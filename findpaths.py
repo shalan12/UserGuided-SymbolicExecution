@@ -1,3 +1,6 @@
+ASSIGNMENT_INSTRUCTION = 1
+BRANCH_INSTRUCTION = 2
+
 class BasicBlock:
 	def __init__(self):
 		self.root = null
@@ -29,7 +32,8 @@ class BasicBlockNode:
 
 
 
-		
+def getInstructionType(instruction):
+	#returns array containing type of instruction, plus some other data	
 def isAssignmentInstruction(instruction):
 	#return array containing either False, or True,LHS,RHS
 
