@@ -50,7 +50,6 @@ void foo(int a, int b)
 		b = c + b + d;
 	}
 }
-
 int main()
 {
 	foo(50,100);
