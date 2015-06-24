@@ -1,6 +1,8 @@
+import re
+
 ASSIGNMENT_INSTRUCTION = 1
 BRANCH_INSTRUCTION = 2
-
+prog = re.compile("[a-zA-Z_][a-zA-Z0-9_]{0,31}")
 class BasicBlock:
 	def __init__(self):
 		self.root = null
@@ -69,13 +71,52 @@ class BasicBlockNode:
 
 	def expandVars(expression,symbolTable):
 		#replace variables with their values in terms of consts and function inputs
+		varss = getVarsinExp(expression)
+		for var in varss:
+			if (not isAConstant(var) and not symbolTable.get(var,false)):
+				return [-1]
+			else:
+				expression = expression.replace(" " + var + " ",symbolTable[var])
 	def getVarsinExp(expression):
 		# returns all the variables in the expression
+		return prog.findall(expression)
 
-def getInstructionType(instruction):
-	#returns array containing type of instruction, plus some other data	
-def isAssignmentInstruction(instruction):
-	#return array containing either False, or True,LHS,RHS
+	def getInstructionType(instruction):
+		#returns array containing type of instruction, plus some other data
+
+	def isAssignmentInstruction(instruction):
+		#return array containing either False, or True,LHS,RHS
+		if( " = " in instruction):
+			lhs,expression = instruction.split(" = ")
+			lhs = lhs.strip()
+			varss = getVarsinExp(rhs)
+			temp = expandVars(expression,symbolTable)
+			if(temp[0] == -1):
+				return temp
+			else:
+				return (ASSIGNMENT_INSTRUCTION,lhs)+temp
+		else:
+			return [-1]
+
+	def isAConstant(word):
+		toReturn = True
+		for char in word:
+			if(not(char >= '0' and char <= '9')):
+				toReturn = False
+				break
+		return toReturn
+
+	def isBranchInstruction(instruction,symbolTable):
+		if ("if" in instruction):
+			condition = instruction.replace("if","")
+			varss = getVarsinExp(instruction)
+			temp = expandVars(expression,symbolTable)
+			if(temp[0] == -1):
+				return temp
+			else:
+				return (BRANCH_INSTRUCTION)+temp
+		else:
+			return [-1]
 
 def findPaths(function,inputs):
 	symbols = {}

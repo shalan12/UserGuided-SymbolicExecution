@@ -8,7 +8,7 @@ void foo(int a, int b)
 	{
 		c = b + 1;
 		b = b + a;
-		d = 2;
+		d = 2*e;
 		if (b > 2)
 		{
 			b = b + 9;
@@ -54,3 +54,4 @@ int main()
 {
 	foo(50,100);
 }
+int e = 4;
