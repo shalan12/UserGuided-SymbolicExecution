@@ -8,13 +8,10 @@ void foo(int a, int b)
 	{
 		c = b + 1;
 		b = b + a;
-<<<<<<< HEAD
 		d = 2;
 		if ( b > 2 )
-=======
 		d = 2*e;
 		if (b > 2)
->>>>>>> 6a00576535cedd3a31676faa6625e6ca8b60b39f
 		{
 			b = b + 9;
 			c = 11;
@@ -58,15 +55,3 @@ void foo(int a, int b)
 	a = a + b;
 	c = c + d;
 }
-<<<<<<< HEAD
-// int main()
-// {
-// 	foo(50,100);
-// }
-=======
-int main()
-{
-	foo(50,100);
-}
-int e = 4;
->>>>>>> 6a00576535cedd3a31676faa6625e6ca8b60b39f
