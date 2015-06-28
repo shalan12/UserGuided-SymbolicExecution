@@ -119,6 +119,8 @@ class Function:
 		newBlock = 0
 
 		while 1:
+			# if len(self.content) <= self.currLineNo:
+			# 	break 
 			if self.content[self.currLineNo] == '}':
 				break
 			line = self.content[self.currLineNo]
@@ -353,7 +355,7 @@ class Function:
 				currBlock.appendIntruction()	
 
 
-f =  Function('foo2.cpp')
+f =  Function('foo.cpp')
 f.getParams()
 # f.computeTree()
 f.computeTreeI()

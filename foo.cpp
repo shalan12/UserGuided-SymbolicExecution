@@ -49,6 +49,7 @@ void foo(int a, int b)
 		a = a + 50;
 		b = c + b + d;
 	}
+	a = b + d;
 }
 int main()
 {
