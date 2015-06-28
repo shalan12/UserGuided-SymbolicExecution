@@ -40,7 +40,7 @@ class Function:
 		self.content.remove(self.content[0])
 		for i in range(len(self.content)):
 			x = self.content[i]
-			self.content[i] = self.content[i].strip()
+			self.content[i] = str(' ') + str(self.content[i].strip()) + str(' ')
 			for t in self.allowedDataTypes:
 				if (x[0:len(t)] == t):
 					# self.content[i] = self.content[i].replace(" ", "")
@@ -76,7 +76,7 @@ class Function:
 		newBlock = 0
 
 		while 1:
-			if self.content[self.currLineNo] == '}':
+			if self.content[self.currLineNo] == ' } ':
 				break
 			line = self.content[self.currLineNo]
 			inst = Instruction(line)
@@ -121,11 +121,12 @@ class Function:
 		while 1:
 			# if len(self.content) <= self.currLineNo:
 			# 	break 
-			if self.content[self.currLineNo] == '}':
+			if self.content[self.currLineNo] == ' } ':
+				print self.content[self.currLineNo-1]
 				break
 			line = self.content[self.currLineNo]
 			inst = Instruction(line)
-			if line[0:2] == 'if' or line[0:4] == 'else':
+			if line[0:3] == ' if' or line[0:5] == ' else':
 				tmp = BasicBlock()
 				branches = branches + 1;
 				if newBlock == 1:
@@ -134,9 +135,9 @@ class Function:
 					self.tree.append(nextBlock)
 					currBlock = nextBlock
 					nextBlock = BasicBlock()
-				if line[0:2] == 'if': 
+				if line[0:3] == ' if': 
 					currBlock.setThen(tmp)
-				elif line[0:4] == 'else':
+				elif line[0:5] == ' else':
 					currBlock.setElse(tmp)
 				self.currLineNo = self.currLineNo + 1;
 				self.doBranchIndependent(tmp)
@@ -345,11 +346,11 @@ class Function:
 		for line in content:
 			if line[0:2] == 'if':
 				currBlock.setThen
-			if line == '{':
+			if line == ' { ':
 				tree.append(currBlock)
 				temp_currBlock = BasicBlock()
 
-			elif line == '{':
+			elif line == ' { ':
 				continue
 			else :
 				currBlock.appendIntruction()	
