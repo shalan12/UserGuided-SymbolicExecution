@@ -31,6 +31,7 @@ class ProgramState
         }
         pathCondition = "";
   }
+
   std::string getPathCondition()
   {
   	return pathCondition;
@@ -41,7 +42,6 @@ class ProgramState
     map[value] = exp;
   }
   
-
   ExpressionTree* get(llvm::Value * s)
   {
     if ( map.find(s) == map.end() ) return NULL;
@@ -59,11 +59,11 @@ class ProgramState
       std::cout <<  getString(pr.first) << " === " << pr.second->toString(map) << '\n';
   }
 };
-ExpressionTree* getExpressionTree(ProgramState& state, llvm::Value* value);
+ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value);
 /**
 Executes a nonbranching instruction and updates the program state
 */
-void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState& state)
+void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState* state)
 {
     #ifdef DEBUG  
         std::cout << instruction->getOpcodeName() << " executing something \n";
@@ -75,7 +75,7 @@ void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState&
         #endif
         llvm::Value* memLocation = instruction->getOperand(1);
         llvm::Value* value = instruction->getOperand(0);
-        state.add(memLocation,getExpressionTree(state,value));
+        state->add(memLocation,getExpressionTree(state,value));
     }
     else if(instruction->getOpcode()==llvm::Instruction::Load)
     {
@@ -83,7 +83,7 @@ void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState&
             std::cout << "executing Load \n";
         #endif
         ExpressionTree* exptree = getExpressionTree(state,instruction->getOperand(0));
-        state.add(instruction,exptree);
+        state->add(instruction,exptree);
 
         #ifdef DEBUG  
         if(!exptree)
@@ -98,10 +98,10 @@ void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState&
         ExpressionTree* lhs = getExpressionTree(state,instruction->getOperand(0));
         ExpressionTree* rhs = getExpressionTree(state,instruction->getOperand(1));
         #ifdef DEBUG  
-            std::cout << "lhs: " << lhs->toString(state.getMap()) <<"\n";
-            std::cout << "rhs: " << rhs->toString(state.getMap()) <<"\n";
+            std::cout << "lhs: " << lhs->toString(state->getMap()) <<"\n";
+            std::cout << "rhs: " << rhs->toString(state->getMap()) <<"\n";
         #endif
-        state.add(instruction,new ExpressionTree("+",lhs,rhs));     
+        state->add(instruction,new ExpressionTree("+",lhs,rhs));     
     }
     else if (instruction->getOpcode() == llvm::Instruction::ICmp)
     {
@@ -114,14 +114,14 @@ void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState&
         {
           ExpressionTree* lhs = getExpressionTree(state,instruction->getOperand(0));
           ExpressionTree* rhs = getExpressionTree(state,instruction->getOperand(1));
-          state.add(instruction,new ExpressionTree(">",lhs,rhs));
+          state->add(instruction,new ExpressionTree(">",lhs,rhs));
         }
     }
 }
 
-ExpressionTree* getExpressionTree(ProgramState& state, llvm::Value* value)
+ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value)
 {
-    if (ExpressionTree* exptree = state.get(value))
+    if (ExpressionTree* exptree = state->get(value))
     {
         return exptree;
     }
@@ -132,7 +132,7 @@ ExpressionTree* getExpressionTree(ProgramState& state, llvm::Value* value)
 /**
  Executes a branching instruction and determines which block(s) need to be explored depending on the program state
 */
-std::vector<llvm::BasicBlock*> getNextBlocks(llvm::Instruction* inst, ProgramState& state)
+std::vector<llvm::BasicBlock*> getNextBlocks(llvm::Instruction* inst, ProgramState* state)
 {
   std::vector<llvm::BasicBlock*> to_ret;
   llvm::Value * check = NULL;
@@ -150,7 +150,7 @@ std::vector<llvm::BasicBlock*> getNextBlocks(llvm::Instruction* inst, ProgramSta
     {
       // std::cout << "yy!!\n";
       check = v;
-      check_expr = state.get(check);
+      check_expr = state->get(check);
     }
     if (basicBlock) to_ret.push_back(basicBlock);
   }
@@ -159,7 +159,7 @@ std::vector<llvm::BasicBlock*> getNextBlocks(llvm::Instruction* inst, ProgramSta
     if (to_ret.size() > 1)
     {
       // std::cout <<inst->getNumOperands() << " going to get integer!" << std::endl;
-      if (check_expr->getInteger(check_expr->getTop()->value) == 0)
+      if (check_expr->getInteger() == 0)
       {
         to_ret.resize(1);
         #ifdef DEBUG
@@ -167,7 +167,7 @@ std::vector<llvm::BasicBlock*> getNextBlocks(llvm::Instruction* inst, ProgramSta
         #endif
         return to_ret;
       }
-      else if (check_expr->getInteger(check_expr->getTop()->value) == 1) 
+      else if (check_expr->getInteger() == 1) 
       {
         to_ret[0] = to_ret[1];
         to_ret.resize(1);
@@ -216,7 +216,7 @@ std::vector<llvm::BasicBlock*> getNextBlocks(llvm::Instruction* inst, ProgramSta
 /**
  executes the basicBlock, updates programstate and returns the next Block(s) to execute if it can be determined that only the "Then" block should be executed then only the "Then" block is returned. Similarly for the else block. Otherwise both are are retuarned. NULL is returned if there's nothing left to execute
  */
-std::vector<llvm::BasicBlock*> executeBasicBlock(llvm::BasicBlock* block, ProgramState& state)
+std::vector<llvm::BasicBlock*> executeBasicBlock(llvm::BasicBlock* block, ProgramState* state)
 {
 
   std::vector<llvm::BasicBlock*> to_ret;
@@ -286,9 +286,9 @@ std::vector<llvm::BasicBlock*> executeBasicBlock(llvm::BasicBlock* block, Progra
 /**
     Executes all the possible paths in the given function and returns the programState at the end of every path
 */
-ProgramState executeFunction(llvm::Function* function)
+ProgramState* executeFunction(llvm::Function* function)
 {
-    ProgramState state = ProgramState(function->args());
+    ProgramState* state = new ProgramState(function->args());
     llvm::BasicBlock* currBlock;
     // std::cout << "good to go!" << std::endl;
     std::vector<llvm::BasicBlock*> blocks;
@@ -325,7 +325,7 @@ ProgramState executeFunction(llvm::Function* function)
       // std::cin >> y;
       // if(blocks.size() > 0) currBlock = blocks[0];
     }
-    // std::cout << state.getPathCondition();
+    // std::cout << state->getPathCondition();
     return state;
     
 }
@@ -358,9 +358,9 @@ llvm::Module* loadCode(std::string filename)
 
 int main()
 {
-    llvm::Module* module = loadCode("/media/ACER/Users/Shalan/Dropbox/SHALAN/LUMS/sproj/llvm-stuff/SUT/hello.bc");
+    llvm::Module* module = loadCode("./SUT/hello.bc");
     auto function = module->getFunction("main");
-    ProgramState finalState = executeFunction(function);
-    finalState.printVariables();
+    ProgramState* finalState = executeFunction(function);
+    finalState->printVariables();
     return 0;
 }
