@@ -12,7 +12,15 @@ int main()
 	}
 	
 }
-int notmain(int a, char b)
+int notmain(int a, int b)
 {
+	if (a > b)
+	{
+		b = b + 1;
+	}
+	else
+	{
+		b = b * 2;
+	}
 	return 0;
 }

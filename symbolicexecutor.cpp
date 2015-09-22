@@ -14,6 +14,7 @@
 #include <map>
 #include <vector>
 #include "llvmExpressionTree.cpp"
+#define DEBUG 1
 
 class ProgramState
 {
@@ -24,9 +25,9 @@ class ProgramState
   public:
   
   ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> inputs)
-  {
+  {   
         for (auto input = inputs.begin(), last = inputs.end(); input!=last; input++)
-        {
+        {   
             add(input,new ExpressionTree(input));
         }
         pathCondition = "";
@@ -56,7 +57,7 @@ class ProgramState
   void printVariables()
   {
     for (auto& pr : map)
-      std::cout <<  getString(pr.first) << " === " << pr.second->toString(map) << '\n';
+      std::cout <<  getString(pr.first) << "\t == " << pr.second->toString(map) << '\n';
   }
 };
 ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value);
@@ -117,6 +118,9 @@ void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState*
           state->add(instruction,new ExpressionTree(">",lhs,rhs));
         }
     }
+    #ifdef DEBUG
+      std::cout << "exiting executeNonBranchingInstruction\n";
+    #endif
 }
 
 ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value)
@@ -135,48 +139,56 @@ ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value)
 std::vector<llvm::BasicBlock*> getNextBlocks(llvm::Instruction* inst, ProgramState* state)
 {
   std::vector<llvm::BasicBlock*> to_ret;
-  llvm::Value * check = NULL;
-  ExpressionTree * check_expr;
-  for (int j = 0; j < inst->getNumOperands(); j++)
+  if(inst->getOpcode() == llvm::Instruction::Ret)
   {
-    // std::cout <<"operand no : " << j+1 << "\n" << getString(inst->getOperand(j)) << "\n";
-    llvm::BasicBlock* basicBlock = NULL;
-    if (llvm::isa<llvm::BasicBlock>(inst->getOperand(j)))
-    {
-        basicBlock = llvm::dyn_cast<llvm::BasicBlock> (inst->getOperand(j));
-    }
-    llvm::Value* v = dynamic_cast<llvm::Value*> (inst->getOperand(j));
-    if (!basicBlock && j == 0)
-    {
-      // std::cout << "yy!!\n";
-      check = v;
-      check_expr = state->get(check);
-    }
-    if (basicBlock) to_ret.push_back(basicBlock);
+    return to_ret;
   }
-  if (check && check_expr->isConstant())
+  else
   {
-    if (to_ret.size() > 1)
+    llvm::Value * check = NULL;
+    ExpressionTree * check_expr;
+    for (int j = 0; j < inst->getNumOperands(); j++)
     {
-      // std::cout <<inst->getNumOperands() << " going to get integer!" << std::endl;
-      if (check_expr->getInteger() == 0)
+      // std::cout <<"operand no : " << j+1 << "\n" << getString(inst->getOperand(j)) << "\n";
+      llvm::BasicBlock* basicBlock = NULL;
+      if (llvm::isa<llvm::BasicBlock>(inst->getOperand(j)))
       {
-        to_ret.resize(1);
-        #ifdef DEBUG
-            std::cout << "here 1\n";
-        #endif
-        return to_ret;
+          basicBlock = llvm::dyn_cast<llvm::BasicBlock> (inst->getOperand(j));
       }
-      else if (check_expr->getInteger() == 1) 
+      llvm::Value* v = dynamic_cast<llvm::Value*> (inst->getOperand(j));
+      if (!basicBlock && j == 0)
       {
-        to_ret[0] = to_ret[1];
-        to_ret.resize(1);
-        #ifdef DEBUG
-            std::cout << "here 2\n";
-        #endif
-        return to_ret;
+        // std::cout << "yy!!\n";
+        check = v;
+        check_expr = state->get(check);
       }
+      if (basicBlock) to_ret.push_back(basicBlock);
     }
+    /*if (check && check_expr->isConstant())
+    {
+      if (to_ret.size() > 1)
+      {
+        if (check_expr->getInteger() == 0)
+        {
+          to_ret.resize(1);
+          #ifdef DEBUG
+              std::cout << "here 1\n";
+          #endif
+          return to_ret;
+        }
+        else if (check_expr->getInteger() == 1) 
+        {
+          to_ret[0] = to_ret[1];
+          to_ret.resize(1);
+          #ifdef DEBUG
+              std::cout << "here 2\n";
+          #endif
+          return to_ret;
+        }
+      }
+
+    }
+    */
   }
   #ifdef DEBUG
   // std::cout << "about to return possible branches as follows:" << std::endl;
@@ -225,21 +237,19 @@ std::vector<llvm::BasicBlock*> executeBasicBlock(llvm::BasicBlock* block, Progra
   {
     #ifdef DEBUG
             
-        // printf("Basic block (name= %s) has %zu instructions\n",block->getName().str().c_str(),block->size());
+        printf("Basic block (name= %s) has %zu instructions\n",block->getName().str().c_str(),block->size());
 
-        // std::cout << "printing operands ";
-        // for (int j = 0; j < i->getNumOperands(); j++)
-        // {
-          // std::cout << getString(i->getOperand(j)) << "\n";
-        // }
-        // std::cout << getString(i) << "\n";
-        // std::cout << (*i).print();
-        // The next statement works since operator<<(ostream&,...)
-        // is overloaded for Instruction&
-        // std::cout << *(i).str().c_str() << "\n";
-        // std::cout << "move forward? ";
-        // int x;
-        // std::cin >> x;
+        std::cout << "printing operands ";
+        for (int j = 0; j < i->getNumOperands(); j++)
+        {
+          std::cout << getString(i->getOperand(j)) << "\n";
+        }
+        std::cout << getString(i) << "\n";
+        std::cout << "move forward? ";
+        std::cout << i->getOpcode() << "\t";
+        std::cout << llvm::Instruction::Ret << "\n";
+        int x;
+        std::cin >> x;
     #endif
 
     if(i->getOpcode() == llvm::Instruction::Br || i->getOpcode() == llvm::Instruction::Ret) 
@@ -289,6 +299,9 @@ std::vector<llvm::BasicBlock*> executeBasicBlock(llvm::BasicBlock* block, Progra
 ProgramState* executeFunction(llvm::Function* function)
 {
     ProgramState* state = new ProgramState(function->args());
+    #ifdef DEBUG
+      state->printVariables();
+    #endif
     llvm::BasicBlock* currBlock;
     // std::cout << "good to go!" << std::endl;
     std::vector<llvm::BasicBlock*> blocks;
@@ -359,7 +372,11 @@ llvm::Module* loadCode(std::string filename)
 int main()
 {
     llvm::Module* module = loadCode("./SUT/hello.bc");
-    auto function = module->getFunction("main");
+    // for (auto function = module->begin(), last = module->end(); function!=last; function++)
+    // {
+    //     printf("%s\n",function->getName().str().c_str());
+    // }
+    auto function = module->getFunction("_Z7notmainii");
     ProgramState* finalState = executeFunction(function);
     finalState->printVariables();
     return 0;

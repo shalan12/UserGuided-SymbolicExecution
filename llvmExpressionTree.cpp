@@ -18,7 +18,6 @@ class ExpressionTreeNode
         // => we're not responsible for deleting it and we're guranteed not to have a dangling pointer
         // => we can just keep a raw pointer
         llvm::Value* value;
-        // a node owns it's children uniquely. No other ptr will ever point to them
         std::shared_ptr<ExpressionTreeNode> left;
         std::shared_ptr<ExpressionTreeNode> right;
         ExpressionTreeNode(std::string data, llvm::Value* value)

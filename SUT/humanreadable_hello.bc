@@ -33,11 +33,29 @@ define i32 @main() #0 {
 }
 
 ; Function Attrs: nounwind uwtable
-define i32 @_Z7notmainic(i32 %a, i8 signext %b) #0 {
+define i32 @_Z7notmainii(i32 %a, i32 %b) #0 {
   %1 = alloca i32, align 4
-  %2 = alloca i8, align 1
+  %2 = alloca i32, align 4
   store i32 %a, i32* %1, align 4
-  store i8 %b, i8* %2, align 1
+  store i32 %b, i32* %2, align 4
+  %3 = load i32* %1, align 4
+  %4 = load i32* %2, align 4
+  %5 = icmp sgt i32 %3, %4
+  br i1 %5, label %6, label %9
+
+; <label>:6                                       ; preds = %0
+  %7 = load i32* %2, align 4
+  %8 = add nsw i32 %7, 1
+  store i32 %8, i32* %2, align 4
+  br label %12
+
+; <label>:9                                       ; preds = %0
+  %10 = load i32* %2, align 4
+  %11 = mul nsw i32 %10, 2
+  store i32 %11, i32* %2, align 4
+  br label %12
+
+; <label>:12                                      ; preds = %9, %6
   ret i32 0
 }
 
