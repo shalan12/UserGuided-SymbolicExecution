@@ -20,7 +20,7 @@ int notmain(int a, int b)
 	}
 	else
 	{
-		b = b * 2;
+		b = b + 2;
 	}
 	return 0;
 }

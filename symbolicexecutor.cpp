@@ -14,7 +14,7 @@
 #include <map>
 #include <vector>
 #include "llvmExpressionTree.cpp"
-#define DEBUG 1
+// #define DEBUG 1
 
 class ProgramState
 {
@@ -31,6 +31,14 @@ class ProgramState
             add(input,new ExpressionTree(input));
         }
         pathCondition = "";
+  }
+  ProgramState(const ProgramState & p)
+  {
+    for (auto& pr : p.map)
+    {
+      add(pr.first,new ExpressionTree(*(pr.second)));
+    }
+    pathCondition = "";
   }
 
   std::string getPathCondition()
@@ -57,7 +65,7 @@ class ProgramState
   void printVariables()
   {
     for (auto& pr : map)
-      std::cout <<  getString(pr.first) << "\t == " << pr.second->toString(map) << '\n';
+      std::cout <<  getString(pr.first) << "\t == \t" << pr.second->toString(map) << '\n';
   }
 };
 ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value);
@@ -67,7 +75,7 @@ Executes a nonbranching instruction and updates the program state
 void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState* state)
 {
     #ifdef DEBUG  
-        std::cout << instruction->getOpcodeName() << " executing something \n";
+        std::cout << " executing :" << instruction->getOpcodeName() << " instruction \n";
     #endif
     if(instruction->getOpcode()==llvm::Instruction::Store)
     {
@@ -98,7 +106,12 @@ void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState*
         #endif
         ExpressionTree* lhs = getExpressionTree(state,instruction->getOperand(0));
         ExpressionTree* rhs = getExpressionTree(state,instruction->getOperand(1));
-        #ifdef DEBUG  
+        #ifdef DEBUG
+            if (lhs)
+              std::cout << "lhs not NULL\n";
+            if (rhs)
+              std::cout << "rhs not NULL\n";
+
             std::cout << "lhs: " << lhs->toString(state->getMap()) <<"\n";
             std::cout << "rhs: " << rhs->toString(state->getMap()) <<"\n";
         #endif
@@ -218,7 +231,8 @@ std::vector<llvm::BasicBlock*> getNextBlocks(llvm::Instruction* inst, ProgramSta
   // }
 
 
-    std::cout << "about to return!";
+    std::cout << "exiting getNextBlocks\n";
+
   #endif
 
   return to_ret;
@@ -230,32 +244,32 @@ std::vector<llvm::BasicBlock*> getNextBlocks(llvm::Instruction* inst, ProgramSta
  */
 std::vector<llvm::BasicBlock*> executeBasicBlock(llvm::BasicBlock* block, ProgramState* state)
 {
-
   std::vector<llvm::BasicBlock*> to_ret;
- 
+  #ifdef DEBUG
+    printf("Basic block (name= %s) has %zu instructions\n",block->getName().str().c_str(),block->size());
+  #endif
+
   for (auto i = block->begin(), e = block->end(); i != e; ++i)
   {
     #ifdef DEBUG
-            
-        printf("Basic block (name= %s) has %zu instructions\n",block->getName().str().c_str(),block->size());
 
-        std::cout << "printing operands ";
+        std::cout << "printing operands : " << i->getNumOperands() << "\n";
         for (int j = 0; j < i->getNumOperands(); j++)
         {
-          std::cout << getString(i->getOperand(j)) << "\n";
+          std::cout << "operand # : " << j+1 << " : "<< getString(i->getOperand(j)) << "\n";
         }
-        std::cout << getString(i) << "\n";
-        std::cout << "move forward? ";
-        std::cout << i->getOpcode() << "\t";
-        std::cout << llvm::Instruction::Ret << "\n";
-        int x;
-        std::cin >> x;
+        std::cout << "printing instruction: " << getString(i) << "\n";
+        std::cout << "getOpcode: " << i->getOpcode() << "\n";
+        std::cout << "move forward? \n";
+        // std::cout << llvm::Instruction::Ret << "\n";
+        // int x;
+        // std::cin >> x;
     #endif
 
     if(i->getOpcode() == llvm::Instruction::Br || i->getOpcode() == llvm::Instruction::Ret) 
     {
         #ifdef DEBUG
-            std::cout << "Its a branch!";
+            std::cout << "Branch Instruction Hit!\n";
             // std::cin >> x;
             // std::cout << "about to return!";
         #endif
@@ -265,7 +279,7 @@ std::vector<llvm::BasicBlock*> executeBasicBlock(llvm::BasicBlock* block, Progra
     {
       #ifdef DEBUG
           int abc;
-          std::cout << "instruction to b executed\n"<< std::endl;
+          std::cout << "non branch instruction to b executed\n";
           // std::cin >> abc;
           if (i)
           { 
@@ -280,15 +294,18 @@ std::vector<llvm::BasicBlock*> executeBasicBlock(llvm::BasicBlock* block, Progra
       executeNonBranchingInstruction(i,state);
     }
     #ifdef DEBUG
-        std::cout << "Executed!";
+        std::cout << "Instruction Executed! (either branch or non branch)\n";
         // std::cin >> x;
     #endif
   }
   #ifdef DEBUG
-    std::cout << "about to return! basic block";
+    std::cout << "exiting executeBasicBlock\n";
   #endif
   return to_ret;
 }
+
+void symbolicExecute(ProgramState * s, llvm::BasicBlock * b, std::vector<ProgramState*> & vec);
+
 /**
     Converts an llvm::Value to a humanreadable string
 */
@@ -296,8 +313,9 @@ std::vector<llvm::BasicBlock*> executeBasicBlock(llvm::BasicBlock* block, Progra
 /**
     Executes all the possible paths in the given function and returns the programState at the end of every path
 */
-ProgramState* executeFunction(llvm::Function* function)
+std::vector<ProgramState*> executeFunction(llvm::Function* function)
 {
+    std::vector<ProgramState*> vec;
     ProgramState* state = new ProgramState(function->args());
     #ifdef DEBUG
       state->printVariables();
@@ -307,6 +325,9 @@ ProgramState* executeFunction(llvm::Function* function)
     std::vector<llvm::BasicBlock*> blocks;
     blocks.push_back(&function->getEntryBlock());
     //since we're only writing code for executing a single path we can simply do this
+    symbolicExecute(state, &function->getEntryBlock(), vec);
+
+    /***
     while(blocks.size())
     {
       currBlock = blocks[0];
@@ -339,8 +360,42 @@ ProgramState* executeFunction(llvm::Function* function)
       // if(blocks.size() > 0) currBlock = blocks[0];
     }
     // std::cout << state->getPathCondition();
-    return state;
+    ***/
     
+    return vec;
+    
+}
+
+void symbolicExecute(ProgramState * s, llvm::BasicBlock * b, std::vector<ProgramState*> & vec)
+{
+  std::vector<llvm::BasicBlock*> new_blocks = executeBasicBlock(b,s);
+  if (new_blocks.size() < 1)
+  {
+    vec.push_back(s);
+    return;
+  }
+  for (int i = 0; i < new_blocks.size(); i++)
+  {
+    if (new_blocks[i])
+    {
+      #ifdef DEBUG
+        std::cout << "new block not null" << std::endl;
+      #endif
+      // std::cout << "************(input) printing vars!**********\n" << std::endl;
+      // s->printVariables();
+      // std::cout << "************(input) printing vars!**********\n" << std::endl;
+      // std::cout << "************(output) printing vars!**********\n" << std::endl;
+      // t->printVariables();
+      // std::cout << "************(output) printing vars!**********\n" << std::endl;
+      symbolicExecute(new ProgramState(*s), new_blocks[i], vec);
+    }
+    else
+    {
+      #ifdef DEBUG
+        std::cout << "new block NULL!!" << std::endl;
+      #endif
+    }
+  }
 }
 
 /**
@@ -377,7 +432,12 @@ int main()
     //     printf("%s\n",function->getName().str().c_str());
     // }
     auto function = module->getFunction("_Z7notmainii");
-    ProgramState* finalState = executeFunction(function);
-    finalState->printVariables();
+    std::vector<ProgramState*> final_states = executeFunction(function);
+    std::cout << "final states: ("<< final_states.size() << ")\n";
+    for (int i = 0; i < final_states.size(); i++)
+    {
+      final_states[i]->printVariables();
+      std::cout << "\n\n";
+    }
     return 0;
 }

@@ -25,6 +25,13 @@ class ExpressionTreeNode
             this->data = data;
             this->value = value;
         }
+        ExpressionTreeNode(const ExpressionTreeNode & n)
+        {
+            this->data = n.data;
+            this->value = n.value;
+            this->left = n.left;
+            this->right = n.right;
+        }
 };
 class ExpressionTree
 {
@@ -32,7 +39,8 @@ private:
     bool isConstant(llvm::Value* value)
     {
         return llvm::isa<llvm::Constant>(value); 
-    }   
+    }
+
 public:
  
     std::shared_ptr<ExpressionTreeNode> top;
@@ -40,6 +48,10 @@ public:
     ExpressionTree(llvm::Value* value)
     {
         this->top = std::make_shared<ExpressionTreeNode>(ExpressionTreeNode("", value));
+    }
+    ExpressionTree(const ExpressionTree & e)
+    {
+        top = std::make_shared<ExpressionTreeNode>(ExpressionTreeNode(*(e.top)));
     }
     
     bool isConstant()
@@ -49,6 +61,7 @@ public:
 
     ExpressionTree(std::string op, ExpressionTree* lhs, ExpressionTree* rhs)
     {
+
         if (isConstant(lhs->top->value) && isConstant(rhs->top->value)) 
         {
             this->top = std::make_shared<ExpressionTreeNode>(ExpressionTreeNode("",evaluate(lhs->top->value, rhs->top->value, op)));

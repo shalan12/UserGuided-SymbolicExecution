@@ -51,7 +51,7 @@ define i32 @_Z7notmainii(i32 %a, i32 %b) #0 {
 
 ; <label>:9                                       ; preds = %0
   %10 = load i32* %2, align 4
-  %11 = mul nsw i32 %10, 2
+  %11 = add nsw i32 %10, 2
   store i32 %11, i32* %2, align 4
   br label %12
 
