@@ -9,3 +9,5 @@ clang-3.5 -emit-llvm hello.cpp -c -o hello.bc
 #to get humanreadable assembly from bitcode
 llvm-dis-3.5 hello.bc -o humanreadable_hello.bc
 
+https://gist.github.com/fyears/745da3cf6b19dbff3d0e
+http://stackoverflow.com/questions/17657261/how-to-install-clang-pre-built-binaries-ubuntu-12-04
