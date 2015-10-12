@@ -13,6 +13,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include "z3++.h"
 #include "llvmExpressionTree.cpp"
 // #define DEBUG 1
 
@@ -21,11 +22,15 @@ class ProgramState
   private:
   std::map<llvm::Value*, ExpressionTree*> map;
   std::string pathCondition;
+
   
   public:
-  
+  z3::context c;
+  std::map<std::string, z3::expr> variables;
+  std::vector<std::pair<llvm::Value*, std::string> > constraints;
   ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> inputs)
-  {   
+  {     
+    //s = new z3::solver(c);
         for (auto input = inputs.begin(), last = inputs.end(); input!=last; input++)
         {   
             add(input,new ExpressionTree(input));
@@ -34,16 +39,22 @@ class ProgramState
   }
   ProgramState(const ProgramState & p)
   {
+    //s = new z3::solver(*p.s);
     for (auto& pr : p.map)
     {
       add(pr.first,new ExpressionTree(*(pr.second)));
     }
+/*    for (auto&pr : p.variables)
+    {
+      variables.insert(std::pair<std::string, z3::expr>(pr.first,pr.second));
+      //variables[pr.first] = pr.second;//z3::to_expr(c,Z3_translate(p.c, pr.second, c));
+    }*/
     pathCondition = "";
   }
 
   std::string getPathCondition()
   {
-  	return pathCondition;
+    return pathCondition;
   }
 
   void add(llvm::Value* value, ExpressionTree* exp)
@@ -67,6 +78,92 @@ class ProgramState
     for (auto& pr : map)
       std::cout <<  getString(pr.first) << "\t == \t" << pr.second->toString(map) << '\n';
   }
+  void printZ3Variables()
+  {
+    for (auto& pr : map)
+    {
+      std::cout <<  getString(pr.first) << " === ";
+      if (pr.second->top != NULL)
+      {
+        if (pr.second->top->left != NULL && pr.second->top->right != NULL)
+        {
+          std::string left = getString(pr.second->top->left->value);
+          std::string right = getString(pr.second->top->right->value);
+          variables.insert(std::pair<std::string, z3::expr>(left, c.int_const(left.c_str())));
+          variables.insert(std::pair<std::string, z3::expr>(right, c.int_const(right.c_str())));
+          if (pr.second->top->data == "+")
+          {
+            std::cout << variables.at(left) + variables.at(right) << '\n';
+          }
+          else if (pr.second->top->data == "*")
+          {
+            std::cout << variables.at(left) * variables.at(right) << '\n';
+          }
+          else if (pr.second->top->data == ">")
+          {
+            std::cout << "(>" << variables.at(left) << variables.at(right) << ")" << '\n';
+          }
+          else if (pr.second->top->data == "<")
+          {
+            std::cout << "(<" << variables.at(left) << variables.at(right) << ")" << '\n';
+          }
+          else 
+          {
+            std::cout << variables.at(left) << '\n';
+          }
+        }
+        else if (pr.second->top->left == NULL && pr.second->top->right == NULL)
+        {
+          variables.insert(std::pair<std::string,z3::expr>(getString(pr.second->top->value),c.int_const(getString(pr.second->top->value).c_str())));
+          std::cout << variables.at(getString(pr.second->top->value)) << '\n';
+        }
+      }
+    }
+  }
+  void Z3solver()
+  { 
+    z3::solver s(c);
+    for (int i = 0; i < constraints.size(); i++)
+    {
+      ExpressionTree* exptree = get(constraints[i].first);
+      if (exptree->top->left != NULL && exptree->top->right != NULL)
+      {
+        std::string left = getString(exptree->top->left->value);
+        std::string right = getString(exptree->top->right->value);
+        if (constraints[i].second == "true")
+        {
+          if(exptree->top->data == ">")
+          {
+            s.add(variables.at(left) > variables.at(right));
+            std::cout << "Constraint is: " << left << " > " << right << std::endl;
+          }  
+          else if(exptree->top->data == "<")
+          {
+            s.add(variables.at(left) > variables.at(right));
+            std::cout << "Constraint is: " << left << " < " << right << std::endl;
+          }
+        }
+        else if (constraints[i].second == "false")
+        {
+          if(exptree->top->data == ">")
+          {
+            s.add(variables.at(left) <= variables.at(right));
+            std::cout << "Constraint is: " << left << " <= " << right << std::endl;
+          }
+          else if(exptree->top->data == "<")
+          {
+            s.add(variables.at(left) >= variables.at(right)); 
+            std::cout << "Constraint is: " << left << " >= " << right << std::endl;
+          }
+        }
+      }
+
+    }
+
+    std::cout << s.check() << "\n";
+    z3::model m = s.get_model();
+    std::cout << m << std::endl;
+  }
 };
 ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value);
 /**
@@ -77,7 +174,17 @@ void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState*
     #ifdef DEBUG  
         std::cout << " executing :" << instruction->getOpcodeName() << " instruction \n";
     #endif
-    if(instruction->getOpcode()==llvm::Instruction::Store)
+    if (instruction->getOpcode() == llvm::Instruction::Alloca)
+    {
+        #ifdef DEBUG  
+            std::cout << "executing Store \n";
+        #endif
+        //state->variables.insert(std::make_pair(getString(instruction).c_str(),state->c.int_const(getString(instruction).c_str())));
+        //state->variables.insert(std::pair<std::string, z3::expr>(getString(instruction).c_str(),state->c.int_const(getString(instruction).c_str())));
+        //std::cout << state->variables.at(getString(instruction).c_str()) << std::endl;
+        //state->variables[getString(instruction).c_str()] = state->c.int_const(getString(instruction).c_str());    
+    }
+    else if(instruction->getOpcode()==llvm::Instruction::Store)
     {
         #ifdef DEBUG  
             std::cout << "executing Store \n";
@@ -85,6 +192,7 @@ void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState*
         llvm::Value* memLocation = instruction->getOperand(1);
         llvm::Value* value = instruction->getOperand(0);
         state->add(memLocation,getExpressionTree(state,value));
+        //state->s->add(state->variables[getString(memLocation).c_str()] == state->variables[getString(value).c_str()]);
     }
     else if(instruction->getOpcode()==llvm::Instruction::Load)
     {
@@ -93,6 +201,8 @@ void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState*
         #endif
         ExpressionTree* exptree = getExpressionTree(state,instruction->getOperand(0));
         state->add(instruction,exptree);
+        //state->variables.insert(std::pair<std::string, z3::expr>(getString(instruction).c_str(),state->c.int_const(getString(instruction).c_str())));
+       // state->s->add(state->variables[getString(instruction).c_str()] == state->variables[getString(instruction->getOperand(0)).c_str()]);
 
         #ifdef DEBUG  
         if(!exptree)
@@ -115,7 +225,10 @@ void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState*
             std::cout << "lhs: " << lhs->toString(state->getMap()) <<"\n";
             std::cout << "rhs: " << rhs->toString(state->getMap()) <<"\n";
         #endif
-        state->add(instruction,new ExpressionTree("+",lhs,rhs));     
+        state->add(instruction,new ExpressionTree("+",lhs,rhs));  
+        //std::cout << state->variables.at(getString(instruction->getOperand(0)).c_str()) + state->variables.at(getString(instruction->getOperand(1)).c_str())  << std::endl; 
+        //state->variables[getString(instruction).c_str()] = state->c.bool_const(getString(instruction).c_str());
+        //state->s->add(state->variables[getString(instruction).c_str()] == state->variables[getString(instruction->getOperand(0)).c_str()] + state->variables[getString(instruction->getOperand(1)).c_str()]);   
     }
     else if (instruction->getOpcode() == llvm::Instruction::ICmp)
     {
@@ -129,6 +242,8 @@ void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState*
           ExpressionTree* lhs = getExpressionTree(state,instruction->getOperand(0));
           ExpressionTree* rhs = getExpressionTree(state,instruction->getOperand(1));
           state->add(instruction,new ExpressionTree(">",lhs,rhs));
+          //state->variables[getString(instruction).c_str()] = state->c.bool_const(getString(instruction).c_str());
+          //state->s->add(state->variables[getString(instruction).c_str()] == state->variables[getString(instruction->getOperand(0)).c_str()] > state->variables[getString(instruction->getOperand(1)).c_str()]);
         }
     }
     #ifdef DEBUG
@@ -149,15 +264,22 @@ ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value)
 /**
  Executes a branching instruction and determines which block(s) need to be explored depending on the program state
 */
-std::vector<llvm::BasicBlock*> getNextBlocks(llvm::Instruction* inst, ProgramState* state)
+std::vector<std::pair<llvm::BasicBlock*, ProgramState*>> getNextBlocks(llvm::Instruction* inst, ProgramState* state)
 {
-  std::vector<llvm::BasicBlock*> to_ret;
+  std::vector<std::pair<llvm::BasicBlock*, ProgramState*> > pairs;
+  llvm::Value* value = NULL;
   if(inst->getOpcode() == llvm::Instruction::Ret)
   {
-    return to_ret;
+    return pairs;
   }
   else
   {
+    if (!llvm::isa<llvm::BasicBlock>(inst->getOperand(0)))
+    {
+        value = llvm::dyn_cast<llvm::Value> (inst->getOperand(0));
+        //state->s->add(state->variables.at(getString(value).c_str()) == true);
+        state->constraints.push_back(std::pair<llvm::Value*, std::string>(value, "true"));
+    }
     llvm::Value * check = NULL;
     ExpressionTree * check_expr;
     for (int j = 0; j < inst->getNumOperands(); j++)
@@ -175,8 +297,29 @@ std::vector<llvm::BasicBlock*> getNextBlocks(llvm::Instruction* inst, ProgramSta
         check = v;
         check_expr = state->get(check);
       }
-      if (basicBlock) to_ret.push_back(basicBlock);
+      if (basicBlock) 
+      {
+          ProgramState* prg = new ProgramState(*state);
+          if (value)
+          {
+            if (j <= 1)
+            {
+              prg->constraints.push_back(std::pair<llvm::Value*, std::string>(value, "true"));
+              //prg->s->add(prg->variables.at(getString(value).c_str()) == true);
+            }
+            else
+            {
+              prg->constraints.push_back(std::pair<llvm::Value*,std::string>(value, "false"));
+              //prg->s->add(prg->variables.at(getString(value).c_str()) == false);
+            }
+
+            pairs.push_back(std::make_pair(basicBlock, prg));
+          }
+          else
+            pairs.push_back(std::make_pair(basicBlock, state)); 
+      }
     }
+
     /*if (check && check_expr->isConstant())
     {
       if (to_ret.size() > 1)
@@ -235,16 +378,16 @@ std::vector<llvm::BasicBlock*> getNextBlocks(llvm::Instruction* inst, ProgramSta
 
   #endif
 
-  return to_ret;
+  return pairs;
 }
 
 
 /**
  executes the basicBlock, updates programstate and returns the next Block(s) to execute if it can be determined that only the "Then" block should be executed then only the "Then" block is returned. Similarly for the else block. Otherwise both are are retuarned. NULL is returned if there's nothing left to execute
  */
-std::vector<llvm::BasicBlock*> executeBasicBlock(llvm::BasicBlock* block, ProgramState* state)
+std::vector<std::pair<llvm::BasicBlock*, ProgramState*> > executeBasicBlock(llvm::BasicBlock* block, ProgramState* state)
 {
-  std::vector<llvm::BasicBlock*> to_ret;
+  std::vector<std::pair<llvm::BasicBlock*, ProgramState*>> to_ret;
   #ifdef DEBUG
     printf("Basic block (name= %s) has %zu instructions\n",block->getName().str().c_str(),block->size());
   #endif
@@ -368,7 +511,7 @@ std::vector<ProgramState*> executeFunction(llvm::Function* function)
 
 void symbolicExecute(ProgramState * s, llvm::BasicBlock * b, std::vector<ProgramState*> & vec)
 {
-  std::vector<llvm::BasicBlock*> new_blocks = executeBasicBlock(b,s);
+  std::vector<std::pair<llvm::BasicBlock*, ProgramState*>> new_blocks = executeBasicBlock(b,s);
   if (new_blocks.size() < 1)
   {
     vec.push_back(s);
@@ -376,7 +519,7 @@ void symbolicExecute(ProgramState * s, llvm::BasicBlock * b, std::vector<Program
   }
   for (int i = 0; i < new_blocks.size(); i++)
   {
-    if (new_blocks[i])
+    if (new_blocks[i].first)
     {
       #ifdef DEBUG
         std::cout << "new block not null" << std::endl;
@@ -387,7 +530,7 @@ void symbolicExecute(ProgramState * s, llvm::BasicBlock * b, std::vector<Program
       // std::cout << "************(output) printing vars!**********\n" << std::endl;
       // t->printVariables();
       // std::cout << "************(output) printing vars!**********\n" << std::endl;
-      symbolicExecute(new ProgramState(*s), new_blocks[i], vec);
+      symbolicExecute(new_blocks[i].second, new_blocks[i].first, vec);
     }
     else
     {
@@ -439,5 +582,13 @@ int main()
       final_states[i]->printVariables();
       std::cout << "\n\n";
     }
-    return 0;
+    for (int i = 0; i < final_states.size(); i++)
+    {
+      final_states[i]->printZ3Variables();
+      std::cout << "\n";
+      final_states[i]->Z3solver();
+      std::cout << "\n\n";
+
+    }
+  return 0;
 }
