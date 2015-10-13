@@ -33,7 +33,7 @@ define i32 @main() #0 {
 }
 
 ; Function Attrs: nounwind uwtable
-define i32 @_Z7notmainii(i32 %a, i32 %b) #0 {
+define void @_Z7notmainii(i32 %a, i32 %b) #0 {
   %1 = alloca i32, align 4
   %2 = alloca i32, align 4
   store i32 %a, i32* %1, align 4
@@ -56,7 +56,7 @@ define i32 @_Z7notmainii(i32 %a, i32 %b) #0 {
   br label %12
 
 ; <label>:12                                      ; preds = %9, %6
-  ret i32 0
+  ret void
 }
 
 attributes #0 = { nounwind uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }

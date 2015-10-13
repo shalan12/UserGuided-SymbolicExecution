@@ -22,7 +22,10 @@
 #include "jsoncpp/dist/jsoncpp.cpp"
 #include <thread>
 #include <string>
+#include <condition_variable>
 #include <utility>      
+#include <mutex>              // std::mutex, std::unique_lock
+
 
 
 // #define DEBUG 1
@@ -186,9 +189,12 @@ class ProgramState
 class SymbolicExecutor
 {
   private:
+    std::mutex mtx;
+    std::condition_variable cv;
     ServerSocket * socket;
     std::string filename;
-    sigset_t mask;
+    // sigset_t mask;
+    sigset_t mask, oldmask;
     static int instances;
   public:
   ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value)
@@ -481,11 +487,26 @@ void symbolicExecute(ProgramState * s, llvm::BasicBlock * b, std::vector<Program
     msg["fin"] = Json::Value("0");
     Json::FastWriter fastWriter;
     std::string output = fastWriter.write(msg);
-    (*socket) >> output;
+    std::cout << "sending this: " << output << std::endl;
+    (*socket) << output;
+    std::cout << "going to sleep " << std::endl;
+
     
-    sigfillset(&mask);
-    sigdelset(&mask, SIGRTMIN+instances);
-    sigsuspend(&mask);
+
+    // sigemptyset (&mask);
+    // sigaddset (&mask, SIGUSR1);
+    // sigprocmask (SIG_BLOCK, &mask, &oldmask);
+    // sigsuspend (&oldmask);
+    {
+    std::unique_lock<std::mutex> lck(mtx);
+    cv.wait(lck);
+    }
+
+    // sigfillset(&mask);
+    // sigdelset(&mask, SIGRTMIN+instances);
+    // sigsuspend(&mask);
+    std::cout << "wakeup!! " << std::endl;
+
 
     if (new_blocks.size() < 1)
     {
@@ -536,7 +557,13 @@ void symbolicExecute(ProgramState * s, llvm::BasicBlock * b, std::vector<Program
       blocks.push_back(&function->getEntryBlock());
       //since we're only writing code for executing a single path we can simply do this
       symbolicExecute(state, &function->getEntryBlock(), vec);
-
+      Json::Value msg;
+      msg["fin"] = Json::Value("1");
+      Json::FastWriter fastWriter;
+      std::string output = fastWriter.write(msg);
+      std::cout << "sending this: " << output << std::endl;
+      (*socket) << output;
+      std::cout << "going to sleep " << std::endl;
       /***
       while(blocks.size())
       {
@@ -605,7 +632,12 @@ void symbolicExecute(ProgramState * s, llvm::BasicBlock * b, std::vector<Program
 
   void proceed()
   {
-    sigprocmask (SIG_UNBLOCK, &mask, NULL);
+    std::cout << "WAKE UP!!!!!" << std::endl;
+    std::unique_lock<std::mutex> lck(mtx);
+    cv.notify_all();
+    std::cout << "AWAKEN UP!!!!!" << std::endl;
+    // sigprocmask (SIG_UNBLOCK, &mask, NULL);
+    // sigprocmask (SIG_UNBLOCK, &mask, NULL);
   }
 
 
@@ -665,34 +697,49 @@ int executeSym(std::string id)
   threads_sym[id].second->proceed();
 }
 
+int communicate(ServerSocket* new_sock)
+{
+  std::cout << "new connection established\n";
+  std::string message;
+  while(true)
+  {
+      message = "";
+     (*new_sock) >> message;
+     std::cout << "recieved " << message << "\n";
+            
+     if (message.length() > 4)
+     {
+          std::string type = message.substr(0,4);
+          if (type == "file")
+          {
+            createNewSym(message.substr(5), new_sock);
+          }
+          else if (type == "exec")
+          {
+            executeSym(message.substr(5)); 
+          }
+      }
+  }
+}
+
 int main ()
 {
   try
   {
     ServerSocket server ( 30000 );
-    std::string message;
+    std::thread tempThread;
 
     while(true)
     {
-      try
-      {
-        ServerSocket new_sock;
-        server.accept ( new_sock );
-        new_sock >> message;
-        if (message.length() > 4)
+        ServerSocket* new_sock = new ServerSocket();
+        try
         {
-          std::string type = message.substr(0,4);
-          if (type == "file")
-          {
-            createNewSym(message.substr(4), &new_sock);
-          }
-          else if (type == "exec")
-          {
-            executeSym(message.substr(4)); 
-          }
+          server.accept ( *new_sock );
+          tempThread = std::thread(communicate,new_sock);
+          // tempThread.join();
+          std::cout << "Reached here";
         }
-      }
-      catch ( SocketException& ) {}
+        catch ( SocketException& ) {}
     }
   }
   catch ( SocketException& e )

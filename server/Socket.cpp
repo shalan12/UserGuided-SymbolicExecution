@@ -128,10 +128,9 @@ int Socket::recv ( std::string& s ) const
 
   memset ( buf, 0, MAXRECV + 1 );
   int status = ::recv ( m_sock, buf, MAXRECV, 0 );
-  std::cout << "status == " << status << "\n"; 
   if ( status == -1 )
     {
-      std::cout << "status == -1   errno == " << errno << "  in Socket::recv\n";
+      perror("in recv -- status == -1");
       return 0;
     }
   else if ( status == 0 )
