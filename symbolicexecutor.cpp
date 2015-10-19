@@ -193,10 +193,22 @@ class SymbolicExecutor
     std::condition_variable cv;
     ServerSocket * socket;
     std::string filename;
+    int currId;
+    std::map<llvm::BasicBlock*, int> BlockIds;
     // sigset_t mask;
     sigset_t mask, oldmask;
     static int instances;
   public:
+
+  SymbolicExecutor(std::string f, ServerSocket * s)
+  {
+    socket = s;
+    filename = f;
+    instances++;
+    currId = 0;
+    BlockIds[NULL] = -1;
+  }
+
   ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value)
   {
       if (ExpressionTree* exptree = state->get(value))
@@ -478,12 +490,15 @@ class SymbolicExecutor
     return to_ret;
   }
 
-void symbolicExecute(ProgramState * s, llvm::BasicBlock * b, std::vector<ProgramState*> & vec)
+void symbolicExecute(ProgramState * s, llvm::BasicBlock * prev, llvm::BasicBlock * b, std::vector<ProgramState*> & vec)
   {
     std::vector<std::pair<llvm::BasicBlock*, ProgramState*>> new_blocks = executeBasicBlock(b,s);
     Json::Value msg;
-    msg["id"] = Json::Value(filename.c_str());
-    msg["basicblock"] = Json::Value(s->toString());
+    BlockIds[b]=currId++;
+    msg["fileId"] = Json::Value(filename.c_str());
+    msg["node"] = Json::Value(BlockIds[b]);
+    if(prev != NULL) msg["parent"] = Json::Value(BlockIds[prev]);
+    msg["text"] = Json::Value(s->toString());
     msg["fin"] = Json::Value("0");
     Json::FastWriter fastWriter;
     std::string output = fastWriter.write(msg);
@@ -526,7 +541,7 @@ void symbolicExecute(ProgramState * s, llvm::BasicBlock * b, std::vector<Program
         // std::cout << "************(output) printing vars!**********\n" << std::endl;
         // t->printVariables();
         // std::cout << "************(output) printing vars!**********\n" << std::endl;
-        symbolicExecute(new_blocks[i].second, new_blocks[i].first, vec);
+        symbolicExecute(new_blocks[i].second, b, new_blocks[i].first, vec);
       }
       else
       {
@@ -537,9 +552,6 @@ void symbolicExecute(ProgramState * s, llvm::BasicBlock * b, std::vector<Program
     }
   }
 
-  /**
-      Converts an llvm::Value to a humanreadable string
-  */
 
   /**
       Executes all the possible paths in the given function and returns the programState at the end of every path
@@ -556,14 +568,16 @@ void symbolicExecute(ProgramState * s, llvm::BasicBlock * b, std::vector<Program
       std::vector<llvm::BasicBlock*> blocks;
       blocks.push_back(&function->getEntryBlock());
       //since we're only writing code for executing a single path we can simply do this
-      symbolicExecute(state, &function->getEntryBlock(), vec);
+      symbolicExecute(state, NULL, &function->getEntryBlock(), vec);
       Json::Value msg;
       msg["fin"] = Json::Value("1");
       Json::FastWriter fastWriter;
       std::string output = fastWriter.write(msg);
+
       std::cout << "sending this: " << output << std::endl;
       (*socket) << output;
-      std::cout << "going to sleep " << std::endl;
+      std::cout << "Function executed"  << std::endl;
+
       /***
       while(blocks.size())
       {
@@ -665,12 +679,7 @@ void symbolicExecute(ProgramState * s, llvm::BasicBlock * b, std::vector<Program
 
       }
   }
-  SymbolicExecutor(std::string f, ServerSocket * s)
-  {
-    socket = s;
-    filename = f;
-    instances++;
-  }
+  
 };
 
 int SymbolicExecutor::instances = 0;
@@ -706,7 +715,10 @@ int communicate(ServerSocket* new_sock)
       message = "";
      (*new_sock) >> message;
      std::cout << "recieved " << message << "\n";
-            
+     if(message == "FIN")
+     {
+        break;
+     }
      if (message.length() > 4)
      {
           std::string type = message.substr(0,4);
@@ -720,6 +732,7 @@ int communicate(ServerSocket* new_sock)
           }
       }
   }
+  delete new_sock;
 }
 
 int main ()
@@ -728,10 +741,10 @@ int main ()
   {
     ServerSocket server ( 30000 );
     std::thread tempThread;
-
+    ServerSocket* new_sock;
     while(true)
     {
-        ServerSocket* new_sock = new ServerSocket();
+        new_sock = new ServerSocket();
         try
         {
           server.accept ( *new_sock );
