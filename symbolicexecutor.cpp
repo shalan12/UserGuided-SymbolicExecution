@@ -25,6 +25,7 @@
 #include <condition_variable>
 #include <utility>      
 #include <mutex>              // std::mutex, std::unique_lock
+#include <sstream>
 
 
 
@@ -57,17 +58,22 @@ class ProgramState
     {
       add(pr.first,new ExpressionTree(*(pr.second)));
     }
+    this->pathCondition = p.pathCondition;
 /*    for (auto&pr : p.variables)
     {
       variables.insert(std::pair<std::string, z3::expr>(pr.first,pr.second));
       //variables[pr.first] = pr.second;//z3::to_expr(c,Z3_translate(p.c, pr.second, c));
     }*/
-    pathCondition = "";
   }
 
   std::string getPathCondition()
   {
     return pathCondition;
+  }
+  void addCondition(std::string cond)
+  {
+    if(pathCondition == "") pathCondition = cond;
+    else pathCondition += " &&\n" + cond;
   }
 
   void add(llvm::Value* value, ExpressionTree* exp)
@@ -140,6 +146,7 @@ class ProgramState
       }
     }
   }
+  
   void Z3solver()
   { 
     z3::solver s(c);
@@ -155,12 +162,10 @@ class ProgramState
           if(exptree->top->data == ">")
           {
             s.add(variables.at(left) > variables.at(right));
-            std::cout << "Constraint is: " << left << " > " << right << std::endl;
           }  
           else if(exptree->top->data == "<")
           {
-            s.add(variables.at(left) > variables.at(right));
-            std::cout << "Constraint is: " << left << " < " << right << std::endl;
+            s.add(variables.at(left) < variables.at(right));
           }
         }
         else if (constraints[i].second == "false")
@@ -168,18 +173,15 @@ class ProgramState
           if(exptree->top->data == ">")
           {
             s.add(variables.at(left) <= variables.at(right));
-            std::cout << "Constraint is: " << left << " <= " << right << std::endl;
           }
           else if(exptree->top->data == "<")
           {
             s.add(variables.at(left) >= variables.at(right)); 
-            std::cout << "Constraint is: " << left << " >= " << right << std::endl;
           }
         }
       }
-
     }
-
+    std::cout << this->getPathCondition();
     std::cout << s.check() << "\n";
     z3::model m = s.get_model();
     std::cout << m << std::endl;
@@ -348,11 +350,15 @@ class SymbolicExecutor
               if (j <= 1)
               {
                 prg->constraints.push_back(std::pair<llvm::Value*, std::string>(value, "true"));
+                prg->addCondition(state->get(value)->toString(state->getMap()));
+
                 //prg->s->add(prg->variables.at(getString(value).c_str()) == true);
               }
               else
               {
                 prg->constraints.push_back(std::pair<llvm::Value*,std::string>(value, "false"));
+                prg->addCondition("not " + state->get(value)->toString(state->getMap()));
+
                 //prg->s->add(prg->variables.at(getString(value).c_str()) == false);
               }
 
@@ -500,6 +506,7 @@ void symbolicExecute(ProgramState * s, llvm::BasicBlock * prev, llvm::BasicBlock
     if(prev != NULL) msg["parent"] = Json::Value(BlockIds[prev]);
     msg["text"] = Json::Value(s->toString());
     msg["fin"] = Json::Value("0");
+    msg["constraints"] = Json::Value(s->getPathCondition());
     Json::FastWriter fastWriter;
     std::string output = fastWriter.write(msg);
     std::cout << "sending this: " << output << std::endl;
