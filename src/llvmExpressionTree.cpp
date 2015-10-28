@@ -7,22 +7,35 @@
 #include <llvm/IR/LLVMContext.h>
 
 
-
+ExpressionTreeNode::ExpressionTreeNode(std::string data, llvm::Value* value)
+{
+    this->data = data;
+    this->value = value;
+    this->left = NULL;
+    this->right = NULL;
+}
+/*ExpressionTreeNode::ExpressionTreeNode(const ExpressionTreeNode & n)
+{
+    this->data = n.data;
+    this->value = n.value;
+    this->left = n.left;
+    this->right = n.right;
+}*/
 bool ExpressionTree::isConstant(llvm::Value* value)
 {
-    return llvm::isa<llvm::Constant>(value); 
+    return value && llvm::isa<llvm::Constant>(value); 
 }
 
 
 ExpressionTree::ExpressionTree(llvm::Value* value)
 {
-    this->top = std::make_shared<ExpressionTreeNode>(ExpressionTreeNode("", value));
+    this->top = new ExpressionTreeNode(ExpressionTreeNode("", value));
 }
 
-ExpressionTree::ExpressionTree(const ExpressionTree & e)
+/*ExpressionTree::ExpressionTree(const ExpressionTree & e)
 {
-    top = std::make_shared<ExpressionTreeNode>(ExpressionTreeNode(*(e.top)));
-}
+    top = new ExpressionTreeNode(ExpressionTreeNode(*(e.top)));
+}*/
 
 bool ExpressionTree::isConstant()
 {
@@ -34,20 +47,20 @@ ExpressionTree::ExpressionTree(std::string op, ExpressionTree* lhs, ExpressionTr
 
     if (lhs->isConstant() && rhs->isConstant()) 
     {
-        this->top = std::make_shared<ExpressionTreeNode>(ExpressionTreeNode("",evaluate(lhs->top->value, rhs->top->value, op)));
+        this->top = new ExpressionTreeNode(ExpressionTreeNode("",evaluate(lhs->top->value, rhs->top->value, op)));
     }
     else if (op == "+" && rhs->isConstant() && rhs->getInteger() == 0)
     {
-        this->top = std::make_shared<ExpressionTreeNode>(ExpressionTreeNode("",lhs->top->value));
+        this->top = new ExpressionTreeNode(ExpressionTreeNode("",lhs->top->value));
         
     }
     else if (op == "+" && lhs->isConstant() && lhs->getInteger() == 0)
     {
-    	this->top = std::make_shared<ExpressionTreeNode>(ExpressionTreeNode("",rhs->top->value));
+    	this->top = new ExpressionTreeNode(ExpressionTreeNode("",rhs->top->value));
     }
     else
     {
-        this->top = std::make_shared<ExpressionTreeNode>(ExpressionTreeNode(op, NULL));
+        this->top = new ExpressionTreeNode(ExpressionTreeNode(op, NULL));
         this->top->left = lhs->top;
         this->top->right = rhs->top;
     }
@@ -58,17 +71,17 @@ ExpressionTree::ExpressionTree(std::string op, llvm::Value* lhs, llvm::Value* rh
 {
     if (isConstant(lhs) && isConstant(rhs)) 
     {
-        this->top = std::make_shared<ExpressionTreeNode>(ExpressionTreeNode("",evaluate(lhs, rhs, op)));
+        this->top = new ExpressionTreeNode(ExpressionTreeNode("",evaluate(lhs, rhs, op)));
     }
     else if (op == "+" && isConstant(rhs))
     {
-        if (::getInteger(rhs) == 0) this->top = std::make_shared<ExpressionTreeNode>(ExpressionTreeNode("",lhs));
+        if (::getInteger(rhs) == 0) this->top = new ExpressionTreeNode(ExpressionTreeNode("",lhs));
     }
     else
     {   
-        this->top = std::make_shared<ExpressionTreeNode>(  ExpressionTreeNode(op, NULL));
-        this->top->left = std::make_shared<ExpressionTreeNode>(  ExpressionTreeNode("",lhs));
-        this->top->right = std::make_shared<ExpressionTreeNode>(  ExpressionTreeNode("",rhs));
+        this->top = new ExpressionTreeNode(  ExpressionTreeNode(op, NULL));
+        this->top->left = new ExpressionTreeNode(  ExpressionTreeNode("",lhs));
+        this->top->right = new ExpressionTreeNode(  ExpressionTreeNode("",rhs));
     }
 
 }
@@ -103,7 +116,7 @@ std::string ExpressionTree::toString(std::map<llvm::Value*, ExpressionTree*> tab
     return toReturn.str();
 }
 
-void ExpressionTree::getExpressionString(std::shared_ptr<ExpressionTreeNode> node,
+void ExpressionTree::getExpressionString(ExpressionTreeNode* node,
                                          std::map<llvm::Value*, ExpressionTree*> table, 
                                          std::stringstream& toReturn)
 {

@@ -4,7 +4,8 @@
 g++ -std=c++11 -I/usr/lib/llvm-3.5/build/include test.cpp `llvm-config-3.5 --cppflags --ldflags --libs --system-libs`
 
 #to compile to bitcode
-clang-3.5 -emit-llvm hello.cpp -c -o hello.bc
+clang-3.5 -emit-llvm hello.cpp -g -c -o hello.bc
+#-g gives debug information
 
 #to get humanreadable assembly from bitcode
 llvm-dis-3.5 hello.bc -o humanreadable_hello.bc

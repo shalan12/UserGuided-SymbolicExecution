@@ -16,7 +16,10 @@ void notmain(int a, int b)
 {
 	if (a > b)
 	{
+		if(a+1 > b)
 		b = b + 1;
+		else
+			b= b+2;
 	}
 	else
 	{

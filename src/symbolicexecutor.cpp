@@ -1,6 +1,6 @@
 #include "symbolicexecutor.h"
 #include "jsoncpp/dist/json/json.h"
-
+#include "utils.h"
 #include <fstream>
 
 
@@ -10,7 +10,9 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Bitcode/ReaderWriter.h>
 #include <llvm/Support/raw_ostream.h>
-
+#include <llvm/IR/DebugInfo.h>
+#include <llvm/IR/DebugLoc.h>
+#include <llvm/IR/Metadata.h>
 
 #include <pthread.h>
 
@@ -38,7 +40,14 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 {
 	#ifdef DEBUG	
 		std::cout << " executing :" << instruction->getOpcodeName() << " instruction \n";
+		std::cout << "State at this point == \n------------------" << state->toString() << "\n";
 	#endif
+	if (llvm::MDNode *N = instruction->getMetadata("dbg")) 
+	{  
+		llvm::DILocation Loc(N);
+		unsigned Line = Loc.getLineNumber();
+		std::cout << "instruction == " << getString(instruction) << "\tLine Number == " << Line << "\n";
+	}
 	if (instruction->getOpcode() == llvm::Instruction::Alloca)
 	{
 		#ifdef DEBUG	
@@ -107,10 +116,23 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 		llvm::ICmpInst* cmpInst = llvm::dyn_cast<llvm::ICmpInst>(instruction); 
 		// if (llvm::ConstantInt* cl = llvm::dyn_cast<llvm::ConstantInt>(value))
 		if(cmpInst->getSignedPredicate() == llvm::ICmpInst::ICMP_SGT)
-		{
+		{	
+			#ifdef DEBUG
+				std::cout << "operand0 == " << getString(instruction->getOperand(0)) << "\n";
+				std::cout << "operand1 == " << getString(instruction->getOperand(1)) << "\n";
+			#endif
 			ExpressionTree* lhs = getExpressionTree(state,instruction->getOperand(0));
 			ExpressionTree* rhs = getExpressionTree(state,instruction->getOperand(1));
+			#ifdef DEBUG
+				if(lhs) std::cout << "lhs == " << lhs->toString(state->getMap()) << "\n";
+				else std::cout << "lhs is NULL\n";
+				if(rhs) std::cout << "rhs == " << rhs->toString(state->getMap()) << "\n";
+				else std::cout << "rhs is NULL\n";
+			#endif
 			state->add(instruction,new ExpressionTree(">",lhs,rhs));
+			#ifdef DEBUG
+				std::cout << "state updated\n";
+			#endif
 			//state->variables[getString(instruction).c_str()] = state->c.bool_const(getString(instruction).c_str());
 			//state->s->add(state->variables[getString(instruction).c_str()] == state->variables[getString(instruction->getOperand(0)).c_str()] > state->variables[getString(instruction->getOperand(1)).c_str()]);
 		}
@@ -126,125 +148,34 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 /**
  Executes a branching instruction and determines which block(s) need to be explored depending on the program state
 */
-std::vector<std::pair<llvm::BasicBlock*, ProgramState*>> 
+std::vector<std::pair<llvm::BasicBlock*, ProgramState*> > 
 	SymbolicExecutor::getNextBlocks(llvm::Instruction* inst, ProgramState* state)
 {
 	std::vector<std::pair<llvm::BasicBlock*, ProgramState*> > pairs;
-	llvm::Value* value = NULL;
-	if(inst->getOpcode() == llvm::Instruction::Ret)
+	if(inst->getOpcode() != llvm::Instruction::Ret)
 	{
-		return pairs;
+		llvm::BranchInst* binst = llvm::dyn_cast<llvm::BranchInst>(inst);
+		if(binst->isConditional())
+		{
+			ProgramState* first = new ProgramState(*state);
+			llvm::Value* cond = binst->getCondition();
+			first->constraints.push_back(std::make_pair(cond,"true"));
+			first->addCondition(state->get(cond)->toString(state->getMap()));
+			pairs.push_back(std::make_pair(binst->getSuccessor(0), first));
+			int numSuccesors = binst->getNumSuccessors();
+			if(numSuccesors == 2)
+			{
+				ProgramState* second = new ProgramState(*state);
+				second->constraints.push_back(std::make_pair(cond,"false"));
+				second->addCondition("not " + state->get(cond)->toString(state->getMap()));
+				pairs.push_back(std::make_pair(binst->getSuccessor(1), second));
+			}
+		}
+		else pairs.push_back(std::make_pair(binst->getSuccessor(0),state));
 	}
-	else
-	{
-		if (!llvm::isa<llvm::BasicBlock>(inst->getOperand(0)))
-		{
-			value = llvm::dyn_cast<llvm::Value> (inst->getOperand(0));
-			//state->s->add(state->variables.at(getString(value).c_str()) == true);
-			state->constraints.push_back(std::pair<llvm::Value*, std::string>(value, "true"));
-		}
 
-		llvm::Value * check = NULL;
-		ExpressionTree * check_expr;
-
-		for (int j = 0; j < inst->getNumOperands(); j++)
-		{
-			// std::cout <<"operand no : " << j+1 << "\n" << getString(inst->getOperand(j)) << "\n";
-			llvm::BasicBlock* basicBlock = NULL;
-			if (llvm::isa<llvm::BasicBlock>(inst->getOperand(j)))
-			{
-				basicBlock = llvm::dyn_cast<llvm::BasicBlock> (inst->getOperand(j));
-			}
-			llvm::Value* v = dynamic_cast<llvm::Value*> (inst->getOperand(j));
-			if (!basicBlock && j == 0)
-			{
-				// std::cout << "yy!!\n";
-				check = v;
-				check_expr = state->get(check);
-			}
-			if (basicBlock) 
-			{
-				ProgramState* prg = new ProgramState(*state);
-				if (value)
-				{
-					if (j <= 1)
-					{
-						prg->constraints.push_back(std::pair<llvm::Value*, std::string>(value, "true"));
-						prg->addCondition(state->get(value)->toString(state->getMap()));
-
-						//prg->s->add(prg->variables.at(getString(value).c_str()) == true);
-					}
-					else
-					{
-						prg->constraints.push_back(std::pair<llvm::Value*,std::string>(value, "false"));
-						prg->addCondition("not " + state->get(value)->toString(state->getMap()));
-
-						//prg->s->add(prg->variables.at(getString(value).c_str()) == false);
-					}
-
-					pairs.push_back(std::make_pair(basicBlock, prg));
-				}
-				else
-					pairs.push_back(std::make_pair(basicBlock, state)); 
-			}
-		}
-
-		/*if (check && check_expr->isConstant())
-		{
-			if (to_ret.size() > 1)
-			{
-			if (check_expr->getInteger() == 0)
-			{
-				to_ret.resize(1);
-				#ifdef DEBUG
-					std::cout << "here 1\n";
-				#endif
-				return to_ret;
-			}
-			else if (check_expr->getInteger() == 1) 
-			{
-				to_ret[0] = to_ret[1];
-				to_ret.resize(1);
-				#ifdef DEBUG
-					std::cout << "here 2\n";
-				#endif
-				return to_ret;
-			}
-			}
-
-		}
-		*/
-	}
 	#ifdef DEBUG
-	// std::cout << "about to return possible branches as follows:" << std::endl;
-	// for (int j = 0; j < to_ret.size(); j++)
-	// {
-	// auto block = to_ret[j];
-	// if (block)
-		// std::cout << "new block not null" << std::endl;
-	// for (auto i = block->begin(), e = block->end(); i != e; ++i)
-	// {
-		// printf("Basic block (name= %s) has %zu instructions\n",block->getName().str().c_str(),block->size());
-
-		// std::cout << "printing operands ";
-		// for (int j = 0; j < i->getNumOperands(); j++)
-		// {
-		//	 std::cout << getString(i->getOperand(j)) << "\n";
-		// }
-		// std::cout << getString(i) << "\n";
-		// std::cout << (*i).print();
-		// The next statement works since operator<<(ostream&,...)
-		// is overloaded for Instruction&
-		// std::cout << *(i).str().c_str() << "\n";
-		// std::cout << "move forward? ";
-		// int x;
-		// std::cin >> x;	
-	// }
-	// }
-
-
-	std::cout << "exiting getNextBlocks\n";
-
+		std::cout << "exiting getNextBlocks\n";
 	#endif
 
 	return pairs;
@@ -273,7 +204,7 @@ std::vector<std::pair<llvm::BasicBlock*, ProgramState*> >
 			}
 			std::cout << "printing instruction: " << getString(i) << "\n";
 			std::cout << "getOpcode: " << i->getOpcode() << "\n";
-			std::cout << "move forward? \n";
+			//std::cout << "move forward? \n";
 			// std::cout << llvm::Instruction::Ret << "\n";
 			// int x;
 			// std::cin >> x;

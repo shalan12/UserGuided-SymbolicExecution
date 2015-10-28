@@ -12,17 +12,15 @@ ProgramState::ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> in
 }
 ProgramState::ProgramState(const ProgramState & p)
 {
-	//s = new z3::solver(*p.s);
 	for (auto& pr : p.map)
 	{
 		add(pr.first,new ExpressionTree(*(pr.second)));
 	}
-	this->pathCondition = p.pathCondition;
-/*		for (auto&pr : p.variables)
+	for (auto constraint : p.constraints)
 	{
-	variables.insert(std::pair<std::string, z3::expr>(pr.first,pr.second));
-	//variables[pr.first] = pr.second;//z3::to_expr(c,Z3_translate(p.c, pr.second, c));
-	}*/
+		this->constraints.push_back(constraint);
+	}
+	this->pathCondition = p.pathCondition;
 }
 
 std::string ProgramState::getPathCondition()
@@ -65,18 +63,15 @@ void ProgramState::printZ3Variables()
 {
 	for (auto& pr : map)
 	{
-		std::cout <<	getString(pr.first) << " === ";
+		std::cout << getString(pr.first) << " === ";
 		if (pr.second->top != NULL)
 		{
 			if (pr.second->top->left != NULL && pr.second->top->right != NULL)
 			{
 				std::string left = getString(pr.second->top->left->value);
 				std::string right = getString(pr.second->top->right->value);
-				variables.insert(std::pair<std::string, z3::expr>
-								(left, c.int_const(left.c_str())));
-
-				variables.insert(std::pair<std::string, z3::expr>
-								(right, c.int_const(right.c_str())));
+				variables.insert(std::make_pair(left, c.int_const(left.c_str())));
+				variables.insert(std::make_pair(right, c.int_const(right.c_str())));
 
 				if (pr.second->top->data == "+")
 				{
@@ -101,9 +96,8 @@ void ProgramState::printZ3Variables()
 			}
 			else if (pr.second->top->left == NULL && pr.second->top->right == NULL)
 			{
-				variables.insert(std::pair<std::string,z3::expr>
-					(getString(pr.second->top->value),
-						c.int_const(getString(pr.second->top->value).c_str())));
+				variables.insert(std::make_pair(getString(pr.second->top->value),
+								c.int_const(getString(pr.second->top->value).c_str())));
 
 				std::cout << variables.at(getString(pr.second->top->value)) << '\n';
 			}
@@ -114,8 +108,12 @@ void ProgramState::printZ3Variables()
 void ProgramState::Z3solver()
 { 
 	z3::solver s(c);
+	#ifdef DEBUG
+		std::cout << "size of constraints = " << constraints.size() << "\n";
+	#endif
 	for (int i = 0; i < constraints.size(); i++)
 	{
+		std::cout << "i = " << i << "\n";
 		ExpressionTree* exptree = get(constraints[i].first);
 		if (exptree->top->left != NULL && exptree->top->right != NULL)
 		{

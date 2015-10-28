@@ -1,4 +1,4 @@
-//#define DEBUG 1
+#define DEBUG 1
 #include "symbolicexecutor.h"
 #include "server/SocketException.h"
 
