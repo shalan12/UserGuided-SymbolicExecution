@@ -9,7 +9,7 @@ z3Flag = -lz3
 BUILD_DIR = build
 SRC_DIR = src
 VPATH = $(SRC_DIR):$(SRC_DIR)/server:$(SRC_DIR)/jsoncpp/dist:$(SRC_DIR)/jsoncpp/dist/json:$(BUILD_DIR):$(SRC_DIR)/SUT
-CXX = g++ -std=c++0x
+CXX = g++-4.8 -std=c++0x
 PREFIX = $(CXX) $(SRC_DIR)/
 SUFFIX = $(BUILD_DIR)/$@ 
 
@@ -35,11 +35,11 @@ llvmExpressionTree.o: utils.h llvmExpressionTree.h llvmExpressionTree.cpp
 	$(PREFIX)llvmExpressionTree.cpp $(INCLUDES) $(CPPFLAGS) -c -o $(SUFFIX)
 utils.o: utils.h utils.cpp
 	$(PREFIX)utils.cpp $(INCLUDES) $(CPPFLAGS) -c -o $(SUFFIX)
-jsoncpp.o: json.h jsoncpp.cpp
-	$(PREFIX)jsoncpp/dist/jsoncpp.cpp $(CPPFLAGS) -c -o $(SUFFIX)
 hello.bc: hello.cpp
 	clang-3.5 -emit-llvm $(SRC_DIR)/SUT/hello.cpp -g -c -o $(SUFFIX)
 	llvm-dis-3.5 $(BUILD_DIR)/hello.bc -o $(BUILD_DIR)/humanreadable_hello.bc
+jsoncpp.o: jsoncpp.cpp json.h
+	$(PREFIX)jsoncpp/dist/jsoncpp.cpp -c -o $(SUFFIX)
 
 setup:
 	@mkdir -p build

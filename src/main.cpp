@@ -8,7 +8,8 @@ std::map< std::string, std::pair<std::thread,SymbolicExecutor*> > threads_sym;
 
 void runOnThread(SymbolicExecutor * sym)
 {
-  sym->execute();
+  // execute(bool isbfs, int stps, int d, int prev)
+  sym->execute(false, 1, 0, -1);
 }
 void createNewSym(std::string file, ServerSocket * s)
 {
@@ -54,7 +55,7 @@ int communicate(ServerSocket* new_sock)
   delete new_sock;
 }
 
-int main ()
+/*int main ()
 {
   try
   {
@@ -79,4 +80,4 @@ int main ()
     std::cout << "Exception was caught:" << e.description() << "\n";
   }
   return 0;
-}
+}*/

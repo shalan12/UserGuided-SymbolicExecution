@@ -9,6 +9,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <deque>
 
 #include <llvm/IR/Module.h>
 #include <llvm/IR/BasicBlock.h>
@@ -23,6 +24,18 @@
 #include <mutex>              // std::mutex, std::unique_lock
 
 
+struct SymbolicTreeNode {
+  llvm::BasicBlock * block;
+  SymbolicTreeNode * left;
+  SymbolicTreeNode * right;
+  SymbolicTreeNode(llvm::BasicBlock * b, SymbolicTreeNode * l, SymbolicTreeNode * r)
+  {
+    block = b;
+    left = l;
+    right = r;
+  }
+};
+
 class SymbolicExecutor
 {
   private:
@@ -30,11 +43,14 @@ class SymbolicExecutor
     std::condition_variable cv;
     ServerSocket * socket;
     std::string filename;
+    std::map<int, std::pair<SymbolicTreeNode*, ProgramState*> > BlockStates;
+    ProgramState * rootState;
+    llvm::BasicBlock * rootBlock;
+    bool isBFS;
+    int dir;
+    int steps;
     int currId;
-    std::map<llvm::BasicBlock*, int> BlockIds;
-    // sigset_t mask;
-    sigset_t mask, oldmask;
-    static int instances;
+    int prevId;
 
     llvm::Module* loadCode(std::string filename);
     ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value);
@@ -58,17 +74,16 @@ class SymbolicExecutor
   std::vector<std::pair<llvm::BasicBlock*, ProgramState*> > 
       executeBasicBlock(llvm::BasicBlock* block, ProgramState* state);
 
-  void symbolicExecute(ProgramState * s, llvm::BasicBlock * prev, 
-                    llvm::BasicBlock * b, std::vector<ProgramState*> & vec);
+  void symbolicExecute();
 
   /**
       Executes all the possible paths in the given function and returns the programState at the 
       end of every path
   */
-  std::vector<ProgramState*> executeFunction(llvm::Function* function);
+  void executeFunction(llvm::Function* function);
   void proceed();
 
-  void execute();
+  void execute(bool isbfs, int stps, int d, int prev);
 
 };
 #endif
