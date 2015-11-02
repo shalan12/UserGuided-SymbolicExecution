@@ -219,7 +219,6 @@ std::vector<std::pair<llvm::BasicBlock*, ProgramState*> >
 		else 
 		{
 			#ifdef DEBUG
-				int abc;
 				std::cout << "non branch instruction to b executed\n";
 				if (i)
 				{ 
