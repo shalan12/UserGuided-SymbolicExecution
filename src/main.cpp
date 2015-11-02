@@ -1,29 +1,42 @@
 #define DEBUG 1
 #include "symbolicexecutor.h"
 #include "server/SocketException.h"
+#include "utils.h"
+
 
 
 
 std::map< std::string, std::pair<std::thread,SymbolicExecutor*> > threads_sym;
 
-void runOnThread(SymbolicExecutor * sym)
+void runOnThread(SymbolicExecutor * sym, Json::Value val)
 {
   // execute(bool isbfs, int stps, int d, int prev)
-  sym->execute(false, 1, 0, -1);
-}
-void createNewSym(std::string file, ServerSocket * s)
-{
-  SymbolicExecutor * sym = new SymbolicExecutor(file, s);
-   // std::thread th = std::thread(rnd, sym);
-   // std::thread th = std::thread([sym](){
-   //      sym->execute();
-   //      };);
-  threads_sym[file] = std::make_pair(std::thread(runOnThread,sym),sym);
+  sym->execute(atoi(toString(val["isBFS"]).c_str()), atoi(toString(val["steps"]).c_str()), 
+      atoi(toString(val["branch"]).c_str()), atoi(toString(val["prev"]).c_str()));
 }
 
-int executeSym(std::string id)
+// void createNewSym(std::string file, ServerSocket * s)
+// {
+//   SymbolicExecutor * sym = new SymbolicExecutor(file, s);
+//    // std::thread th = std::thread(rnd, sym);
+//    // std::thread th = std::thread([sym](){
+//    //      sym->execute();
+//    //      };);
+//   threads_sym[file] = std::make_pair(std::thread(runOnThread,sym),sym);
+// }
+
+int executeSym(Json::Value val, ServerSocket * s)
 {
-  threads_sym[id].second->proceed();
+  if (threads_sym.find(toString(val["id"])) == threads_sym.end())
+  {
+    SymbolicExecutor * sym = new SymbolicExecutor(toString(val["id"]), s);
+    threads_sym[toString(val["id"])] = std::make_pair(std::thread(runOnThread,sym,val),sym);
+  }
+  else
+  {
+    threads_sym[toString(val["id"])].second->proceed(atoi(toString(val["isBFS"]).c_str()), atoi(toString(val["steps"]).c_str()), 
+      atoi(toString(val["branch"]).c_str()), atoi(toString(val["prev"]).c_str()));
+  }
 }
 
 int communicate(ServerSocket* new_sock)
@@ -39,23 +52,34 @@ int communicate(ServerSocket* new_sock)
      {
         break;
      }
+     Json::Reader reader;
+     Json::Value val;
+     reader.parse(message, val);
+
+
      if (message.length() > 4)
      {
           std::string type = message.substr(0,4);
-          if (type == "file")
+
+
+          // if (type == "file")
+          // {
+          //   #ifdef DEBUG
+          //     std::cout << "filename recvd : " + message + "\n";
+          //   #endif
+          //   createNewSym(message.substr(5), new_sock);
+          // }
+          // else 
+          if (type == "exec")
           {
-            createNewSym(message.substr(5), new_sock);
-          }
-          else if (type == "exec")
-          {
-            executeSym(message.substr(5)); 
+            executeSym(val, new_sock); 
           }
       }
   }
   delete new_sock;
 }
 
-/*int main ()
+int main ()
 {
   try
   {
@@ -80,4 +104,4 @@ int communicate(ServerSocket* new_sock)
     std::cout << "Exception was caught:" << e.description() << "\n";
   }
   return 0;
-}*/
+}

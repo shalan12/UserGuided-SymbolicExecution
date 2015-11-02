@@ -22,17 +22,20 @@
 #include <condition_variable>
 #include <utility>      
 #include <mutex>              // std::mutex, std::unique_lock
-
+#include <limits>
 
 struct SymbolicTreeNode {
   llvm::BasicBlock * block;
   SymbolicTreeNode * left;
   SymbolicTreeNode * right;
+  unsigned int minLineNumber,maxLineNumber;
   SymbolicTreeNode(llvm::BasicBlock * b, SymbolicTreeNode * l, SymbolicTreeNode * r)
   {
     block = b;
     left = l;
     right = r;
+    maxLineNumber = 0;
+    minLineNumber = std::numeric_limits<unsigned int>::max();
   }
 };
 
@@ -57,7 +60,7 @@ class SymbolicExecutor
     /**
      Executes a nonbranching instruction and updates the program state
     */
-    void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState* state);
+    void executeNonBranchingInstruction(llvm::Instruction* instruction,SymbolicTreeNode*,ProgramState* state);
      /**
       Executes a branching instruction and determines which block(s) need to be explored depending on the program state
     */
@@ -72,7 +75,7 @@ class SymbolicExecutor
    executes the basicBlock, updates programstate and returns the next Block(s) to execute if it can be determined that only the "Then" block should be executed then only the "Then" block is returned. Similarly for the else block. Otherwise both are are retuarned. NULL is returned if there's nothing left to execute
    */
   std::vector<std::pair<llvm::BasicBlock*, ProgramState*> > 
-      executeBasicBlock(llvm::BasicBlock* block, ProgramState* state);
+      executeBasicBlock(SymbolicTreeNode*, ProgramState*);
 
   void symbolicExecute();
 
@@ -81,7 +84,8 @@ class SymbolicExecutor
       end of every path
   */
   void executeFunction(llvm::Function* function);
-  void proceed();
+  void proceed(bool isbfs, int stps, int d, int prev);
+
 
   void execute(bool isbfs, int stps, int d, int prev);
 

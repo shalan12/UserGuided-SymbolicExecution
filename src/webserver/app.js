@@ -16,9 +16,9 @@ var HOST = '127.0.0.1';
 var PORT = 30000;
 var timeout = 1000;
 
+var sys = require('sys')
 var exec = require('child_process').exec,
     child;
-
 
 var fs = require('fs');
 var util = require('util');
@@ -82,6 +82,8 @@ client.on('data',function(data)
       toSendToUser["updated"] = true;
       toSendToUser["constraints"] = data["constraints"];
       toSend[data.fileId] = toSendToUser;
+      toSend["startLine"] = data["startLine"];
+      toSend["endLine"] = data["endLine"];
       console.log("sending to user : " + JSON.stringify(toSendToUser));  
       if(data.fin  === "1")
       {
@@ -154,18 +156,27 @@ app.post('/upload',function(req,res){
 
   console.log(req)
   var filename = req.files.SelectedFile.name; //fileToUpload is the name of the inputfield
-  var base = filename.substring(0,filename.length - 3); // remove extension
-  var extension = '.bc'; 
+  var base = filename.substring(0,filename.length - 4); // remove extension
+  var extension = '.cpp'; 
   //filename = base + "_" + req.cookies.sessionid + extension; 
-  filename = req.cookies.sessionid + extension;
+  filename = req.cookies.sessionid;
   fs.readFile(req.files.SelectedFile.path, function (err, data) 
   {
       var newPath = __dirname + "/uploads/" + filename; //__dirname is a global, containing the current dir
-      fs.writeFile(newPath, data,function(err)
+      fs.writeFile(newPath+extension, data,function(err)
       {
-          map[req.cookies.sessionid] = newPath; // store mapping between sessionid and filename
-          // things from this map will need to be deleted later .. when client leaves .. or when execution is completed
-          client.write("file " + newPath ); // pass the filename to symbolic executor
+            bcFile = newPath+".bc";
+            toExec = "clang-3.5 -emit-llvm " + newPath  + ".cpp -g -c -o " + bcFile;
+            exec(toExec, function (error, stdout, stderr) {
+              map[req.cookies.sessionid] = bcFile; // store mapping between sessionid and filename
+              // things from this map will need to be deleted later .. when client leaves .. or when execution is completed
+              toSendToExecutor["isBFS"] = 1;
+              toSendToExecutor["branch"] = 1;
+              toSendToExecutor["steps"] = 1;
+              toSendToExecutor["prevId"] = -1;
+              toSendToExecutor["id"] = bcFile;
+              client.write(toSendToExecutor.stringify()); // pass the filename to symbolic executor
+            });
       });
        
   }); 
@@ -173,9 +184,17 @@ app.post('/upload',function(req,res){
 });
 
 app.get('/next',function(req,res){
-  client.write("exec " + map[req.cookies.sessionid]);
-  // res.redirect('back')
+  toSendToExecutor = {};
+  var parts = url.parse(request.url, true);
+  var query = parts.query;
   var fileId = map[req.cookies.sessionid];
+  toSendToExecutor["isBFS"] = query["isBFS"];
+  toSendToExecutor["branch"] = query["branch"];
+  toSendToExecutor["steps"] = query["steps"];
+  toSendToExecutor["prevId"] = query["prevId"];
+  toSendToExecutor["id"] = query[fileId];
+  client.write(toSendToExecutor.stringify());
+  // res.redirect('back')
   var toSendToUser = toSend[fileId];
   if(!toSendToUser)
   {
