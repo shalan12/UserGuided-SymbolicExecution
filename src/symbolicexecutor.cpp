@@ -403,10 +403,13 @@ void SymbolicExecutor::symbolicExecute()
 
 		std::cout << "going to sleep " << std::endl;
 
-		{
+		// {
 			std::unique_lock<std::mutex> lck(mtx);
 			cv.wait(lck);
-		}
+			lck.unlock();
+
+		// }
+
 		std::cout << "wakeup!! " << std::endl;
 	}
 }
@@ -491,6 +494,8 @@ void SymbolicExecutor::execute(bool isbfs, int stps, int d, int prev)
 	auto function = module->getFunction("_Z7notmainii");
 	executeFunction(function);
 }
+
+
 // int main()
 // {
 // 	SymbolicExecutor sym("src/SUT/hello.bc", NULL);

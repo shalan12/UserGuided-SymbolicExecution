@@ -176,7 +176,7 @@ app.post('/upload',function(req,res){
   {
 	  var newPath = __dirname + "/uploads/" + filename; //__dirname is a global, containing the current dir
 	  fs.writeFile(newPath+extension, data,function(err)
-	  {      
+	  {     console.log(err);
 			console.log(newPath+extension + " file written")
 			bcFile = newPath+".bc";
 			toExec = "clang-3.5 -emit-llvm " + newPath  + ".cpp -g -c -o " + bcFile;
