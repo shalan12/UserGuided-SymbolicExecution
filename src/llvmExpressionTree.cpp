@@ -109,46 +109,35 @@ llvm::Value* ExpressionTree::evaluate(llvm::Value* lhs, llvm::Value* rhs, std::s
 }
 
 
-std::string ExpressionTree::toString(std::map<llvm::Value*, ExpressionTree*> table)
+std::string ExpressionTree::toString()
 {
     std::stringstream toReturn;
-    getExpressionString(this->top, table, toReturn);
+    getExpressionString(this->top, toReturn);
     return toReturn.str();
 }
 
-void ExpressionTree::getExpressionString(ExpressionTreeNode* node,
-                                         std::map<llvm::Value*, ExpressionTree*> table, 
-                                         std::stringstream& toReturn)
+
+void ExpressionTree::getExpressionString(ExpressionTreeNode* node, std::stringstream& toReturn)
 {
     if (node != NULL)
     {
-        if (node->left != NULL)
-        {
-
-            toReturn << "(";
-            if (isConstant(node->left->value))
-                toReturn << getString(node->left->value);
-            else
-            {
-                ExpressionTree* left = table[node->left->value];
-                getExpressionString(left->top, table, toReturn);
-            }   
-        }
-        if (node->left == NULL && node->right == NULL)
+        if (node->left == NULL && node->right == NULL) 
             toReturn << getString(node->value);
-        else toReturn << node->data;
-        if (node->right != NULL)
+        else
         {
-            if (isConstant(node->right->value))
-                toReturn << getString(node->right->value);
-            else
+            if(node->left != NULL)
             {
-                ExpressionTree* right = table[node->right->value];
-                getExpressionString(right->top, table, toReturn);
+                toReturn << "(";
+                getExpressionString(node->left, toReturn);
+                
+            }
+            toReturn << node->data;
+            if(node->right != NULL)
+            {
+                getExpressionString(node->right, toReturn);
                 toReturn << ")";
-            }   
+            }
         }
-         
     }
 }
 

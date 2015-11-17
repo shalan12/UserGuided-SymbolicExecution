@@ -26,7 +26,7 @@ class ExpressionTree
 {
 private:
     bool isConstant(llvm::Value* value);
-    void getExpressionString(ExpressionTreeNode* node, std::map<llvm::Value*, ExpressionTree*> table, std::stringstream& toReturn);
+    void getExpressionString(ExpressionTreeNode* node, std::stringstream& toReturn);
 
 public:
  
@@ -39,7 +39,7 @@ public:
     bool isConstant();
     int getInteger();
     llvm::Value* evaluate(llvm::Value* lhs, llvm::Value* rhs, std::string op);
-    std::string toString(std::map<llvm::Value*, ExpressionTree*> table);
+    std::string toString();
     int compare(int value);
     int compare(ExpressionTree* exp1);
  

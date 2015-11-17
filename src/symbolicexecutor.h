@@ -26,14 +26,17 @@
 
 struct SymbolicTreeNode {
   llvm::BasicBlock * block;
+  ProgramState * state;
   SymbolicTreeNode * left;
   SymbolicTreeNode * right;
   unsigned int minLineNumber,maxLineNumber;
-  SymbolicTreeNode(llvm::BasicBlock * b, SymbolicTreeNode * l, SymbolicTreeNode * r)
+
+  SymbolicTreeNode(llvm::BasicBlock * b, ProgramState * ps, SymbolicTreeNode * l = NULL, SymbolicTreeNode * r = NULL)
   {
     block = b;
     left = l;
     right = r;
+    state = ps;
     maxLineNumber = 0;
     minLineNumber = std::numeric_limits<unsigned int>::max();
   }
@@ -46,14 +49,10 @@ class SymbolicExecutor
     std::condition_variable cv;
     ServerSocket * socket;
     std::string filename;
-    std::map<int, std::pair<SymbolicTreeNode*, ProgramState*> > BlockStates;
-    ProgramState * rootState;
-    llvm::BasicBlock * rootBlock;
+    std::map<int, SymbolicTreeNode* > BlockStates;
+    SymbolicTreeNode * rootNode;
     bool isBFS;
-    int dir;
-    int steps;
-    int currId;
-    int prevId;
+    int dir,steps,currId,prevId;
 
     llvm::Module* loadCode(std::string filename);
     ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value);
@@ -64,8 +63,7 @@ class SymbolicExecutor
      /**
       Executes a branching instruction and determines which block(s) need to be explored depending on the program state
     */
-    std::vector<std::pair<llvm::BasicBlock*, ProgramState*>> 
-      getNextBlocks(llvm::Instruction* inst, ProgramState* state);
+    std::vector<SymbolicTreeNode*> getNextBlocks(llvm::Instruction* inst, ProgramState* state);
 
 
   public:
@@ -74,8 +72,7 @@ class SymbolicExecutor
   /**
    executes the basicBlock, updates programstate and returns the next Block(s) to execute if it can be determined that only the "Then" block should be executed then only the "Then" block is returned. Similarly for the else block. Otherwise both are are retuarned. NULL is returned if there's nothing left to execute
    */
-  std::vector<std::pair<llvm::BasicBlock*, ProgramState*> > 
-      executeBasicBlock(SymbolicTreeNode*, ProgramState*);
+  std::vector<SymbolicTreeNode*> executeBasicBlock(SymbolicTreeNode*);
 
   void symbolicExecute();
 

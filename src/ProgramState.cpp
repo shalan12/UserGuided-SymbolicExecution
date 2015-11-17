@@ -14,7 +14,7 @@ ProgramState::ProgramState(const ProgramState & p)
 {
 	for (auto& pr : p.map)
 	{
-		add(pr.first,new ExpressionTree(*(pr.second)));
+		add(pr.first, new ExpressionTree(*pr.second));
 	}
 	for (auto constraint : p.constraints)
 	{
@@ -54,7 +54,7 @@ std::string ProgramState::toString()
 	std::stringstream str;
 	for (auto& pr : map)
 	{
-		str <<	getString(pr.first) << "\t == \t" << pr.second->toString(map) << '\n';
+		str <<	getString(pr.first) << "\t == \t" << pr.second->toString() << '\n';
 	}
 	return str.str();
 }

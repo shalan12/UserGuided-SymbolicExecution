@@ -12,11 +12,16 @@ VPATH = $(SRC_DIR):$(SRC_DIR)/server:$(SRC_DIR)/jsoncpp/dist:$(SRC_DIR)/jsoncpp/
 CXX = g++-4.8 -std=c++0x
 PREFIX = $(CXX) $(SRC_DIR)/
 SUFFIX = $(BUILD_DIR)/$@ 
+CPPFLAGS = -g
 
-all: hello.bc sfse.o
 
-sfse.o: $(objects)
-	$(CXX) $(CPPFLAGS) $(objectPaths) $(INCLUDES) -o sfse.o $(llvmFlags) $(exceptionFlag) $(z3Flag)
+all: hello.bc sfse
+
+debug: CPPFLAGS += -DDEBUG -DCIN_SERVER
+debug: all
+
+sfse: $(objects)
+	$(CXX) $(CPPFLAGS) $(objectPaths) $(INCLUDES) -o sfse $(llvmFlags) $(exceptionFlag) $(z3Flag)
 
 main.o: main.cpp symbolicexecutor.h SocketException.h
 	$(PREFIX)main.cpp $(CPPFLAGS) $(INCLUDES) -c -o $(SUFFIX)

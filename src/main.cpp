@@ -78,7 +78,7 @@ int communicate(ServerSocket* new_sock)
   }
   delete new_sock;
 }
-
+#ifndef CIN_SERVER
 int main ()
 {
   try
@@ -105,3 +105,13 @@ int main ()
   }
   return 0;
 }
+#else
+// if debugging, skip communicating with nodejs server
+int main()
+{
+ SymbolicExecutor sym("build/hello.bc", NULL);
+ sym.execute(true, 1, 0, -1);
+ std::cout << "still working" << std::endl;
+ return 0;
+}
+#endif
