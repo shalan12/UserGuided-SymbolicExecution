@@ -55,7 +55,7 @@ function update(source) {
         .style("left", "300px")
         .style("top", "500px");
         menu.html(
-            "<form id='menuoptions' onsubmit='return handleMenuOptions()'>" + 
+            '<form id='menuoptions' onsubmit="return handleMenuOptions(\''+d.id+'\')">' + 
                 "Number of steps to explore:<br>" +
                 "<input type='text' name='steps'>" +
                 "<br>" +
@@ -224,7 +224,7 @@ function getNext(nodeID)
 /* ---------------- Nodes Right Click Menu Options ------------------------------ */
 
 
-function handleMenuOptions()
+function handleMenuOptions(nodeID)
 {
     try
     {
@@ -235,6 +235,7 @@ function handleMenuOptions()
         console.log(numSteps);
         console.log(branchSelected);
         console.log(explore);
+        getNext(nodeID);
         d3.select('.menu').remove();
     }
     catch(e){
