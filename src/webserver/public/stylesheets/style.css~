@@ -83,7 +83,7 @@ section {
 body {
   font: 62.5%/1.5 Helvetica, Arial, "Lucida Grande", "Lucida Sans", Tahoma, Verdana, sans-serif;
   text-align: center;
-  background: #fff;
+  background: #000;
 }
 #wrapper {
   width: 920px;

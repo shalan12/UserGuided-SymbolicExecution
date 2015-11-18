@@ -1,294 +1,34 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.1/d3.min.js"></script>
-    <script type="text/javascript" src="../scripts/tooltip.js"></script>		
-    <style>
-    .container {
-        width: 500px;
-        margin: 0 auto;
-    }
-    .progress_outer {
-        border: 1px solid #000;
-    }
-    .progress {
-        width: 20%;
-        background: rgba(68,136,187,0.5);
-        height: 20px;  
-    }
-    .tooltip{ background-color:rgba(68,136,187,0.5);;
-          margin: 10px;
-          height: 200px;
-          width: 450px;
-          padding-left: 10px; 
-          padding-top: 10px;
-    -webkit-border-radius:10px;
-    -moz-border-radius:10px;
-    border-radius:10px;
-        }
-    .node {
-      cursor: pointer;
-    }
-    .node circle {
-      fill: #fff;
-      stroke: steelblue;
-      stroke-width: 3px;
-    }
-    .node text {
-      font: 12px sans-serif;
-    }
-    .link {
-      fill: none;
-      stroke: #ccc;
-      stroke-width: 2px;
-    }
-    </style>
-  </head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    	<script type="text/javascript" src="../scripts/tooltip.js"></script>
+    	<link href="../public/stylesheets/style.css" rel="stylesheet">		
+    	<title>Senior Year Project</title>
+	</head>
 	
 
-  <body>
+	<body>
 		<h1>Framework for Symbolic Execution of LLVM Bitcode</h1>
 		<h2>Symbolic Map</h2>
-    <div id="graph"></div>
-    <div class='container'>
-        <p>
-            Select Your Code File: <input type='file' id='_file'> <input type='button' id='_submit' value='Upload!'>
-        </p>
-        <div class='progress_outer'>
-            <div id='_progress' class='progress'></div>
-        </div>
-    </div>
-		<button id="Step" onclick="getNext()">Step</button>
+	    <div class='container'>
+	        <p>
+	           	Select Your Code File: <input type='file' id='_file'> <input type='button' id='_submit' value='Upload!'>
+	        </p>
+	        <div class='progress_outer'>
+	           	<div id='_progress' class='progress'></div>
+	        </div>
+	    </div>
+		<div class="codecontainer">
+			<div class="codefile">
+				<p><b>Code:</b></p>
+				<p id="codedata"><pre></pre></p>
+			</div>
+		</div>
+		<div id="graph"></div>	
+		<button id="Step" onclick="getNext()">Begin Symbolic Execution</button>
+		<script type="text/javascript" src="../public/scripts/graph.js">
 	</body>
-
-
-
-  <script>
-    var margin = {top: 20, right: 120, bottom: 20, left: 120},
-    width = 960 - margin.right - margin.left,
-    height = 500 - margin.top - margin.bottom;
-    var i = 0,
-    duration = 750,
-    root;
-    var tree = d3.layout.tree()
-    .size([height, width]);
-    var diagonal = d3.svg.diagonal()
-    .projection(function(d) { return [d.y, d.x]; });
-    var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.right + margin.left)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    var treeData = [];
-
-
-
-    function update(source) {
-      // Compute the new tree layout.
-      var nodes = tree.nodes(root).reverse(),
-      links = tree.links(nodes);
-
-      // Normalize for fixed-depth.
-      nodes.forEach(function(d) { d.y = d.depth * 180; });
-
-      // Update the nodes…
-      var node = svg.selectAll("g.node")
-      .data(nodes, function(d) { return d.id || (d.id = ++i); });
-
-      // Enter any new nodes at the parent's previous position.
-      var nodeEnter = node.enter().append("g")
-      .attr("class", "node")
-      .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; });
-      //.on("click", click);
-
-      nodeEnter.append("circle")
-      .attr("r", 1e-6)
-      .style("fill", function(d) { return d.children ? "lightsteelblue" : "#fff"; })
-      .call(d3.helper.tooltip(
-        function(d, i){
-          return d.text;
-        }
-        ));
-
-      nodeEnter.append("text")
-      .attr("x", function(d) { return d.children ? -13 : 13; })
-      .attr("dy", ".35em")
-      .attr("text-anchor", function(d) { return d.children ? "end" : "start"; })
-      .text(function(d) { return d.node; })
-      .style("fill-opacity", 1e-6);
-
-  // Transition nodes to their new position.
-      var nodeUpdate = node.transition()
-      .duration(duration)
-      .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
-
-      nodeUpdate.select("circle")
-      .attr("r", 10)
-      .style("fill", function(d) { return d.children ? "lightsteelblue" : "#fff"; });
-
-      nodeUpdate.select("text")
-      .style("fill-opacity", 1);
-
-  // Transition exiting nodes to the parent's new position.
-      var nodeExit = node.exit().transition()
-      .duration(duration)
-      .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
-      .remove();
-
-      nodeExit.select("circle")
-      .attr("r", 1e-6);
-
-      nodeExit.select("text")
-      .style("fill-opacity", 1e-6);
-
-  // Update the links…
-      var link = svg.selectAll("path.link")
-      .data(links, function(d) { return d.target.id; });
-
-  // Enter any new links at the parent's previous position.
-      link.enter().insert("path", "g")
-      .attr("class", "link")
-      .attr("d", function(d) {
-      var o = {x: source.x0, y: source.y0};
-      return diagonal({source: o, target: o});
-      });
-
-  // Transition links to their new position.
-      link.transition()
-      .duration(duration)
-      .attr("d", diagonal);
-
-  // Transition exiting nodes to the parent's new position.
-      link.exit().transition()
-      .duration(duration)
-      .attr("d", function(d) {
-      var o = {x: source.x, y: source.y};
-      return diagonal({source: o, target: o});
-      })
-      .remove();
-
-  // Stash the old positions for transition.
-      nodes.forEach(function(d) {
-      d.x0 = d.x;
-      d.y0 = d.y;
-      });
-}
-
-// Toggle children on click.
-    function click(d) {
-/*      if (d.children) {
-        d._children = d.children;
-        d.children = null;
-      } else {
-        d.children = d._children;
-        d._children = null;
-      }*/
-      update(d);
-    }
-/*    var vis = d3.select("#graph")
-      .append("svg");
-    var w = 1000,
-      h = 400;
-    vis.attr("width", w)
-      .attr("height", h);
-    vis.text("Symbolic Map")
-      .select("#graph")
-    var nodes = []    
-    var links = []*/
-    function updateGraph()
-    {
-      root = treeData[0]
-      root.x0 = height / 2;
-      root.y0 = 0;
-      update(root);
-
-      d3.select(self.frameElement).style("height", "500px");
-    }
-    function getNext()
-    {
-      var request = new XMLHttpRequest();
-      request.onreadystatechange = function() {
-        if (request.readyState == 4 && request.status == 200) {
-          console.log(request.response);
-          var nodeObj = JSON.parse(request.response);
-
-          if(!nodeObj.updated)
-          {
-            setTimeout(getNext, 1000);
-          }
-          else
-          {
-            var node = {"node": nodeObj.node, "text": nodeObj["text"], "parent": nodeObj["parent"], "children": []};
-            treeData.push(node);
-            for (var j = 0; j < treeData.length; j++)
-            {
-              console.log("before");
-              console.log(treeData[j]);
-              if (treeData[j].node == node["parent"])
-              {
-                if(treeData[j].children)
-                  treeData[j].children.push(node);
-                else treeData[j].children = [node];
-              }
-              console.log("after");
-              console.log(treeData[j]);
-            }
-            updateGraph();
-          }
-        }
-      }
-      request.open("GET", "next", true);
-      request.send();     
-    }
-  </script>
-  <script>
-    var _submit = document.getElementById('_submit'), 
-    _file = document.getElementById('_file'), 
-    _progress = document.getElementById('_progress');
-
-    var upload = function(){
-
-      if(_file.files.length === 0){
-          return;
-      }
-
-      var data = new FormData();
-      data.append('SelectedFile', _file.files[0]);
-
-      var request = new XMLHttpRequest();
-      request.onreadystatechange = function(){
-          if(request.readyState == 4){
-              try {
-                  var resp = JSON.parse(request.response);
-              } catch (e){
-                  var resp = {
-                      status: 'error',
-                      data: 'Unknown error occurred: [' + request.responseText + ']'
-                  };
-              }
-              console.log(resp.status + ': ' + resp.data);
-          }
-      };
-
-      request.upload.addEventListener('progress', function(e){
-          _progress.style.width = Math.ceil(e.loaded/e.total) * 100 + '%';
-      }, false);
-
-      request.open('POST', 'upload');
-      request.send(data);
-    }
-    _submit.addEventListener('click', upload);
-  </script>
-  <script>
-
-/*      vis.selectAll(".line")
-          .data(links)
-          .enter()
-          .append("line")
-          .attr("x1", function(d) { return d.source })
-          .attr("y1", function(d) { return d.source })
-          .attr("x2", function(d) { return d.target })
-          .attr("y2", function(d) { return d.target })
-          .style("stroke", "rgb(6,120,155)");*/
-    </script>
 </html>

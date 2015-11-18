@@ -85,8 +85,9 @@ client.on('data',function(data)
       console.log("sending to user : " + JSON.stringify(toSendToUser));  
       if(data.fin  === "1")
       {
-        var idx = map.indexOf(data.sessionid);
+        var idx = map.indexOf(data.fileId);
         if(idx != -1) map.splice(idx,1);
+        console.log("len(map) = " + map.length);
         client.end("FIN");
         //delete file
       }
@@ -173,9 +174,14 @@ app.post('/upload',function(req,res){
 });
 
 app.get('/next',function(req,res){
-  client.write("exec " + map[req.cookies.sessionid]);
   // res.redirect('back')
   var fileId = map[req.cookies.sessionid];
+  if(fileId)
+  {
+      console.log("fileId == " + fileId);
+     client.write("exec " + map[req.cookies.sessionid]);
+  }
+ 
   var toSendToUser = toSend[fileId];
   if(!toSendToUser)
   {
@@ -184,7 +190,11 @@ app.get('/next',function(req,res){
   }
   res.send(toSendToUser);
   toSendToUser["updated"] = false;
-  
+  if(toSendToUser["fin"] == "1")
+  {
+    var idx = toSend.indexOf(fileId);
+    toSend.splice(fileId,1);
+  }
 });
 server = http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
