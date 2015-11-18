@@ -37,12 +37,14 @@ ExpressionTree* SymbolicExecutor::getExpressionTree(ProgramState* state, llvm::V
 	}
 	else return new ExpressionTree(value);
 }	
-void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruction,SymbolicTreeNode* symTreeNode, ProgramState* state)
+void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruction,SymbolicTreeNode* symTreeNode)
 {
+	ProgramState* state = symTreeNode->state;
 	#ifdef DEBUG	
 		std::cout << " executing :" << instruction->getOpcodeName() << " instruction \n";
 		std::cout << "State at this point == \n------------------" << state->toString() << "\n";
 	#endif
+
 	if (llvm::MDNode *N = instruction->getMetadata("dbg")) 
 	{  
 		llvm::DILocation Loc(N);
@@ -231,7 +233,7 @@ std::vector<SymbolicTreeNode*>
 				}
 			#endif
 
-			executeNonBranchingInstruction(i,state);
+			executeNonBranchingInstruction(i,symTreeNode);
 		}
 			#ifdef DEBUG
 				std::cout << "Instruction Executed! (either branch or non branch)\n";

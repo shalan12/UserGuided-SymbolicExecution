@@ -59,7 +59,7 @@ class SymbolicExecutor
     /**
      Executes a nonbranching instruction and updates the program state
     */
-    void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState* state);
+    void executeNonBranchingInstruction(llvm::Instruction* instruction,SymbolicTreeNode* symTreeNode);
      /**
       Executes a branching instruction and determines which block(s) need to be explored depending on the program state
     */

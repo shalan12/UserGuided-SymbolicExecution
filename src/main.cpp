@@ -54,13 +54,8 @@ int communicate(ServerSocket* new_sock)
   }
   delete new_sock;
 }
-<<<<<<< HEAD
 #ifndef CIN_SERVER
 int main ()
-=======
-
-/*int main ()
->>>>>>> client-side
 {
   try
   {
@@ -85,7 +80,6 @@ int main ()
     std::cout << "Exception was caught:" << e.description() << "\n";
   }
   return 0;
-<<<<<<< HEAD
 }
 #else
 // if debugging, skip communicating with nodejs server
@@ -97,6 +91,3 @@ int main()
  return 0;
 }
 #endif
-=======
-}*/
->>>>>>> client-side
