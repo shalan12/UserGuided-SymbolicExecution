@@ -1,65 +1,61 @@
 #define DEBUG 1
 #include "symbolicexecutor.h"
 #include "server/SocketException.h"
-#include "utils.h"
-
 
 
 
 std::map< std::string, std::pair<std::thread,SymbolicExecutor*> > threads_sym;
 
-void runOnThread(SymbolicExecutor * sym, Json::Value val)
+void runOnThread(SymbolicExecutor * sym)
 {
-  sym->execute(val["isBFS"].asInt(), val["steps"].asInt(), 0, val["prevId"].asInt());
+  // execute(bool isbfs, int stps, int d, int prev)
+  sym->execute(false, 1, 0, -1);
+}
+void createNewSym(std::string file, ServerSocket * s)
+{
+  SymbolicExecutor * sym = new SymbolicExecutor(file, s);
+   // std::thread th = std::thread(rnd, sym);
+   // std::thread th = std::thread([sym](){
+   //      sym->execute();
+   //      };);
+  threads_sym[file] = std::make_pair(std::thread(runOnThread,sym),sym);
 }
 
-int executeSym(Json::Value val, ServerSocket * s)
+int executeSym(std::string id)
 {
-  if (threads_sym.find(val["id"].asString()) == threads_sym.end())
-  {
-    SymbolicExecutor * sym = new SymbolicExecutor(val["id"].asString(), s);
-    threads_sym[val["id"].asString()] = std::make_pair(std::thread(runOnThread,sym,val),sym);
-  }
-  else
-  {
-    threads_sym[val["id"].asString()].second->proceed(val["isBFS"].asInt(), 
-        val["steps"].asInt(), 0, val["prevId"].asInt());
-  }
+  threads_sym[id].second->proceed();
 }
 
 int communicate(ServerSocket* new_sock)
 {
-    std::cout << "new connection established\n";
-    std::string message;
-    while(true)
-    {
-        message = "";
-        (*new_sock) >> message;
-        std::cout << "recieved : \n" << message << "\n";
-        if(message == "FIN")
-        {
-            break;
-        }
-        Json::Reader reader;
-        Json::Value val;
-        bool isParsed = reader.parse(message, val);
-        if (isParsed)
-        {
-            std::cout << "isBFS : " << val["isBFS"].asInt() << "\n";
-            std::cout << "branch : " << val["branch"].asInt() << "\n";
-            std::cout << "steps : " << val["steps"].asInt() << "\n";
-            std::cout << "prevId : " << val["prevId"].asInt() << "\n";
-            std::cout << "id : " << val["id"].asString() << "\n";
-            std::cout << "proceed? : \n";
-            int abc;
-            std::cin >> abc;
-            executeSym(val, new_sock);
-        }
-    }
-    delete new_sock;
+  std::cout << "new connection established\n";
+  std::string message;
+  while(true)
+  {
+      message = "";
+     (*new_sock) >> message;
+     std::cout << "recieved " << message << "\n";
+     if(message == "FIN")
+     {
+        break;
+     }
+     if (message.length() > 4)
+     {
+          std::string type = message.substr(0,4);
+          if (type == "file")
+          {
+            createNewSym(message.substr(5), new_sock);
+          }
+          else if (type == "exec")
+          {
+            executeSym(message.substr(5)); 
+          }
+      }
+  }
+  delete new_sock;
 }
 
-int main ()
+/*int main ()
 {
   try
   {
@@ -84,4 +80,4 @@ int main ()
     std::cout << "Exception was caught:" << e.description() << "\n";
   }
   return 0;
-}
+}*/

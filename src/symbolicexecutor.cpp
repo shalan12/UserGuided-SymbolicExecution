@@ -38,7 +38,7 @@ ExpressionTree* SymbolicExecutor::getExpressionTree(ProgramState* state, llvm::V
 	}
 	else return new ExpressionTree(value);
 }	
-void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruction,SymbolicTreeNode* symbTreeNode, ProgramState* state)
+void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState* state)
 {
 	#ifdef DEBUG	
 		std::cout << " executing :" << instruction->getOpcodeName() << " instruction \n";
@@ -48,8 +48,6 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 	{  
 		llvm::DILocation Loc(N);
 		unsigned Line = Loc.getLineNumber();
-		symbTreeNode->minLineNumber = std::min(symbTreeNode->minLineNumber,Line);
-		symbTreeNode->maxLineNumber = std::max(symbTreeNode->maxLineNumber,Line);
 		std::cout << "instruction == " << getString(instruction) << "\tLine Number == " << Line << "\n";
 	}
 	if (instruction->getOpcode() == llvm::Instruction::Alloca)
@@ -179,14 +177,11 @@ std::vector<std::pair<llvm::BasicBlock*, ProgramState*> >
  executes the basicBlock, updates programstate and returns the next Block(s) to execute if it can be determined that only the "Then" block should be executed then only the "Then" block is returned. Similarly for the else block. Otherwise both are are retuarned. NULL is returned if there's nothing left to execute
  */
 std::vector<std::pair<llvm::BasicBlock*, ProgramState*> > 
-	SymbolicExecutor::executeBasicBlock(SymbolicTreeNode* symbtreeNode, ProgramState* state)
-{	
-	llvm::BasicBlock* block = symbtreeNode->block;
-	
+	SymbolicExecutor::executeBasicBlock(llvm::BasicBlock* block, ProgramState* state)
+{
 	std::vector<std::pair<llvm::BasicBlock*, ProgramState*>> to_ret;
-	
 	#ifdef DEBUG
-		printf("Basic block (name= %s) has %zu instructions\n",block->getName().str().c_str(),block->size());
+	printf("Basic block (name= %s) has %zu instructions\n",block->getName().str().c_str(),block->size());
 	#endif
 
 	for (auto i = block->begin(), e = block->end(); i != e; ++i)
@@ -200,12 +195,15 @@ std::vector<std::pair<llvm::BasicBlock*, ProgramState*> >
 			}
 			std::cout << "printing instruction: " << getString(i) << "\n";
 			std::cout << "getOpcode: " << i->getOpcode() << "\n";
-
+<<<<<<< HEAD
 			//std::cout << "move forward? \n";
 			// std::cout << llvm::Instruction::Ret << "\n";
 			// int x;
 			// std::cin >> x;
-			std::cout << "move forward? \n";			
+=======
+			std::cout << "move forward? \n";
+			
+>>>>>>> de87f645fdcaa66f51ff754abf5e09cbb91d2b92
 		#endif
 
 		if(i->getOpcode() == llvm::Instruction::Br || i->getOpcode() == llvm::Instruction::Ret) 
@@ -219,6 +217,7 @@ std::vector<std::pair<llvm::BasicBlock*, ProgramState*> >
 		else 
 		{
 			#ifdef DEBUG
+				int abc;
 				std::cout << "non branch instruction to b executed\n";
 				if (i)
 				{ 
@@ -230,7 +229,7 @@ std::vector<std::pair<llvm::BasicBlock*, ProgramState*> >
 				}
 			#endif
 
-			executeNonBranchingInstruction(i,symbtreeNode,state);
+			executeNonBranchingInstruction(i,state);
 		}
 			#ifdef DEBUG
 				std::cout << "Instruction Executed! (either branch or non branch)\n";
@@ -323,13 +322,12 @@ void SymbolicExecutor::symbolicExecute()
 			if (deque.empty()) break;
 
 			auto curr = deque.front();
-			ProgramState * currState = curr.second;
-			SymbolicTreeNode* symbTreeNode = curr.first;
 			deque.pop_front();
-			
+			ProgramState * currState = curr.second;
+			llvm::BasicBlock * currBlock = curr.first->block;
 
 			std::vector<std::pair<llvm::BasicBlock*, ProgramState*> > new_blocks = 
-				executeBasicBlock(symbTreeNode,currState);		
+				executeBasicBlock(currBlock,currState);		
 			
 			BlockStates[currId++]=curr;
 			
@@ -340,8 +338,7 @@ void SymbolicExecutor::symbolicExecute()
 			msg["text"] = Json::Value(currState->toString());
 			msg["fin"] = Json::Value("0");
 			msg["constraints"] = Json::Value(currState->getPathCondition());
-			msg["startLine"] = Json::Value(symbTreeNode->minLineNumber);
-			msg["endLine"] = Json::Value(symbTreeNode->maxLineNumber);
+
 			parentId = currId-1;
 			prevId = parentId;
 			
@@ -403,13 +400,10 @@ void SymbolicExecutor::symbolicExecute()
 
 		std::cout << "going to sleep " << std::endl;
 
-		// {
+		{
 			std::unique_lock<std::mutex> lck(mtx);
 			cv.wait(lck);
-			lck.unlock();
-
-		// }
-
+		}
 		std::cout << "wakeup!! " << std::endl;
 	}
 }
@@ -428,7 +422,7 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 	rootState = new ProgramState(function->args());
 	rootBlock = &function->getEntryBlock();
 	#ifdef DEBUG
-		//std::cout <<"entry state : " << state->toString();
+		std::cout <<"entry state : " << state->toString();
 	#endif
 	llvm::BasicBlock* currBlock;
 	
@@ -442,7 +436,7 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 
 	std::cout << "sending this: " << output << std::endl;
 	(*socket) << output;
-	std::cout << "Function executed" << std::endl;
+	std::cout << "Function executed"	<< std::endl;
 }
 
 
@@ -466,13 +460,8 @@ llvm::Module* SymbolicExecutor::loadCode(std::string filename)
 	return *mainModuleOrError;
 }
 
-void SymbolicExecutor::proceed(bool isbfs, int stps, int d, int prev)
+void SymbolicExecutor::proceed()
 {
-	isBFS = isbfs;
-	steps = stps;
-	dir = d;
-	prevId = prev; 
-	
 	std::cout << "WAKE UP!!!!!" << std::endl;
 	std::unique_lock<std::mutex> lck(mtx);
 	cv.notify_all();
@@ -494,15 +483,13 @@ void SymbolicExecutor::execute(bool isbfs, int stps, int d, int prev)
 	auto function = module->getFunction("_Z7notmainii");
 	executeFunction(function);
 }
-
-
-// int main()
-// {
-// 	SymbolicExecutor sym("src/SUT/hello.bc", NULL);
-// 	sym.execute(true, 1, 0, -1);
-// 	std::cout << "still working" << std::endl;
-// 	return 0;
-// }
+int main()
+{
+	SymbolicExecutor sym("src/SUT/hello.bc", NULL);
+	sym.execute(true, 1, 0, -1);
+	std::cout << "still working" << std::endl;
+	return 0;
+}
 
 /*
 Old Execute Fnction code

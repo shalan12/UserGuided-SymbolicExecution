@@ -12,7 +12,7 @@ int main()
 	}
 	
 }
-int notmain(int a, int b)
+void notmain(int a, int b)
 {
 	if (a > b)
 	{
@@ -22,5 +22,4 @@ int notmain(int a, int b)
 	{
 		b = b + 2;
 	}
-	return 0;
 }
