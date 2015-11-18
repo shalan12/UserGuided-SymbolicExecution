@@ -206,11 +206,6 @@ std::vector<SymbolicTreeNode*>
 			std::cout << "printing instruction: " << getString(i) << "\n";
 			std::cout << "getOpcode: " << i->getOpcode() << "\n";
 
-			//std::cout << "move forward? \n";
-			// std::cout << llvm::Instruction::Ret << "\n";
-			// int x;
-			// std::cin >> x;
-			std::cout << "move forward? \n";			
 		#endif
 
 		if(i->getOpcode() == llvm::Instruction::Br || i->getOpcode() == llvm::Instruction::Ret) 
@@ -224,6 +219,7 @@ std::vector<SymbolicTreeNode*>
 		else 
 		{
 			#ifdef DEBUG
+				int abc;
 				std::cout << "non branch instruction to b executed\n";
 				if (i)
 				{ 
@@ -235,7 +231,7 @@ std::vector<SymbolicTreeNode*>
 				}
 			#endif
 
-			executeNonBranchingInstruction(i,symTreeNode,state);
+			executeNonBranchingInstruction(i,state);
 		}
 			#ifdef DEBUG
 				std::cout << "Instruction Executed! (either branch or non branch)\n";
@@ -401,7 +397,6 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 	auto rootState = new ProgramState(function->args());
 	auto rootBlock = &function->getEntryBlock();
 	rootNode = new SymbolicTreeNode(rootBlock, rootState);	
-
 	symbolicExecute();
 	
 	Json::Value msg;
@@ -411,7 +406,7 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 
 	std::cout << "sending this: " << output << std::endl;
 	(*socket) << output;
-	std::cout << "Function executed" << std::endl;
+	std::cout << "Function executed"	<< std::endl;
 }
 
 
@@ -435,13 +430,8 @@ llvm::Module* SymbolicExecutor::loadCode(std::string filename)
 	return *mainModuleOrError;
 }
 
-void SymbolicExecutor::proceed(bool isbfs, int stps, int d, int prev)
+void SymbolicExecutor::proceed()
 {
-	isBFS = isbfs;
-	steps = stps;
-	dir = d;
-	prevId = prev; 
-	
 	std::cout << "WAKE UP!!!!!" << std::endl;
 	std::unique_lock<std::mutex> lck(mtx);
 	cv.notify_all();
@@ -463,7 +453,6 @@ void SymbolicExecutor::execute(bool isbfs, int stps, int d, int prev)
 	auto function = module->getFunction("_Z7notmainii");
 	executeFunction(function);
 }
-
 
 /*
 Old Execute Fnction code

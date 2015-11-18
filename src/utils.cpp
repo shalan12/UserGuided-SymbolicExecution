@@ -20,11 +20,3 @@ int getInteger(llvm::Value* value)
 
     else throw std::invalid_argument("not a constant");
 }
-
-std::string toString(Json::Value val)
-{
-    Json::StreamWriterBuilder builder;
-    builder.settings_["indentation"] = "";
-    std::string out = Json::writeString(builder, val);
-    return out;
-}

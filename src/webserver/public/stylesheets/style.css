@@ -83,7 +83,7 @@ section {
 body {
   font: 62.5%/1.5 Helvetica, Arial, "Lucida Grande", "Lucida Sans", Tahoma, Verdana, sans-serif;
   text-align: center;
-  background: #000;
+  background: #fff;
 }
 #wrapper {
   width: 920px;
@@ -252,3 +252,68 @@ footer {
 footer ul {
   list-style: none;
 }
+    .codecontainer {
+      position: relative;
+      width: 100%;
+  }
+    .codefile {
+      position: absolute;
+      right: 0px;
+      width: 500px;
+      height: 700px;
+      background: rgba(68,136,187,0.5);
+      overflow:scroll;
+    }
+    #codedata {
+      white-space: pre;
+    }
+    .menu {
+    position: absolute;
+    left: 200px;
+    top: 200px;
+    background-color:rgba(68,136,187,0.5);
+    width: 500px;
+    border: 1px #ccc solid;
+    border-radius: 6px;
+    box-shadow: #333 2px 2px 4px;
+    padding: 8px;
+    font-family: arial, helvetica, sans-serif;
+  }
+    .container {
+        width: 500px;
+        margin: 0 auto;
+    }
+    .progress_outer {
+        border: 1px solid #000;
+    }
+    .progress {
+        width: 20%;
+        background: rgba(68,136,187,0.5);
+        height: 20px;  
+    }
+    .tooltip{ background-color:rgba(68,136,187,0.5);
+        margin: 10px;
+        height: 200px;
+        width: 450px;
+        padding-left: 10px; 
+        padding-top: 10px;
+      -webkit-border-radius:10px;
+      -moz-border-radius:10px;
+      border-radius:10px;
+    }
+    .node {
+      cursor: pointer;
+    }
+    .node circle {
+      fill: #fff;
+      stroke: steelblue;
+      stroke-width: 3px;
+    }
+    .node text {
+      font: 12px sans-serif;
+    }
+    .link {
+      fill: none;
+      stroke: #ccc;
+      stroke-width: 2px;
+    }

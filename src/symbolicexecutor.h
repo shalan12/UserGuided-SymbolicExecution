@@ -22,7 +22,7 @@
 #include <condition_variable>
 #include <utility>      
 #include <mutex>              // std::mutex, std::unique_lock
-#include <limits>
+
 
 struct SymbolicTreeNode {
   llvm::BasicBlock * block;
@@ -59,7 +59,7 @@ class SymbolicExecutor
     /**
      Executes a nonbranching instruction and updates the program state
     */
-    void executeNonBranchingInstruction(llvm::Instruction* instruction,SymbolicTreeNode*,ProgramState* state);
+    void executeNonBranchingInstruction(llvm::Instruction* instruction,ProgramState* state);
      /**
       Executes a branching instruction and determines which block(s) need to be explored depending on the program state
     */
@@ -81,8 +81,7 @@ class SymbolicExecutor
       end of every path
   */
   void executeFunction(llvm::Function* function);
-  void proceed(bool isbfs, int stps, int d, int prev);
-
+  void proceed();
 
   void execute(bool isbfs, int stps, int d, int prev);
 
