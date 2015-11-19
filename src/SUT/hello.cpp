@@ -12,7 +12,7 @@ int main()
 	}
 	
 }
-void notmain(int a, int b)
+/*void notmain(int a, int b)
 {
 	a = a + 10; // a = A+10
 	b = b + 5; // b = B + 5
@@ -39,7 +39,7 @@ void notmain(int a, int b)
 		d = c + d; // d = B+5+A+10+9 + A + 10 + A + 10 + 1 + B+5+A+10+9 + A + 10
 		if ((c + d) < 10) // (B+5+A+10+9 + A + 10 + A + 10 + 1) +
 						  // (B+5+A+10+9 + A + 10 + A + 10 + 1) + 
-						  // (B+5+A+10+9 + A + 10)
+						  // (B+5+A+10+9 + A + 10) < 10
 		{
 			a = a + 5;
 		}
@@ -67,9 +67,8 @@ void notmain(int a, int b)
 	}
 	a = b + d;
 }
+*/
 
-
-/*
 void notmain(int a, int b)
 {
 	if (a > b)
@@ -83,4 +82,4 @@ void notmain(int a, int b)
 	{
 		b = b + 2;
 	}
-}*/
+}

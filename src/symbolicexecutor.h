@@ -22,16 +22,19 @@
 #include <condition_variable>
 #include <utility>      
 #include <mutex>              // std::mutex, std::unique_lock
-
+#include <limits>
 
 struct SymbolicTreeNode {
   llvm::BasicBlock * block;
   ProgramState * state;
   SymbolicTreeNode * left;
   SymbolicTreeNode * right;
+  int prevId;
+  int id;
   unsigned int minLineNumber,maxLineNumber;
+  static int instances;
 
-  SymbolicTreeNode(llvm::BasicBlock * b, ProgramState * ps, SymbolicTreeNode * l = NULL, SymbolicTreeNode * r = NULL)
+  SymbolicTreeNode(llvm::BasicBlock * b, ProgramState * ps, int pid, SymbolicTreeNode * l = NULL, SymbolicTreeNode * r = NULL)
   {
     block = b;
     left = l;
@@ -39,6 +42,8 @@ struct SymbolicTreeNode {
     state = ps;
     maxLineNumber = 0;
     minLineNumber = std::numeric_limits<unsigned int>::max();
+    prevId = pid;
+    id = instances++;
   }
 };
 
@@ -52,7 +57,7 @@ class SymbolicExecutor
     std::map<int, SymbolicTreeNode* > BlockStates;
     SymbolicTreeNode * rootNode;
     bool isBFS;
-    int dir,steps,currId,prevId;
+    int dir,steps,prevId;
 
     llvm::Module* loadCode(std::string filename);
     ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value);
@@ -63,7 +68,8 @@ class SymbolicExecutor
      /**
       Executes a branching instruction and determines which block(s) need to be explored depending on the program state
     */
-    std::vector<SymbolicTreeNode*> getNextBlocks(llvm::Instruction* inst, ProgramState* state);
+    std::vector<SymbolicTreeNode*> getNextBlocks(llvm::Instruction* inst, ProgramState* state, 
+      int prevId);
 
 
   public:
@@ -81,7 +87,8 @@ class SymbolicExecutor
       end of every path
   */
   void executeFunction(llvm::Function* function);
-  void proceed();
+  void proceed(bool isbfs, int stps, int d, int prev);
+
 
   void execute(bool isbfs, int stps, int d, int prev);
 

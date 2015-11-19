@@ -17,6 +17,8 @@
 #include <pthread.h>
 
 
+int SymbolicTreeNode::instances = 0;
+
 SymbolicExecutor::SymbolicExecutor(std::string f, ServerSocket * s)
 {
 	socket = s;
@@ -25,7 +27,6 @@ SymbolicExecutor::SymbolicExecutor(std::string f, ServerSocket * s)
     isBFS = false;
     dir = 0;
     steps = -1;
-    currId = 0;
     prevId = -1;
 }
 
@@ -145,7 +146,7 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
  Executes a branching instruction and determines which block(s) need to be explored depending on the program state
 */
 std::vector<SymbolicTreeNode*> 
-	SymbolicExecutor::getNextBlocks(llvm::Instruction* inst, ProgramState* state)
+	SymbolicExecutor::getNextBlocks(llvm::Instruction* inst, ProgramState* state, int pid)
 {
 	std::vector<SymbolicTreeNode*> children;
 	if(inst->getOpcode() != llvm::Instruction::Ret)
@@ -159,17 +160,17 @@ std::vector<SymbolicTreeNode*>
 			first->addCondition(state->get(cond)->toString());
 			std::cout << "ADDING CONDITION : " 
 					 << state->get(cond)->toString() << std::endl;
-			children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first));
+			children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first, pid));
 			int numSuccesors = binst->getNumSuccessors();
 			if(numSuccesors == 2)
 			{
 				ProgramState* second = new ProgramState(*state);
 				second->constraints.push_back(std::make_pair(cond,"false"));
 				second->addCondition("not " + state->get(cond)->toString());
-				children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), second));
+				children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), second, pid));
 			}
 		}
-		else children.push_back(new SymbolicTreeNode(binst->getSuccessor(0),state));
+		else children.push_back(new SymbolicTreeNode(binst->getSuccessor(0),state, pid));
 	}
 
 	#ifdef DEBUG
@@ -216,12 +217,11 @@ std::vector<SymbolicTreeNode*>
 				std::cout << "Branch Instruction Hit!\n";
 				
 			#endif
-			return getNextBlocks(i,state);
+			return getNextBlocks(i,state, symTreeNode->id);
 		}
 		else 
 		{
 			#ifdef DEBUG
-				int abc;
 				std::cout << "non branch instruction to b executed\n";
 				if (i)
 				{ 
@@ -254,6 +254,8 @@ void SymbolicExecutor::symbolicExecute()
 	
 	while (1)
 	{
+		Json::Value toSend;
+		int currObject = 0;
 		#ifdef DEBUG
 			std::cout << "prev id: "<< prevId << "\n";
 		#endif
@@ -316,24 +318,19 @@ void SymbolicExecutor::symbolicExecute()
 
 			std::vector<SymbolicTreeNode*> new_blocks = executeBasicBlock(symTreeNode);		
 
-			BlockStates[currId++]=symTreeNode;
+			BlockStates[symTreeNode->id]=symTreeNode;
 			
 			Json::Value msg;
 			msg["fileId"] = Json::Value(filename.c_str());
-			msg["node"] = Json::Value(currId-1);
-			msg["parent"] = Json::Value(prevId);
+			msg["node"] = Json::Value(symTreeNode->id);
+			msg["parent"] = Json::Value(symTreeNode->prevId);
 			msg["text"] = Json::Value(symTreeNode->state->toString());
 			msg["fin"] = Json::Value("0");
 			msg["constraints"] = Json::Value(symTreeNode->state->getPathCondition());
 			msg["startLine"] = Json::Value(symTreeNode->minLineNumber);
 			msg["endLine"] = Json::Value(symTreeNode->maxLineNumber);
-			prevId = currId-1;
 			
-			Json::FastWriter fastWriter;
-			std::string output = fastWriter.write(msg);
-			std::cout << "sending this: " << output << std::endl;
-			if (socket)
-				(*socket) << output;
+			toSend[currObject++] = msg;
 
 			
 			for (int j = 0; j < new_blocks.size(); j++)
@@ -364,19 +361,21 @@ void SymbolicExecutor::symbolicExecute()
 		#ifdef CIN_SERVER
 			std::cout << "proceed? \n";
 			std::cout << "prevId : ";
-			std::cin >>prevId;
-			std::cout << "\n";
+			std::cin >> prevId;
 			std::cout << "isBFS : ";
-			std::cin >>isBFS;
-			std::cout << "\n";
+			std::cin >> isBFS;
 			std::cout << "steps : ";
-			std::cin >>steps;
-			std::cout << "\n";
+			std::cin >> steps;
 			std::cout << "dir : ";
-			std::cin >>dir; 
-			std::cout << "\n";
+			std::cin >> dir; 
 			continue;
 		#endif
+
+		Json::FastWriter fastWriter;
+		std::string output = fastWriter.write(toSend);
+		std::cout << "sending this: " << output << std::endl;
+		if (socket)
+			(*socket) << output;
 
 		std::cout << "going to sleep" << std::endl;
 		std::unique_lock<std::mutex> lck(mtx);
@@ -398,7 +397,7 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 {
 	auto rootState = new ProgramState(function->args());
 	auto rootBlock = &function->getEntryBlock();
-	rootNode = new SymbolicTreeNode(rootBlock, rootState);	
+	rootNode = new SymbolicTreeNode(rootBlock, rootState, -1);	
 	symbolicExecute();
 	
 	Json::Value msg;
@@ -432,8 +431,13 @@ llvm::Module* SymbolicExecutor::loadCode(std::string filename)
 	return *mainModuleOrError;
 }
 
-void SymbolicExecutor::proceed()
+void SymbolicExecutor::proceed(bool isbfs, int stps, int d, int prev)
 {
+	isBFS = isbfs;
+	steps = stps;
+	dir = d;
+	prevId = prev; 
+	
 	std::cout << "WAKE UP!!!!!" << std::endl;
 	std::unique_lock<std::mutex> lck(mtx);
 	cv.notify_all();

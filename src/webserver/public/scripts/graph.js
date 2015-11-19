@@ -1,6 +1,4 @@
 /* --------------------- Symbolic Tree --------------------- */
-
-
 var margin = {top: 20, right: 120, bottom: 20, left: 120},
 width = 960 - margin.right - margin.left,
 height = 500 - margin.top - margin.bottom;
@@ -19,7 +17,6 @@ var svg = d3.select("#graph").append("svg")
 var treeData = [];
 var numSteps, branchSelected, explore;
 var contextMenuShowing = false;
-numSteps = 1;
 /* ---------------------- Tree update and node handling ------------------------- */
 
 function update(source) {
@@ -55,19 +52,19 @@ function update(source) {
         .style("left", "300px")
         .style("top", "500px");
         menu.html(
-            '<form id='menuoptions' onsubmit="return handleMenuOptions(\''+d.id+'\')">' + 
+            '<form id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
                 "Number of steps to explore:<br>" +
                 "<input type='text' name='steps'>" +
                 "<br>" +
                 "<p>Explore by: </p>" + 
-                "<input type='radio' name='explore' value='BFS'> BFS" +
+                "<input type='radio' name='explore' value='1'> BFS" +
                 "<br>" +
-                "<input type='radio' name='explore' value='DFS'> DFS" +
+                "<input type='radio' name='explore' value='0'> DFS" +
                 "<br>" + 
                 "<p>Select Branch</p>" +
-                "<input type='radio' name='branch' value='left'> Left" +
+                "<input type='radio' name='branch' value='0'> Left" +
                 "<br>" +
-                "<input type='radio' name='branch' value='right'> Right" +
+                "<input type='radio' name='branch' value='1'> Right" +
                 "<br><br>" +
                 "<input type='submit' value='Submit'>" +
             "</form>");
@@ -163,61 +160,50 @@ function click(d) {
       //----------------//
       //update(d);
       //----------------//
-    getNext(d.id);
+    getNext(d.node);
 }
 
 
-/* ---------------- Step To Get Next Node --------------------------------------- */
-
-function getNext(nodeID)
+function addNode(nodeObj)
 {
-
-    for (var i = 0; i < numSteps; i++)
+    var node = {"node": nodeObj.node, "text": nodeObj["text"], "parent": nodeObj["parent"], "children": [], "constraints": nodeObj["constraints"], 
+            "startLine": nodeObj["startLine"], "endLine": nodeObj["endLine"]};
+    treeData.push(node);
+    for (var j = 0; j < treeData.length; j++)
     {
-        $.get('next', {isBFS: explore, branch: branch, steps: numSteps, prevID: nodeID}, function(data)
+        console.log("before");
+        console.log(treeData[j]);
+        if (treeData[j].node == node["parent"])
         {
-            nodeObj = JSON.parse(data);  
-            if(!nodeObj.updated && stepsPerformed <= steps)
-            {
-                setTimeout(getNextContext(nodeID), 1000);
-                stepsPerformed = stepsPerformed + 1;
-            }
-            else
-            {
-                console.log("fin = " + nodeObj.fin);
-                if(nodeObj.fin !== "0") 
-                {  //document.getElementById("Step").disabled = true;
-                }
-                else
-                {
-                    var node = {"node": nodeObj.node, "text": nodeObj["text"], "parent": nodeObj["parent"], "children": [], "constraints": nodeObj["constraints"], 
-                    "startLine": nodeObj["startLine"], "endLine": nodeObj["endLine"]};
-                    treeData.push(node);
-                    for (var j = 0; j < treeData.length; j++)
-                    {
-                        console.log("before");
-                        console.log(treeData[j]);
-                        if (treeData[j].node == node["parent"])
-                        {
-                            if(treeData[j].children)
-                                treeData[j].children.push(node);
-                            else treeData[j].children = [node];
-                        }
-                        console.log("after");
-                        console.log(treeData[j]);
-                    }
-                    updateGraph();
-                    for (var line = startLine; line < endLine; line++)
-                    {
-                        document.getElementById(line).style.color = 'darkslateblue';
-                    }
-                }
-            }
-
-        });
+            if(treeData[j].children)
+                treeData[j].children.push(node);
+            else treeData[j].children = [node];
+        }
+        console.log("after");
+        console.log(treeData[j]);
     }
-
-    numSteps = 1;
+    updateGraph();
+    for (var line = node.startLine; line < node.endLine; line++)
+    {
+        document.getElementById(line).style.backgroundColor = 'yellow';
+    }
+}
+/* ---------------- Step To Get Next Node --------------------------------------- */
+function getNext(nodeID,isPing)
+{
+    isPing = isPing || false;
+    $.get('next', {'isBFS': explore, 'branch': branchSelected, 
+                 'steps': numSteps, 'prevId': nodeID, 'isPing': isPing}, function(data){
+            if(data.updated)
+            {
+                for (var i =0; i < data.nodes.length; i++)
+                    addNode(data.nodes[i]);
+            }
+            if(!data.completed)
+            {
+                setTimeout(getNext(nodeID,true), 1000);
+            }
+    });
 }
 
 
@@ -295,3 +281,4 @@ var upload = function(){
     reader.onload = loaded;
 }
 _submit.addEventListener('click', upload);
+console.log('blah');

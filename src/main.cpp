@@ -1,59 +1,69 @@
-#define DEBUG 1
 #include "symbolicexecutor.h"
 #include "server/SocketException.h"
+#include "utils.h"
+#include "jsoncpp/dist/json/json.h"
+
+
 
 
 
 std::map< std::string, std::pair<std::thread,SymbolicExecutor*> > threads_sym;
 
-void runOnThread(SymbolicExecutor * sym)
+void runOnThread(SymbolicExecutor * sym, int isBFS, int isRightBranch, int steps, int prevId)
 {
-  // execute(bool isbfs, int stps, int d, int prev)
-  sym->execute(false, 1, 0, -1);
-}
-void createNewSym(std::string file, ServerSocket * s)
-{
-  SymbolicExecutor * sym = new SymbolicExecutor(file, s);
-   // std::thread th = std::thread(rnd, sym);
-   // std::thread th = std::thread([sym](){
-   //      sym->execute();
-   //      };);
-  threads_sym[file] = std::make_pair(std::thread(runOnThread,sym),sym);
+  sym->execute(isBFS, steps, isRightBranch, prevId);
 }
 
-int executeSym(std::string id)
+int executeSym(int isBFS, int isRightBranch, int steps, int prevId, std::string id, ServerSocket * s)
 {
-  threads_sym[id].second->proceed();
+  if (threads_sym.find(id) == threads_sym.end())
+  {
+    SymbolicExecutor * sym = new SymbolicExecutor(id, s);
+    threads_sym[id] = std::make_pair(std::thread(runOnThread,sym,isBFS,isRightBranch,steps,prevId),sym);
+  }
+  else
+  {
+    threads_sym[id].second->proceed(isBFS, steps, isRightBranch, prevId);
+  }
 }
 
 int communicate(ServerSocket* new_sock)
 {
-  std::cout << "new connection established\n";
-  std::string message;
-  while(true)
-  {
-      message = "";
-     (*new_sock) >> message;
-     std::cout << "recieved " << message << "\n";
-     if(message == "FIN")
-     {
-        break;
-     }
-     if (message.length() > 4)
-     {
-          std::string type = message.substr(0,4);
-          if (type == "file")
-          {
-            createNewSym(message.substr(5), new_sock);
-          }
-          else if (type == "exec")
-          {
-            executeSym(message.substr(5)); 
-          }
-      }
-  }
-  delete new_sock;
+    std::cout << "new connection established\n";
+    std::string message;
+    while(true)
+    {
+        message = "";
+        (*new_sock) >> message;
+        std::cout << "recieved : \n" << message << "\n";
+        if(message == "FIN")
+        {
+            break;
+        }
+        Json::Reader reader;
+        Json::Value val;
+        bool isParsed = reader.parse(message, val);
+        if (isParsed)
+        {
+            std::cout << "isBFS : " << val["isBFS"].asString() << "\n";
+            std::cout << "branch : " << val["branch"].asString() << "\n";
+            std::cout << "steps : " << val["steps"].asString() << "\n";
+            std::cout << "prevId : " << val["prevId"].asString() << "\n";
+            std::cout << "id : " << val["id"].asString() << "\n";
+            std::cout << "proceed? : \n";
+            #ifdef DEBUG
+              int abc;
+              std::cin >> abc;
+            #endif
+            executeSym(stoi(val["isBFS"].asString()), stoi(val["branch"].asString()),
+               stoi(val["steps"].asString()), stoi(val["prevId"].asString()), 
+               val["id"].asString(), new_sock);
+        }
+    }
+    delete new_sock;
 }
+
+
 #ifndef CIN_SERVER
 int main ()
 {
