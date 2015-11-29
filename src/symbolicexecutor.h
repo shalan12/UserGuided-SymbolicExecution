@@ -29,6 +29,7 @@ struct SymbolicTreeNode {
   ProgramState * state;
   SymbolicTreeNode * left;
   SymbolicTreeNode * right;
+  bool isExecuted;
   int prevId;
   int id;
   unsigned int minLineNumber,maxLineNumber;
@@ -44,6 +45,7 @@ struct SymbolicTreeNode {
     minLineNumber = std::numeric_limits<unsigned int>::max();
     prevId = pid;
     id = instances++;
+    isExecuted = false;
   }
 };
 
@@ -55,7 +57,7 @@ class SymbolicExecutor
     ServerSocket * socket;
     std::string filename;
     std::map<int, SymbolicTreeNode* > BlockStates;
-    std::map<SymbolicTreeNode*, bool > excludedNodes;
+    std::map<int, bool > excludedNodes;
     SymbolicTreeNode * rootNode;
     bool isBFS;
     int dir,steps,prevId;
@@ -89,7 +91,7 @@ class SymbolicExecutor
   */
   void executeFunction(llvm::Function* function);
   void proceed(bool isbfs, int stps, int d, int prev);
-  void exclude(std:string id);
+  void exclude(std::string id);
 
 
   void execute(bool isbfs, int stps, int d, int prev);

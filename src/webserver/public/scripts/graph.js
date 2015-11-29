@@ -271,7 +271,7 @@ function addNode(nodeObj)
         console.log(treeData[j]);
     }
     updateGraph();
-    for (var line = node.startLine; line < node.endLine; line++)
+    for (var line = node.startLine; line <= node.endLine; line++)
     {
         document.getElementById(line).style.backgroundColor = 'yellow';
     }
@@ -334,7 +334,7 @@ function loaded(evt) {
     var splitted = fileString.split("\n");
     for (var i = 1; i <= splitted.length; i++)
     {
-        $("#codedata").append('<p id = "'+i+'">'+ i + ". " + splitted[i] + '</p>');  
+        $("#codedata").append('<pre id = "'+i+'">'+ i + "." + splitted[i-1] + '</pre>');  
     }
         
 }

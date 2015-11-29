@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.1/d3.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    	<script type="text/javascript" src="../scripts/tooltip.js"></script>
+
+    	<link href="../stylesheets/style1.css" rel="stylesheet">		
+    	<title>Senior Year Project</title>
+	</head>
+	
+
+	<body>
+		<h1>Framework for Symbolic Execution of LLVM Bitcode</h1>
+		<h2>Symbolic Map</h2>
+	    <div class='container'>
+	        <p>
+	           	Select Your Code File: <input type='file' id='_file'> <input type='button' id='_submit' value='Upload!'>
+	        </p>
+	        <div class='progress_outer'>
+	           	<div id='_progress' class='progress'></div>
+	        </div>
+	    </div>
+		<div class="codecontainer">
+			<div class="codefile">
+				<p><b>Code:</b></p>
+				<p id="codedata"><pre></pre></p>
+			</div>
+		</div>
+		<div id="graph"></div>	
+		<button id="Step" onclick="getNext()">Begin Symbolic Execution</button>
+		<script type="text/javascript" src="../scripts/graph.js"></script>
+
+	</body>
+</html>

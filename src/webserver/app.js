@@ -222,10 +222,11 @@ app.get('/next',function(req,res){
   toSend[fileId]["completed"] = false;
   res.send(sendCopy);
 });
-app.get('/exclude', function(req,rest){
+app.get('/exclude', function(req,res){
   query = req.query;
   toSendToExecutor = {"id":map[req.cookies.sessionid], "exclude":query["nodeid"]};
   client.write(JSON.stringify(toSendToExecutor));
+  res.send({});
 });
 server = http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

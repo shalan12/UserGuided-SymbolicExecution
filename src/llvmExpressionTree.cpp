@@ -104,7 +104,7 @@ llvm::Value* ExpressionTree::evaluate(llvm::Value* lhs, llvm::Value* rhs, std::s
             result = lhsInt + rhsInt;
         else if (op == ">")
             result = lhsInt > rhsInt;
-        llvm::Value* ans = llvm::ConstantInt::get( llvm::getGlobalContext() , llvm::APInt(64, result, false));
+        llvm::Value* ans = llvm::ConstantInt::get( llvm::getGlobalContext() , llvm::APInt(32, result, false));
         return ans;
 }
 

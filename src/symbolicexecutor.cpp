@@ -46,14 +46,7 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 		std::cout << "State at this point == \n------------------" << state->toString() << "\n";
 	#endif
 
-	if (llvm::MDNode *N = instruction->getMetadata("dbg")) 
-	{  
-		llvm::DILocation Loc(N);
-		unsigned Line = Loc.getLineNumber();
-		symTreeNode->minLineNumber = std::min(symTreeNode->minLineNumber,Line);
-		symTreeNode->maxLineNumber = std::max(symTreeNode->maxLineNumber,Line);
-		std::cout << "instruction == " << getString(instruction) << "\tLine Number == " << Line << "\n";
-	}
+	
 	if (instruction->getOpcode() == llvm::Instruction::Alloca)
 	{
 		#ifdef DEBUG	
@@ -115,6 +108,8 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 			op = ">";	
 		else if(cmpInst->getSignedPredicate() == llvm::ICmpInst::ICMP_SLT)
 			op = "<";
+		else if(cmpInst->getSignedPredicate() == llvm::ICmpInst::ICMP_SLE)
+			op = "<=";
 		#ifdef DEBUG
 			std::cout << "operand0 == " << getString(instruction->getOperand(0)) << "\n";
 			std::cout << "operand1 == " << getString(instruction->getOperand(1)) << "\n";
@@ -156,13 +151,23 @@ std::vector<SymbolicTreeNode*>
 		{
 			ProgramState* first = new ProgramState(*state);
 			llvm::Value* cond = binst->getCondition();
-			first->constraints.push_back(std::make_pair(cond,"true"));
-			first->addCondition(state->get(cond)->toString());
-			std::cout << "ADDING CONDITION : " 
-					 << state->get(cond)->toString() << std::endl;
-			children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first, pid));
+			int toAddTrue = 1;
+			int toAddFalse = 1;
+			if(state->getMap()[cond]->isConstant())
+			{
+				toAddTrue = state->getMap()[cond]->getInteger();
+				toAddFalse = !toAddTrue;
+			}
+			if(toAddTrue)
+			{
+				first->constraints.push_back(std::make_pair(cond,"true"));
+				first->addCondition(state->get(cond)->toString());
+				std::cout << "ADDING CONDITION : " 
+						 << state->get(cond)->toString() << std::endl;
+				children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first, pid));
+			}
 			int numSuccesors = binst->getNumSuccessors();
-			if(numSuccesors == 2)
+			if(numSuccesors == 2 && toAddFalse)
 			{
 				ProgramState* second = new ProgramState(*state);
 				second->constraints.push_back(std::make_pair(cond,"false"));
@@ -197,35 +202,45 @@ std::vector<SymbolicTreeNode*>
 				,block->getName().str().c_str(),block->size());
 	#endif
 
-	for (auto i = block->begin(), e = block->end(); i != e; ++i)
+	for (auto instruction = block->begin(), e = block->end(); instruction != e; ++instruction)
 	{
+
 		#ifdef DEBUG
 
-			std::cout << "printing operands : " << i->getNumOperands() << "\n";
-			for (int j = 0; j < i->getNumOperands(); j++)
+			std::cout << "printing operands : " << instruction->getNumOperands() << "\n";
+			for (int j = 0; j < instruction->getNumOperands(); j++)
 			{
-				std::cout << "operand # : " << j+1 << " : " << getString(i->getOperand(j)) << "\n";
+				std::cout << "operand # : " << j+1 << " : " << getString(instruction->getOperand(j)) << "\n";
 			}
-			std::cout << "printing instruction: " << getString(i) << "\n";
-			std::cout << "getOpcode: " << i->getOpcode() << "\n";
+			std::cout << "printing instruction: " << getString(instruction) << "\n";
+			std::cout << "getOpcode: " << instruction->getOpcode() << "\n";
 
 		#endif
 
-		if(i->getOpcode() == llvm::Instruction::Br || i->getOpcode() == llvm::Instruction::Ret) 
+		if (llvm::MDNode *N = instruction->getMetadata("dbg")) 
+		{  
+			llvm::DILocation Loc(N);
+			unsigned Line = Loc.getLineNumber();
+			symTreeNode->minLineNumber = std::min(symTreeNode->minLineNumber,Line);
+			symTreeNode->maxLineNumber = std::max(symTreeNode->maxLineNumber,Line);
+			std::cout << "instruction == " << getString(instruction) << "\tLine Number == " << Line << "\n";
+		}
+
+		if(instruction->getOpcode() == llvm::Instruction::Br || instruction->getOpcode() == llvm::Instruction::Ret) 
 		{
 			#ifdef DEBUG
-				std::cout << "Branch Instruction Hit!\n";
-				
+				std::cout << "Branch Instruction Hit!\n";	
 			#endif
-			return getNextBlocks(i,state, symTreeNode->id);
+
+			return getNextBlocks(instruction,state, symTreeNode->id);
 		}
 		else 
 		{
 			#ifdef DEBUG
 				std::cout << "non branch instruction to b executed\n";
-				if (i)
+				if (instruction)
 				{ 
-					std::cout << getString(i) << "\n" << std::endl;
+					std::cout << getString(instruction) << "\n" << std::endl;
 				}
 				else
 				{
@@ -233,11 +248,8 @@ std::vector<SymbolicTreeNode*>
 				}
 			#endif
 
-			executeNonBranchingInstruction(i,symTreeNode);
+			executeNonBranchingInstruction(instruction,symTreeNode);
 		}
-			#ifdef DEBUG
-				std::cout << "Instruction Executed! (either branch or non branch)\n";
-			#endif
 	}
 
 	#ifdef DEBUG
@@ -315,11 +327,33 @@ void SymbolicExecutor::symbolicExecute()
 
 			SymbolicTreeNode* symTreeNode = deque.front();
 			deque.pop_front();
-			if (excludedBlocks[currObject] != excludedBlocks.end())
+			if (excludedNodes.find(symTreeNode->id) != excludedNodes.end())
 				continue;
+			if (symTreeNode->isExecuted)
+			{
+				for (int j = 0; j < 2; j++)
+				{
+					int k = j;
+					if (dir) k = 1 - j;
 
-			std::vector<SymbolicTreeNode*> new_blocks = executeBasicBlock(symTreeNode);		
-
+					SymbolicTreeNode * tempSymTreeNode;
+					if (k == 0)
+					{
+						tempSymTreeNode = symTreeNode->left;
+					}
+					else
+					{
+						tempSymTreeNode = symTreeNode->right;
+					}
+					if (isBFS)
+						if (tempSymTreeNode) deque.push_back(tempSymTreeNode);	
+					else
+						if (tempSymTreeNode) deque.push_front(tempSymTreeNode);
+				}
+				continue;	
+			}
+			std::vector<SymbolicTreeNode*> new_blocks = executeBasicBlock(symTreeNode);
+			symTreeNode->isExecuted = true;
 			BlockStates[symTreeNode->id]=symTreeNode;
 			
 			Json::Value msg;
@@ -340,9 +374,10 @@ void SymbolicExecutor::symbolicExecute()
 				int k = j;
 				if (dir) k = new_blocks.size() - 1 - j;
 
-				SymbolicTreeNode * tempSymTreeNode;	
+				SymbolicTreeNode * tempSymTreeNode;
 				if (k == 0)
 				{
+
 					symTreeNode->left = new_blocks[k];
 					tempSymTreeNode = symTreeNode->left;
 				}
@@ -464,7 +499,7 @@ void SymbolicExecutor::execute(bool isbfs, int stps, int d, int prev)
 
 void SymbolicExecutor::exclude(std::string id)
 {
-	excludedNodes[BlockStates[stoi(id)]] = true;
+	excludedNodes[stoi(id)] = true;
 }
 
 /*
