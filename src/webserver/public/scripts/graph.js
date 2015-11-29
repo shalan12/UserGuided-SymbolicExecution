@@ -17,6 +17,79 @@ var svg = d3.select("#graph").append("svg")
 var treeData = [];
 var numSteps, branchSelected, explore;
 var contextMenuShowing = false;
+var contextmenu = [
+            {
+                title: 'Exclude',
+                action: function(elm,d,i) {
+                    //console.log(elm + " " + d.node + " " + i);
+                    $.ajax({
+                        url: "/exclude",
+                        data: {"nodeid":d.node} 
+                    }).done(function(){
+                            console.log(d3.select("#name"+d.node).style("fill", "grey"));
+                            var todo = [d];
+                            while (todo)
+                            {
+                                var curr = todo.pop();
+                                d3.select("#name"+curr.node).style("fill", "grey");
+                                d3.select("#name"+curr.node).on('contextmenu', function(d, i){
+                                    console.log("Don't do anything");
+                                });
+                                d3.select("#name"+curr.node).on('click', function(d,i){
+                                    console.log("Dont get next element");
+                                });
+                                if(curr.children)
+                                    todo = todo.concat(curr.children);
+                            }
+                    });
+                }
+            },
+            {
+                title: 'Options',
+                action: function(elm, d, i) {/*
+                    console.log('You have clicked the second item!');
+                    console.log('The data for this circle is: ' + d);*/
+                    if(contextMenuShowing) {
+                        //d3.event.preventDefault();
+                        d3.select(".menu").remove();
+                        contextMenuShowing = false;
+                    }
+                    else 
+                    {
+                        d3_target = d3.select(d3.event.target);
+                        d3.event.preventDefault();
+                        contextMenuShowing = true;
+                        datum = d3_target.datum();
+                        menu = d3.select("body")
+                        .append("div")
+                        .attr("class", "menu")
+                        .style("left", d.x+300 +"px")
+                        .style("top", d.y+200 +"px");
+                        menu.html(
+                                '<form id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
+                                "Number of steps to explore:<br>" +
+                                    "<input type='text' name='steps'>" +
+                                    "<br>" +
+                                    "<p>Explore by: </p>" + 
+                                    "<input type='radio' name='explore' value='1'> BFS" +
+                                    "<br>" +
+                                    "<input type='radio' name='explore' value='0'> DFS" +
+                                    "<br>" + 
+                                    "<p>Select Branch</p>" +
+                                    "<input type='radio' name='branch' value='0'> Left" +
+                                    "<br>" +
+                                    "<input type='radio' name='branch' value='1'> Right" +
+                                    "<br><br>" +
+                                    "<input type='submit' value='Submit'>" +
+
+                                "</form>");
+                    }
+                }
+            }
+        ]
+
+
+
 /* ---------------------- Tree update and node handling ------------------------- */
 
 function update(source) {
@@ -36,40 +109,55 @@ function update(source) {
     .attr("class", "node")
     .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
     .on("click", click);
-
+    
     nodeEnter.append("circle")
     .attr("r", 1e-6)
+    .attr("id", function(d){ return 'name' + d.node; })
     .style("fill", function(d) { return d.children ? "lightsteelblue" : "#fff"; })
     .call(d3.helper.tooltip(
-    function(d, i){
-        return d.text + " \n<b>Constraint: </b> \n" + d.constraints;
-    }
+        function(d, i){
+            return d.text + " \n<b>Constraint: </b> \n" + d.constraints;
+        }
     ))
-    .on('contextmenu', function(d, i){
-        menu = d3.select("body")
-        .append("div")
-        .attr("class", "menu")
-        .style("left", "300px")
-        .style("top", "500px");
-        menu.html(
-            '<form id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
-                "Number of steps to explore:<br>" +
-                "<input type='text' name='steps'>" +
-                "<br>" +
-                "<p>Explore by: </p>" + 
-                "<input type='radio' name='explore' value='1'> BFS" +
-                "<br>" +
-                "<input type='radio' name='explore' value='0'> DFS" +
-                "<br>" + 
-                "<p>Select Branch</p>" +
-                "<input type='radio' name='branch' value='0'> Left" +
-                "<br>" +
-                "<input type='radio' name='branch' value='1'> Right" +
-                "<br><br>" +
-                "<input type='submit' value='Submit'>" +
-            "</form>");
-        contextMenuShowing = true;
-    });
+    .on('contextmenu', d3.contextMenu(contextmenu));
+    
+    /*function(d, i){
+        if(contextMenuShowing) {
+            d3.event.preventDefault();
+            d3.select(".menu").remove();
+            contextMenuShowing = false;
+        }
+        else 
+        {
+            d3_target = d3.select(d3.event.target);
+            d3.event.preventDefault();
+            contextMenuShowing = true;
+            datum = d3_target.datum();
+            menu = d3.select("body")
+            .append("div")
+            .attr("class", "menu")
+            .style("left", d.x+150 +"px")
+            .style("top", d.y+150 +"px");
+            menu.html(
+                    '<form id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
+                    "Number of steps to explore:<br>" +
+                        "<input type='text' name='steps'>" +
+                        "<br>" +
+                        "<p>Explore by: </p>" + 
+                        "<input type='radio' name='explore' value='1'> BFS" +
+                        "<br>" +
+                        "<input type='radio' name='explore' value='0'> DFS" +
+                        "<br>" + 
+                        "<p>Select Branch</p>" +
+                        "<input type='radio' name='branch' value='0'> Left" +
+                        "<br>" +
+                        "<input type='radio' name='branch' value='1'> Right" +
+                        "<br><br>" +
+                        "<input type='submit' value='Submit'>" +
+
+                    "</form>");
+        }
+    });*/
     nodeEnter.append("text")
     .attr("y", function(d) { return d.children ? -18 : 18; })
     .attr("dy", ".35em")
@@ -223,6 +311,7 @@ function handleMenuOptions(nodeID)
         console.log(explore);
         getNext(nodeID);
         d3.select('.menu').remove();
+        contextMenuShowing = false;
     }
     catch(e){
         console.log(e);

@@ -55,6 +55,7 @@ class SymbolicExecutor
     ServerSocket * socket;
     std::string filename;
     std::map<int, SymbolicTreeNode* > BlockStates;
+    std::map<SymbolicTreeNode*, bool > excludedNodes;
     SymbolicTreeNode * rootNode;
     bool isBFS;
     int dir,steps,prevId;
@@ -88,6 +89,7 @@ class SymbolicExecutor
   */
   void executeFunction(llvm::Function* function);
   void proceed(bool isbfs, int stps, int d, int prev);
+  void exclude(std:string id);
 
 
   void execute(bool isbfs, int stps, int d, int prev);

@@ -3,9 +3,10 @@ objectPaths = $(shell find build/*.o)
 llvmPath = /usr/lib/llvm-3.5/build/include
 INCLUDES = -I$(llvmPath)
 
-llvmFlags = `llvm-config-3.5 --libs core jit native` `llvm-config-3.5 --cxxflags --ldflags --libs` `llvm-config --libs core` `llvm-config --ldflags`  -ltinfo -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS
+llvmFlags = `llvm-config-3.5 --libs core jit native` `llvm-config-3.5 --cxxflags --ldflags --libs` `llvm-config --libs core` `llvm-config --ldflags`  -ltinfo -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS -ldl
 exceptionFlag = -fexceptions
 z3Flag = -lz3
+multithreadingFlag = -pthread
 BUILD_DIR = build
 SRC_DIR = src
 VPATH = $(SRC_DIR):$(SRC_DIR)/server:$(SRC_DIR)/jsoncpp/dist:$(SRC_DIR)/jsoncpp/dist/json:$(BUILD_DIR):$(SRC_DIR)/SUT
@@ -21,7 +22,7 @@ debug: CPPFLAGS += -DDEBUG -DCIN_SERVER
 debug: all
 
 sfse: $(objects)
-	$(CXX) $(CPPFLAGS) $(objectPaths) $(INCLUDES) -o sfse $(llvmFlags) $(exceptionFlag) $(z3Flag)
+	$(CXX) $(CPPFLAGS) $(objectPaths) $(INCLUDES) -o sfse $(llvmFlags) $(exceptionFlag) $(z3Flag) $(multithreadingFlag) 
 
 main.o: main.cpp symbolicexecutor.h SocketException.h
 	$(PREFIX)main.cpp $(CPPFLAGS) $(INCLUDES) -c -o $(SUFFIX)

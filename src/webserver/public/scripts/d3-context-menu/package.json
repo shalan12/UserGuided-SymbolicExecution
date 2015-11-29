@@ -1,0 +1,37 @@
+{
+  "name": "d3-context-menu",
+  "version": "0.0.1",
+  "description": "A plugin for d3.js that allows you to easily use context menus in your visualizations.",
+  "main": "js/d3-context-menu.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/patorjk/d3-context-menu.git"
+  },
+  "keywords": [
+    "d3js",
+    "context-menu",
+    "contextmenu"
+  ],
+  "author": {
+    "name": "Patrick Gillespie"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/patorjk/d3-context-menu/issues"
+  },
+  "homepage": "https://github.com/patorjk/d3-context-menu",
+  "readme": "# d3-context-menu\n\nThis is a plugin for d3.js that allows you to easy use context-menus in your visualizations. It's 100% d3 based and done in the \"d3 way\", so you don't need to worry about including additional frameworks.\n\nIt's written to be very light weight and customizable. You can see it in action here:\n\nhttp://plnkr.co/edit/hAx36JQhb0RsvVn7TomS?p=info\n\n### Install with Bower\n\n```\nbower install d3-context-menu\n```\n\n### Basic usage:\n\n```\n// Define your menu\nvar menu = [\n\t{\n\t\ttitle: 'Item #1',\n\t\taction: function(elm, d, i) {\n\t\t\tconsole.log('Item #1 clicked!');\n\t\t\tconsole.log('The data for this circle is: ' + d);\n\t\t}\n\t},\n\t{\n\t\ttitle: 'Item #2',\n\t\taction: function(elm, d, i) {\n\t\t\tconsole.log('You have clicked the second item!');\n\t\t\tconsole.log('The data for this circle is: ' + d);\n\t\t}\n\t}\n]\n\nvar data = [1, 2, 3];\n\nvar g = d3.select('body').append('svg')\n\t.attr('width', 200)\n\t.attr('height', 400)\n\t.append('g');\n\ng.selectAll('circles')\n\t.data(data)\n\t.enter()\n\t.append('circle')\n\t.attr('r', 30)\n\t.attr('fill', 'steelblue')\n\t.attr('cx', function(d) {\n\t\treturn 100;\n\t})\n\t.attr('cy', function(d) {\n\t\treturn d * 100;\n\t})\n\t.on('contextmenu', d3.contextMenu(menu)); // attach menu to element\n});\n```\n\n### Advanced usage:\n\n#### Pre-show callbacks.\n\nYou can pass in a callback that will be executed before the context menu appears. This can be useful if you need something to close tooltips or perform some other task before the menu appears:\n\n```\n    ...\n    .on('contextmenu', d3.contextMenu(menu, function() {\n    \tconsole.log('Quick! Before the menu appears!');\n    })); // attach menu to element\n\n```\n\n#### Context-sensitive menu items\n\nYou can use information from your context in menu names, simply specify a function for title which returns a string:\n\n```\nvar menu = [\n\t{\n\t\ttitle: function(d) {\n\t\t\treturn 'Delete circle '+d.circleName;\n\t\t},\n\t\taction: function(elm, d, i) {\n\t\t\t// delete it\n\t\t}\n\t},\n\t{\n\t\ttitle: function(d) {\n\t\t\treturn 'Item 2';\n\t\t},\n\t\taction: function(elm, d, i) {\n\t\t\t// do nothing interesting\n\t\t}\n\t}\n];\n\n// Menu shown is:\n\n[Delete Circle MyCircle]\n[Item 2]\n```\n\t\n#### Deleting Nodes Example\n\nThe following example shows how to add a right click menu to a tree diagram:\n\nhttp://plnkr.co/edit/bDBe0xGX1mCLzqYGOqOS?p=info\n",
+  "readmeFilename": "README.md",
+  "_id": "d3-context-menu@0.0.1",
+  "dist": {
+    "shasum": "b0fba0a0e99defa15947f3d19c8a50c72b90b36c"
+  },
+  "_from": "d3-context-menu@",
+  "_resolved": "https://registry.npmjs.org/d3-context-menu/-/d3-context-menu-0.0.1.tgz"
+}

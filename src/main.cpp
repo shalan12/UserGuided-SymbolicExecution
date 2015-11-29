@@ -45,12 +45,17 @@ int communicate(ServerSocket* new_sock)
         bool isParsed = reader.parse(message, val);
         if (isParsed)
         {
-            std::cout << "isBFS : " << val["isBFS"].asString() << "\n";
-            std::cout << "branch : " << val["branch"].asString() << "\n";
-            std::cout << "steps : " << val["steps"].asString() << "\n";
             std::cout << "prevId : " << val["prevId"].asString() << "\n";
             std::cout << "id : " << val["id"].asString() << "\n";
             std::cout << "proceed? : \n";
+            if(val["exclude"].asString())
+            {
+               threads_sym[id].second->exclude(stoi(val["prevId"].asString()));
+               continue;
+            }
+            std::cout << "isBFS : " << val["isBFS"].asString() << "\n";
+            std::cout << "branch : " << val["branch"].asString() << "\n";
+            std::cout << "steps : " << val["steps"].asString() << "\n";
             #ifdef DEBUG
               int abc;
               std::cin >> abc;

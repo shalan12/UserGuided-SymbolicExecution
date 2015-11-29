@@ -315,6 +315,8 @@ void SymbolicExecutor::symbolicExecute()
 
 			SymbolicTreeNode* symTreeNode = deque.front();
 			deque.pop_front();
+			if (excludedBlocks[currObject] != excludedBlocks.end())
+				continue;
 
 			std::vector<SymbolicTreeNode*> new_blocks = executeBasicBlock(symTreeNode);		
 
@@ -458,6 +460,11 @@ void SymbolicExecutor::execute(bool isbfs, int stps, int d, int prev)
 
 	auto function = module->getFunction("_Z7notmainii");
 	executeFunction(function);
+}
+
+void SymbolicExecutor::exclude(std::string id)
+{
+	excludedNodes[BlockStates[stoi(id)]] = true;
 }
 
 /*
