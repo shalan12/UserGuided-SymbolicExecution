@@ -52,12 +52,15 @@ struct SymbolicTreeNode {
 class SymbolicExecutor
 {
   private:
+    unsigned int minLineNumber;
+    unsigned int maxLineNumber;
+    std::vector<llvm::BasicBlock*> blocksArr; 
     std::mutex mtx;
     std::condition_variable cv;
     ServerSocket * socket;
     std::string filename;
     std::map<int, SymbolicTreeNode* > BlockStates;
-    std::map<int, bool > excludedNodes;
+    std::map<llvm::BasicBlock*, bool > excludedNodes;
     SymbolicTreeNode * rootNode;
     bool isBFS;
     int dir,steps,prevId;
@@ -91,7 +94,7 @@ class SymbolicExecutor
   */
   void executeFunction(llvm::Function* function);
   void proceed(bool isbfs, int stps, int d, int prev);
-  void exclude(std::string id);
+  void exclude(std::string id, bool);
 
 
   void execute(bool isbfs, int stps, int d, int prev);
