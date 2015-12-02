@@ -1,7 +1,10 @@
 /* --------------------- Symbolic Tree --------------------- */
-var margin = {top: 20, right: 120, bottom: 20, left: 120},
-width = 960 - margin.right - margin.left,
-height = 500 - margin.top - margin.bottom;
+              var margin = { top: 40, right: 120, bottom: 20, left: 250 };
+              var width = 960 - margin.right - margin.left;
+              var height = 500 - margin.top - margin.bottom;
+/*var margin = {top: 200.5, right: 120, bottom: 20, left: 275},
+width = 1040,//960 - margin.right - margin.left,
+height = 1040;//margin.top - margin.bottom;*/
 var i = 0,
 duration = 750,
 root;
@@ -10,8 +13,8 @@ var tree = d3.layout.tree()
 var diagonal = d3.svg.diagonal()
 .projection(function(d) { return [d.x, d.y]; });
 var svg = d3.select("#graph").append("svg")
-.attr("width", width + margin.right + margin.left)
-.attr("height", height + margin.top + margin.bottom)
+.attr("width", width+ margin.right + margin.left)
+.attr("height", height+ margin.top + margin.bottom)
 .append("g")
 .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 var treeData = [];
@@ -32,6 +35,10 @@ var contextmenu = [
                             {
                                 var curr = todo.pop();
                                 d3.select("#name"+curr.node).style("fill", "grey");
+                                for (var line = curr.startLine; line <= curr.endLine; line++)
+                                {
+                                    document.getElementById(line).style.backgroundColor = 'red';
+                                }   
                                 d3.select("#name"+curr.node).on('contextmenu', function(d, i){
                                     console.log("Don't do anything");
                                 });
@@ -41,6 +48,7 @@ var contextmenu = [
                                 if(curr.children)
                                     todo = todo.concat(curr.children);
                             }
+
                     });
                 }
             },
@@ -51,7 +59,7 @@ var contextmenu = [
                     console.log('The data for this circle is: ' + d);*/
                     if(contextMenuShowing) {
                         //d3.event.preventDefault();
-                        d3.select(".menu").remove();
+                        d3.select("#formmenu").remove();
                         contextMenuShowing = false;
                     }
                     else 
@@ -60,13 +68,14 @@ var contextmenu = [
                         d3.event.preventDefault();
                         contextMenuShowing = true;
                         datum = d3_target.datum();
-                        menu = d3.select("body")
+                        menu = d3.select("#graph")
                         .append("div")
-                        .attr("class", "menu")
-                        .style("left", d.x+300 +"px")
-                        .style("top", d.y+200 +"px");
+                        .attr("class", "form-horizontal form-group")
+                        .attr("id", "formmenu")
+                        .style("margin-left", d.x+50 +"px")
+                        .style("margin-top", -500+d.y+50 +"px");
                         menu.html(
-                                '<form id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
+                                '<form class=\'form-group\' id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
                                 "Number of steps to explore:<br>" +
                                     "<input type='text' name='steps'>" +
                                     "<br>" +
@@ -120,44 +129,7 @@ function update(source) {
         }
     ))
     .on('contextmenu', d3.contextMenu(contextmenu));
-    
-    /*function(d, i){
-        if(contextMenuShowing) {
-            d3.event.preventDefault();
-            d3.select(".menu").remove();
-            contextMenuShowing = false;
-        }
-        else 
-        {
-            d3_target = d3.select(d3.event.target);
-            d3.event.preventDefault();
-            contextMenuShowing = true;
-            datum = d3_target.datum();
-            menu = d3.select("body")
-            .append("div")
-            .attr("class", "menu")
-            .style("left", d.x+150 +"px")
-            .style("top", d.y+150 +"px");
-            menu.html(
-                    '<form id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
-                    "Number of steps to explore:<br>" +
-                        "<input type='text' name='steps'>" +
-                        "<br>" +
-                        "<p>Explore by: </p>" + 
-                        "<input type='radio' name='explore' value='1'> BFS" +
-                        "<br>" +
-                        "<input type='radio' name='explore' value='0'> DFS" +
-                        "<br>" + 
-                        "<p>Select Branch</p>" +
-                        "<input type='radio' name='branch' value='0'> Left" +
-                        "<br>" +
-                        "<input type='radio' name='branch' value='1'> Right" +
-                        "<br><br>" +
-                        "<input type='submit' value='Submit'>" +
 
-                    "</form>");
-        }
-    });*/
     nodeEnter.append("text")
     .attr("y", function(d) { return d.children ? -18 : 18; })
     .attr("dy", ".35em")
@@ -229,11 +201,11 @@ function update(source) {
 function updateGraph()
 {
     root = treeData[0]
-    root.x0 = height / 2;
+    root.x0 = height/2;
     root.y0 = 0;
     update(root);
 
-    d3.select(self.frameElement).style("height", "500px");
+    d3.select(self.frameElement).style("height", "800px");
 }
 
 // Toggle children on click.
@@ -251,6 +223,20 @@ function click(d) {
     getNext(d.node);
 }
 
+function excludeStatement(startLine)
+{
+    $.ajax({
+        url: "/exclude",
+        data: {"isNode": false, "startLine": startLine} 
+    }).done(function(resp){
+        var start = resp.startLine,
+        end = resp.endLine;
+        for (var line = start; line <= end; line++)
+        {
+            document.getElementById(line).style.backgroundColor = 'red';
+        }  
+    });
+}
 
 function addNode(nodeObj)
 {
@@ -310,7 +296,7 @@ function handleMenuOptions(nodeID)
         console.log(branchSelected);
         console.log(explore);
         getNext(nodeID);
-        d3.select('.menu').remove();
+        d3.select('#formmenu').remove();
         contextMenuShowing = false;
     }
     catch(e){
@@ -326,15 +312,16 @@ function handleMenuOptions(nodeID)
 /* ---------------- Upload File and Code --------------------- */
 
 var _submit = document.getElementById('_submit'), 
-_file = document.getElementById('_file'), 
-_progress = document.getElementById('_progress'); 
+_file = document.getElementById('_file');
+//_progress = document.getElementById('_progress'); 
 var data = new FormData();
 function loaded(evt) {
     var fileString = evt.target.result.replace(/\r/g, "\n");
     var splitted = fileString.split("\n");
     for (var i = 1; i <= splitted.length; i++)
     {
-        $("#codedata").append('<pre id = "'+i+'">'+ i + "." + splitted[i-1] + '</pre>');  
+        document.getElementById("filecode").style.display = "block";
+        $("#codedata").append('<pre  onclick="excludeStatement(\''+i+'\')"  id = "'+i+'">'+ i + "." + splitted[i-1] + '</pre>');  
     }
         
 }
@@ -356,12 +343,14 @@ var upload = function(){
                 };
             }
             console.log(resp.status + ': ' + resp.data);
+            $("#codeinstructions").append('<p class="panel-body">Upload Successful!</p>');
         }
     };
 
-    request.upload.addEventListener('progress', function(e){
+    /*request.upload.addEventListener('progress', function(e){
       _progress.style.width = Math.ceil(e.loaded/e.total) * 100 + '%';
-    }, false);
+    }, false*/
+
 
     request.open('POST', 'upload');
     request.send(data);

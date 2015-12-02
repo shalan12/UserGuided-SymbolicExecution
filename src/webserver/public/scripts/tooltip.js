@@ -8,7 +8,7 @@ d3.helper.tooltip = function(accessor){
             // Clean up lost tooltips
             d3.select('body').selectAll('div.tooltip').remove();
             // Append tooltip
-            tooltipDiv = d3.select('body').append('div').attr('class', 'tooltip');
+            tooltipDiv = d3.select('body').append('div').attr('class', 'tooltip tooltip-arrow');
             var absoluteMousePos = d3.mouse(bodyNode);
             tooltipDiv.style('left', (absoluteMousePos[0] + 10)+'px')
                 .style('top', (absoluteMousePos[1] - 15)+'px')

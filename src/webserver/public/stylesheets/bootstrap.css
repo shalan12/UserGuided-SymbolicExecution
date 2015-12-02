@@ -1564,14 +1564,14 @@ kbd kbd {
 pre {
   display: block;
   padding: 10px;
-  margin: 0 0 10.5px;
+  margin: 0 0 0px;
   font-size: 14px;
   line-height: 1.42857143;
   word-break: break-all;
   word-wrap: break-word;
   color: #333333;
   background-color: #f5f5f5;
-  border: 1px solid #cccccc;
+  border: 0px solid #cccccc;
   border-radius: 0;
 }
 pre code {
@@ -1604,7 +1604,7 @@ pre code {
 }
 @media (min-width: 1200px) {
   .container {
-    width: 1170px;
+    width: 1800px;
   }
 }
 .container-fluid {
@@ -6842,7 +6842,9 @@ table > tfoot > tr > td,
 .table > tfoot > tr > td {
   border-color: transparent;
 }
-input,
+input {
+  color: #2b3e50;
+}
 textarea {
   color: #2b3e50;
 }
@@ -6994,4 +6996,79 @@ a.list-group-item-danger.active:focus {
 }
 .popover-title {
   border: none;
+}
+/*.tooltip{ background-color:rgba(68,136,187,0.5);
+  margin: 10px;
+  height: 200px;
+  width: 450px;
+  padding-left: 10px; 
+  padding-top: 10px;
+  -webkit-border-radius:10px;
+  -moz-border-radius:10px;
+  border-radius:10px;
+}*/
+.node {
+  cursor: pointer;http://localhost:3000/
+}
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 3px;
+}
+.node text {
+  font: 12px sans-serif;
+  color: #ebebeb;
+}
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+}
+    .d3-tooltip{ background-color:rgba(68,136,187,0.5);
+        margin: 10px;
+        height: 200px;
+        width: 450px;
+        padding-left: 10px; 
+        padding-top: 10px;
+      -webkit-border-radius:10px;
+      -moz-border-radius:10px;
+      border-radius:10px;
+    }
+.d3-context-menu {
+  position: absolute;
+  display: none;
+  background-color: #f2f2f2;
+  border-radius: 4px;
+
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  min-width: 150px;
+  border: 1px solid #d4d4d4;
+
+  z-index:1200;
+}
+
+.d3-context-menu ul {
+  list-style-type: none;
+  margin: 4px 0px;
+  padding: 0px;
+  cursor: default;
+}
+
+.d3-context-menu ul li {
+  padding: 4px 16px;
+}
+
+.d3-context-menu ul li:hover {
+  background-color: #4677f8;
+  color: #fefefe;
+}
+
+
+.bg-dark {
+  background-color: #2B3E50;
+}
+
+input[type="file"] {
+  color: #fff;
 }

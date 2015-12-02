@@ -1,36 +1,91 @@
 <!DOCTYPE html>
 <html>
+	<meta charset="utf-8">
 	<head>
-		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.1/d3.min.js"></script>
+	   	<script data-require="d3@3.4.6" data-semver="3.4.6" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.6/d3.min.js"></script>
+	   	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+		<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.1/d3.min.js"></script>-->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     	<script type="text/javascript" src="../scripts/tooltip.js"></script>
     	<script type="text/javascript" src="scripts/d3-context-menu/js/d3-context-menu.js"></script>
-    	<link href="../stylesheets/style1.css" rel="stylesheet">		
-    	<title>Senior Year Project</title>
+	   	<link href="../stylesheets/bootstrap.css" rel="stylesheet">	
+	 	<title>Senior Year Project</title>
 	</head>
-	
 
-	<body>
-		<h1>Framework for Symbolic Execution of LLVM Bitcode</h1>
-		<h2>Symbolic Map</h2>
-	    <div class='container'>
-	        <p>
-	           	Select Your Code File: <input type='file' id='_file'> <input type='button' id='_submit' value='Upload!'>
-	        </p>
-	        <div class='progress_outer'>
-	           	<div id='_progress' class='progress'></div>
+<body>
+	<div class= "navbar navbar-default navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+	          <a class="navbar-brand" href="">Symbolic Execution</a>
+	        </div>
+	        <div class="navbar-collapse collapse" id="navbar-main">
+	          	<ul class="nav navbar-nav navbar-right">
+	          		<li>
+	              		<a href="">Options</a>
+	            	</li>
+	            	<li>
+	            		<a hre="">Feedback</a>
+	            	</li>
+	            	<li>
+	              		<a href="">Help</a>
+	            	</li>
+	          	</ul>
 	        </div>
 	    </div>
-		<div class="codecontainer">
-			<div class="codefile">
-				<p><b>Code:</b></p>
-				<p id="codedata"><pre></pre></p>
-			</div>
-		</div>
-		<div id="graph"></div>	
-		<button id="Step" onclick="getNext()">Begin Symbolic Execution</button>
-		<script type="text/javascript" src="../scripts/graph.js"></script>
+    </div>
+    <div class="container">
 
-	</body>
+	    	<div class="page-header" id="banner">
+	        	<div class="row">
+	          		<div class="col-lg-8 col-md-7 col-sm-6">
+	            		<h1>Userguided Symbolic Execution</h1>
+	            		<p class="lead">A Framework for Symbolic Execution of LLVM Bitcode</p>
+	          		</div>
+	        	</div>
+			</div>
+	</div>
+	<div class="container-fluid">
+			<div class="row">
+			    <div class="col-md-2">
+			        <div class="panel">
+				        <div class="panel-body">
+				        	<p class="lead" href="#features">Features:</p>
+				            <a class="list-group-item" href="#models">Models</a>
+				            <a class="list-group-item" href="#focus">Focus</a>
+				            <a class="list-group-item" href="#exclusion">Exclusion</a>
+				            <a class="list-group-item" href="#abstraction">Abstraction</a>
+			        	</div>
+			        </div>
+			    </div>
+			    <div class="col-md-7">
+			    	<button class="btn btn-default" id="Step" onclick="getNext()">Begin Symbolic Execution</button>
+			    	<div id="graph"></div>
+			    
+			    </div>
+			    <div class="col-md-3">
+					<div class="panel" id="codeinstructions">
+						<p class="panel-body lead">Instructions:</p>
+						<p class="panel-body">Please upload your code here. Currently, only cpp files can be processed.</p>
+						<p class="panel-body">Select Your Code File:</p>
+						<div class="panel-body">
+							<input type='file' id='_file'>
+						</div>
+						<div class="panel-body">
+							<input class="btn btn-default bg-dark" type='button' id='_submit' value='Upload!'>
+						</div>
+					</div>
+					<div class="panel" id="filecode" style="display:none">
+						<div class="code">
+							<div id="codedata">
+								<p class="panel-body lead">Code:</p>
+							</div>
+						</div>
+
+					</div>
+				</div>	 
+			</div>
+	</div>
+
+	<script type="text/javascript" src="../scripts/graph.js"></script>
+</body>
 </html>
