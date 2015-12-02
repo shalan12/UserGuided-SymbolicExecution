@@ -50,7 +50,7 @@ int communicate(ServerSocket* new_sock)
             std::cout << "proceed? : \n";
             if(val["exclude"].asString() != "")
             {
-               threads_sym[val["id"].asString()].second->exclude(val["exclude"].asString());
+               threads_sym[val["id"].asString()].second->exclude(val["exclude"].asString(), stoi(val["isNode"].asString()));
                continue;
             }
             std::cout << "isBFS : " << val["isBFS"].asString() << "\n";

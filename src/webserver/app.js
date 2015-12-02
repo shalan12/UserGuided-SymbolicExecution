@@ -224,7 +224,7 @@ app.get('/next',function(req,res){
 });
 app.get('/exclude', function(req,res){
   query = req.query;
-  toSendToExecutor = {"id":map[req.cookies.sessionid], "exclude":query["nodeid"]};
+  toSendToExecutor = {"id":map[req.cookies.sessionid], "exclude":query["nodeid"], "isNode":"1"};
   client.write(JSON.stringify(toSendToExecutor));
   res.send({});
 });

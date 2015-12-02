@@ -327,7 +327,7 @@ void SymbolicExecutor::symbolicExecute()
 
 			SymbolicTreeNode* symTreeNode = deque.front();
 			deque.pop_front();
-			if (excludedNodes.find(symTreeNode->id) != excludedNodes.end())
+			if (excludedNodes.find(symTreeNode->block) != excludedNodes.end())
 				continue;
 			if (symTreeNode->isExecuted)
 			{
@@ -432,6 +432,24 @@ void SymbolicExecutor::symbolicExecute()
 
 void SymbolicExecutor::executeFunction(llvm::Function* function)
 {
+	minLineNumber = std::numeric_limits<unsigned int>::max();
+	maxLineNumber = 0;
+
+	for (llvm::Function::iterator b = function->begin(), be = function->end(); b != be; ++b)
+	{
+		for (auto instruction = b->begin(), e = b->end(); instruction != e; ++instruction)
+		{
+			blocksArr.push_back(b);
+			if (llvm::MDNode *N = instruction->getMetadata("dbg")) 
+			{  
+				llvm::DILocation Loc(N);
+				unsigned Line = Loc.getLineNumber();
+				minLineNumber = std::min(minLineNumber,Line);
+				maxLineNumber = std::max(maxLineNumber,Line);
+			}
+		}
+	}
+
 	auto rootState = new ProgramState(function->args());
 	auto rootBlock = &function->getEntryBlock();
 	rootNode = new SymbolicTreeNode(rootBlock, rootState, -1);	
@@ -497,9 +515,45 @@ void SymbolicExecutor::execute(bool isbfs, int stps, int d, int prev)
 	executeFunction(function);
 }
 
-void SymbolicExecutor::exclude(std::string id)
-{
-	excludedNodes[stoi(id)] = true;
+void SymbolicExecutor::exclude(std::string inp, bool isNode)
+{ 
+	int input = stoi(inp);
+	unsigned int minLine = input;
+	unsigned int maxLine = input;
+	if (!isNode)
+	{
+		auto b = blocksArr[input-minLineNumber];
+		for (auto instruction = b->begin(), e = b->end(); instruction != e; ++instruction)
+		{
+			if (llvm::MDNode *N = instruction->getMetadata("dbg")) 
+			{  
+				llvm::DILocation Loc(N);
+				unsigned Line = Loc.getLineNumber();
+				minLine = std::min(minLine,Line);
+				maxLine = std::max(maxLine,Line);
+			}
+		}
+
+		excludedNodes[b] = true;
+
+		Json::Value msg;
+		msg["min"] = Json::Value(minLine);
+		msg["max"] = Json::Value(maxLine);
+		Json::FastWriter fastWriter;
+		std::string output = fastWriter.write(msg);
+		std::cout << "sending this: " << output << std::endl;
+		if (socket)
+			(*socket) << output;
+
+		std::cout << "going to sleep" << std::endl;
+		std::unique_lock<std::mutex> lck(mtx);
+		cv.wait(lck);
+		lck.unlock();
+		std::cout << "wakeup!! " << std::endl;
+	}
+	else
+		excludedNodes[BlockStates[input]->block] = true;
+
 }
 
 /*
