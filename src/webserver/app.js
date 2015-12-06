@@ -44,7 +44,8 @@ var lodash = require('lodash');
 
 var map = []; // contains sessionid->filename,lastPinged
 var toSend = [];
-
+var MSG_TYPE_EXCLUDENODE = 100;
+var MSG_TYPE_EXPANDNODE = 200;
 /////////////////////////////////////
 ////////////UTILS///////////////////
 ///////////////////////////////////
@@ -74,6 +75,10 @@ function getRandomInt()
   }while (!found);
   return randomNumber;
 }
+function isPingQuery(query)
+{
+  return (query['isPing'].valueOf() != 'false');
+}
 ////////////////////////////////////
 //////////END-UTILS////////////////
 //////////////////////////////////
@@ -96,17 +101,26 @@ client.on('data',function(data)
     }
     else
     {
-      toSend[data[0].fileId] = {'nodes':Array(),'updated':true, 'completed':true};
-      var toSendToUser = {}
-      for(var i = 0; i < data.length; i++)
+      if(data["type"] == MSG_TYPE_EXPANDNODE)
       {
-        toSendToUser["node"] = data[i]["node"];
-        toSendToUser["parent"] = data[i]["parent"];
-        toSendToUser["text"] = data[i]["text"];
-        toSendToUser["constraints"] = data[i]["constraints"];
-        toSendToUser["startLine"] = data[i]["startLine"];
-        toSendToUser["endLine"] = data[i]["endLine"];
-        toSend[data[0].fileId]['nodes'].push(lodash.cloneDeep(toSendToUser));
+        var fileid = data.fileId;
+        toSend[fileid] = {'nodes':Array(),'updated':true, 'completed':true};
+        var toSendToUser = {}
+        data = data.nodes;
+        for(var i = 0; i < data.length; i++)
+        {
+          toSendToUser["node"] = data[i]["node"];
+          toSendToUser["parent"] = data[i]["parent"];
+          toSendToUser["text"] = data[i]["text"];
+          toSendToUser["constraints"] = data[i]["constraints"];
+          toSendToUser["startLine"] = data[i]["startLine"];
+          toSendToUser["endLine"] = data[i]["endLine"];
+          toSend[fileid]['nodes'].push(lodash.cloneDeep(toSendToUser));
+        }
+      }
+      else if (data["type"] == MSG_TYPE_EXCLUDENODE)
+      {
+        toSend[data.fileId] = {"minLine": data.minLine, "maxLine": data.maxLine};
       }
     }  
    
@@ -198,12 +212,7 @@ app.post('/upload',function(req,res){
 app.get('/next',function(req,res){
   fileId = map[req.cookies.sessionid];
   query = req.query;
-  console.log(query['isPing'].valueOf() == 'false');
-  if(!toSend[fileId])
-  {
-    toSend[fileId] = {'nodes':Array(),'updated':false, 'completed':false};
-  }
-  if(query['isPing'].valueOf() == 'false')
+  if(!isPingQuery(query))
   {
     toSendToExecutor = {};
     var fileId = map[req.cookies.sessionid]; 
@@ -216,17 +225,42 @@ app.get('/next',function(req,res){
     console.log(toSendToExecutor);
     client.write(JSON.stringify(toSendToExecutor));
   }
-  console.log("sending to user : " + JSON.stringify(toSend[fileId]));
-  sendCopy = lodash.cloneDeep(toSend[fileId]);
-  toSend[fileId]["updated"] = false;
-  toSend[fileId]["completed"] = false;
-  res.send(sendCopy);
+  //console.log("sending to user : " + JSON.stringify(toSend[fileId]));
+  if(toSend[fileId])
+  {
+    //sendCopy = lodash.cloneDeep(toSend[fileId]);
+    res.send(toSend[fileId]);
+    toSend[fileId] = null;
+  }
+  else
+  {
+    res.send({"updated":false,"completed":false});
+  }
+  
 });
 app.get('/exclude', function(req,res){
   query = req.query;
-  toSendToExecutor = {"id":map[req.cookies.sessionid], "exclude":query["nodeid"], "isNode":"1"};
-  client.write(JSON.stringify(toSendToExecutor));
-  res.send({});
+  fileId = map[req.cookies.sessionid];
+
+  if(!isPingQuery(query))
+  {
+    if(query["lineno"]) 
+      toSendToExecutor = {"id":fileId, "exclude":query["lineno"], "isNode":"0"};
+    else
+    {
+      toSendToExecutor = {"id":fileId, "exclude":query["nodeid"], "isNode":"1"};
+      //temp - because ubaid not replying in this case
+    }
+    res.send({});
+    client.write(JSON.stringify(toSendToExecutor));
+
+  }
+  if(toSend[fileId])
+  {
+      res.send(toSend[fileId]);
+      console.log("sending" + JSON.stringify(toSend[fileId]))
+      toSend[fileId] = null;
+  }
 });
 server = http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

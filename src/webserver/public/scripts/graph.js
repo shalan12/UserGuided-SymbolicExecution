@@ -27,7 +27,7 @@ var contextmenu = [
                     //console.log(elm + " " + d.node + " " + i);
                     $.ajax({
                         url: "/exclude",
-                        data: {"nodeid":d.node} 
+                        data: {"nodeid":d.node, "isPing":false}  // temp -- isPing should be false at first, then should keep pinging until EXPECTED reply received
                     }).done(function(){
                             console.log(d3.select("#name"+d.node).style("fill", "grey"));
                             var todo = [d];
@@ -223,21 +223,29 @@ function click(d) {
     getNext(d.node);
 }
 
-function excludeStatement(startLine)
+function excludeStatement(startLine,isPing)
 {
+    isPing = isPing || false;
     $.ajax({
         url: "/exclude",
-        data: {"isNode": false, "startLine": startLine} 
+        data: {"lineno": startLine, "isPing":isPing} 
     }).done(function(resp){
-        var start = resp.startLine,
-        end = resp.endLine;
-        for (var line = start; line <= end; line++)
+        if (resp.minLine !== undefined)
         {
-            document.getElementById(line).style.backgroundColor = 'red';
-        }  
+            var start = resp.minLine,
+            end = resp.maxLine;
+            for (var line = start; line <= end; line++)
+            {
+                document.getElementById(line).style.backgroundColor = 'red';
+            } 
+        } 
+        else setTimeout(excludeStatement(startLine,true), 1000);
     });
 }
-
+/* var exclusionMenu = {
+                title: 'Exclude',
+                action: excludeStatement(line);
+            }*/
 function addNode(nodeObj)
 {
     var node = {"node": nodeObj.node, "text": nodeObj["text"], "parent": nodeObj["parent"], "children": [], "constraints": nodeObj["constraints"], 
@@ -321,7 +329,7 @@ function loaded(evt) {
     for (var i = 1; i <= splitted.length; i++)
     {
         document.getElementById("filecode").style.display = "block";
-        $("#codedata").append('<pre  onclick="excludeStatement(\''+i+'\')"  id = "'+i+'">'+ i + "." + splitted[i-1] + '</pre>');  
+        $("#codedata").append('<pre  onclick="excludeStatement(\''+i+'\')" id = "'+i+'">'+ i + "." + splitted[i-1] + '</pre>');  
     }
         
 }
@@ -347,7 +355,7 @@ var upload = function(){
         }
     };
 
-    /*request.upload.addEventListener('progress', function(e){
+    /*request.upload.addEventListener('progress', function(e){menu=
       _progress.style.width = Math.ceil(e.loaded/e.total) * 100 + '%';
     }, false*/
 

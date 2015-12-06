@@ -2,6 +2,7 @@
 #include "jsoncpp/dist/json/json.h"
 #include "utils.h"
 #include <fstream>
+#include "messagetypes.h"
 
 
 #include <llvm/ADT/StringRef.h>
@@ -267,6 +268,9 @@ void SymbolicExecutor::symbolicExecute()
 	while (1)
 	{
 		Json::Value toSend;
+		toSend["type"] = Json::Value(MSG_TYPE_EXPANDNODE);
+		toSend["fileId"] = Json::Value(filename.c_str());
+
 		int currObject = 0;
 		#ifdef DEBUG
 			std::cout << "prev id: "<< prevId << "\n";
@@ -357,7 +361,6 @@ void SymbolicExecutor::symbolicExecute()
 			BlockStates[symTreeNode->id]=symTreeNode;
 			
 			Json::Value msg;
-			msg["fileId"] = Json::Value(filename.c_str());
 			msg["node"] = Json::Value(symTreeNode->id);
 			msg["parent"] = Json::Value(symTreeNode->prevId);
 			msg["text"] = Json::Value(symTreeNode->state->toString());
@@ -366,7 +369,7 @@ void SymbolicExecutor::symbolicExecute()
 			msg["startLine"] = Json::Value(symTreeNode->minLineNumber);
 			msg["endLine"] = Json::Value(symTreeNode->maxLineNumber);
 			
-			toSend[currObject++] = msg;
+			toSend["nodes"][currObject++] = msg;
 
 			
 			for (int j = 0; j < new_blocks.size(); j++)
@@ -537,8 +540,10 @@ void SymbolicExecutor::exclude(std::string inp, bool isNode)
 		excludedNodes[b] = true;
 
 		Json::Value msg;
-		msg["min"] = Json::Value(minLine);
-		msg["max"] = Json::Value(maxLine);
+		msg["fileId"] = Json::Value(filename.c_str());
+		msg["type"] = Json::Value(MSG_TYPE_EXCLUDENODE);
+		msg["minLine"] = Json::Value(minLine);
+		msg["maxLine"] = Json::Value(maxLine);
 		Json::FastWriter fastWriter;
 		std::string output = fastWriter.write(msg);
 		std::cout << "sending this: " << output << std::endl;
