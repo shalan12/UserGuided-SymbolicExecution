@@ -70,11 +70,12 @@ var contextmenu = [
                         datum = d3_target.datum();
                         menu = d3.select("#graph")
                         .append("div")
-                        .attr("class", "form-horizontal form-group")
+                        .attr("class", "well bs-component col-lg-3")
                         .attr("id", "formmenu")
-                        .style("margin-left", d.x+50 +"px")
+                        .style("margin-left", d.x+120 +"px")
                         .style("margin-top", -500+d.y+50 +"px");
                         menu.html(
+                                '<legend>Options:</legend>'+
                                 '<form class=\'form-group\' id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
                                 "Number of steps to explore:<br>" +
                                     "<input type='text' name='steps'>" +
@@ -135,7 +136,8 @@ function update(source) {
     .attr("dy", ".35em")
     .attr("text-anchor", "middle")
     .text(function(d) { return d.node; })
-    .style("fill-opacity", 1e-6);
+    .style("fill-opacity", 1e-6)
+    .style("color", "#ebebeb");
 
 
 
@@ -242,10 +244,10 @@ function excludeStatement(startLine,isPing)
         else setTimeout(excludeStatement(startLine,true), 1000);
     });
 }
-/* var exclusionMenu = {
+/*var exclusionMenu = {
                 title: 'Exclude',
                 action: excludeStatement(line);
-            }*/
+}*/
 function addNode(nodeObj)
 {
     var node = {"node": nodeObj.node, "text": nodeObj["text"], "parent": nodeObj["parent"], "children": [], "constraints": nodeObj["constraints"], 
@@ -267,7 +269,7 @@ function addNode(nodeObj)
     updateGraph();
     for (var line = node.startLine; line <= node.endLine; line++)
     {
-        document.getElementById(line).style.backgroundColor = 'yellow';
+        document.getElementById(line).style.backgroundColor = 'gold';
     }
 }
 /* ---------------- Step To Get Next Node --------------------------------------- */
@@ -329,7 +331,7 @@ function loaded(evt) {
     for (var i = 1; i <= splitted.length; i++)
     {
         document.getElementById("filecode").style.display = "block";
-        $("#codedata").append('<pre  onclick="excludeStatement(\''+i+'\')" id = "'+i+'">'+ i + "." + splitted[i-1] + '</pre>');  
+        $("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
     }
         
 }

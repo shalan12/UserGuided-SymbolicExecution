@@ -7024,16 +7024,16 @@ a.list-group-item-danger.active:focus {
   stroke: #ccc;
   stroke-width: 2px;
 }
-    .d3-tooltip{ background-color:rgba(68,136,187,0.5);
+.d3-tooltip{ background-color:rgba(68,136,187,0.5);
         margin: 10px;
         height: 200px;
-        width: 450px;
+        width: 550px;
         padding-left: 10px; 
         padding-top: 10px;
       -webkit-border-radius:10px;
       -moz-border-radius:10px;
       border-radius:10px;
-    }
+}
 .d3-context-menu {
   position: absolute;
   display: none;
