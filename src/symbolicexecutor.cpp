@@ -164,7 +164,8 @@ std::vector<SymbolicTreeNode*>
 				first->constraints.push_back(std::make_pair(cond,"true"));
 				first->addCondition(state->get(cond)->toString());
 				std::cout << "ADDING CONDITION : " 
-						 << state->get(cond)->toString() << std::endl;
+						 << state->get(cond)->toString() << std::endl;	
+				// adding stuff for z3	 
 				children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first, pid));
 			}
 			int numSuccesors = binst->getNumSuccessors();
