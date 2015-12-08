@@ -29,6 +29,6 @@ class ProgramState
   std::map<llvm::Value*, ExpressionTree*> getMap();
   std::string toString();
   void printZ3Variables();
-  void Z3solver();
+  bool Z3solver();
 };
 #endif

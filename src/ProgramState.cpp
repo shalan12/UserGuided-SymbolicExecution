@@ -105,7 +105,7 @@ void ProgramState::printZ3Variables()
 	}
 }
 
-void ProgramState::Z3solver()
+bool ProgramState::Z3solver()
 { 
 	z3::solver s(c);
 	#ifdef DEBUG
@@ -148,4 +148,12 @@ void ProgramState::Z3solver()
 	std::cout << s.check() << "\n";
 	z3::model m = s.get_model();
 	std::cout << m << std::endl;
+	if (s.check() == z3::sat)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }

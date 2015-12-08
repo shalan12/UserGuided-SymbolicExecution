@@ -165,8 +165,13 @@ std::vector<SymbolicTreeNode*>
 				first->addCondition(state->get(cond)->toString());
 				std::cout << "ADDING CONDITION : " 
 						 << state->get(cond)->toString() << std::endl;	
-				// adding stuff for z3	 
-				children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first, pid));
+				// adding stuff for z3
+				first->printZ3Variables();	 
+				bool satisfiableFirst = first->Z3solver();
+				if (satisfiableFirst)
+				{
+					children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first, pid));
+				}	
 			}
 			int numSuccesors = binst->getNumSuccessors();
 			if(numSuccesors == 2 && toAddFalse)
@@ -174,7 +179,12 @@ std::vector<SymbolicTreeNode*>
 				ProgramState* second = new ProgramState(*state);
 				second->constraints.push_back(std::make_pair(cond,"false"));
 				second->addCondition("not " + state->get(cond)->toString());
-				children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), second, pid));
+				second->printZ3Variables();
+				bool satisfiableSecond = second->Z3solver();
+				if (satisfiableSecond)
+				{
+					children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), second, pid));
+				}
 			}
 		}
 		else children.push_back(new SymbolicTreeNode(binst->getSuccessor(0),state, pid));
