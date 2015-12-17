@@ -1,7 +1,7 @@
 #include "utils.h"
+#include <sstream>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/IR/Constants.h>
-
 std::string getString(llvm::Value* val)
 {
 	if(val == NULL)
@@ -20,3 +20,5 @@ int getInteger(llvm::Value* value)
 
     else throw std::invalid_argument("not a constant");
 }
+
+

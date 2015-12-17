@@ -11,6 +11,7 @@ class ProgramState
 {
   private:
   std::map<llvm::Value*, ExpressionTree*> map;
+  std::map<std::string, llvm::Value*> userVarMap;
   std::string pathCondition;
   static int instances;
   
@@ -25,6 +26,7 @@ class ProgramState
   void addCondition(std::string cond);
   
   void add(llvm::Value* value, ExpressionTree* exp);
+  void addUserVar(std::string, llvm::Value* val);
   ExpressionTree* get(llvm::Value * s);
   std::map<llvm::Value*, ExpressionTree*> getMap();
   std::string toString();

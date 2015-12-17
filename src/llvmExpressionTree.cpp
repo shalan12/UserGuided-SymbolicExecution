@@ -7,7 +7,7 @@
 #include <llvm/IR/LLVMContext.h>
 
 
-ExpressionTreeNode::ExpressionTreeNode(std::string data, llvm::Value* value)
+ExpressionTreeNode::ExpressionTreeNode(std::string data = "", llvm::Value* value = NULL)
 {
     this->data = data;
     this->value = value;
@@ -36,6 +36,7 @@ ExpressionTree::ExpressionTree(llvm::Value* value)
 {
     top = new ExpressionTreeNode(ExpressionTreeNode(*(e.top)));
 }*/
+
 
 bool ExpressionTree::isConstant()
 {
@@ -86,11 +87,39 @@ ExpressionTree::ExpressionTree(std::string op, llvm::Value* lhs, llvm::Value* rh
 
 }
 
+void ExpressionTree::constructTree(std::stringstream & iss, ExpressionTreeNode* node)
+{
+    if (!iss)
+        return;
+    std::string curr;
+    iss >> curr;
+    if (curr == "+" || curr == "-" || curr == "/" || curr == "*")
+    {
+        node->data = curr;
+        node->left = new ExpressionTreeNode();
+        node->right = new ExpressionTreeNode();
+        // set left and recurse
+        constructTree(iss, node->left);
+        constructTree(iss, node->right);
+    }
+    else
+    {
+        //set value using map in state.
+        node->value = userVarMap[curr];
+    }
+}
+
+ExpressionTree::ExpressionTree(std::string str, std::map<std::string, llvm::Value*> userVarMap)
+{
+    std::stringstream iss(str);
+    this->userVarMap = userVarMap;
+    constructTree(iss, top);   
+}
+
 int ExpressionTree::getInteger()
 {
     if(this->isConstant()) return ::getInteger(this->top->value);
     else throw std::invalid_argument("not a constant");
-
 }
 
 

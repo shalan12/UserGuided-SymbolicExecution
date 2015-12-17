@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <llvm/IR/Value.h>
+#include <sstream>
 
 
 class ExpressionTreeNode
@@ -25,14 +26,20 @@ class ExpressionTreeNode
 class ExpressionTree
 {
 private:
+    std::map<std::string, llvm::Value*> userVarMap;
     bool isConstant(llvm::Value* value);
     void getExpressionString(ExpressionTreeNode* node, std::stringstream& toReturn);
+    void constructTree(std::stringstream & iss, ExpressionTreeNode* node);
 
 public:
  
     ExpressionTreeNode* top;
-    ExpressionTree(){}
+    ExpressionTree()
+    {
+        top = NULL;
+    }
     ExpressionTree(llvm::Value* value);
+    ExpressionTree(std::string str, std::map<std::string, llvm::Value*> userVarMap);
     //ExpressionTree(const ExpressionTree & e);
     ExpressionTree(std::string op, ExpressionTree* lhs, ExpressionTree* rhs);
     ExpressionTree(std::string op, llvm::Value* lhs, llvm::Value* rhs);
@@ -41,7 +48,6 @@ public:
     llvm::Value* evaluate(llvm::Value* lhs, llvm::Value* rhs, std::string op);
     std::string toString();
     int compare(int value);
-    int compare(ExpressionTree* exp1);
- 
+    int compare(ExpressionTree* exp1); 
 };
 #endif
