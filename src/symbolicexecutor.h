@@ -16,7 +16,7 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Instructions.h>
 
-
+#include "jsoncpp/dist/json/json.h"
 
 #include <thread>
 #include <condition_variable>

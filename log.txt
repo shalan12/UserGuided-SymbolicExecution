@@ -14,6 +14,12 @@ State at this point ==
 ------------------i32 %b	 == 	i32 %b
 i32 %a	 == 	i32 %a
 
+<<<<<<< HEAD
+=======
+ user variables: 
+
+executing Allocate 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 : i32 1
@@ -27,6 +33,12 @@ State at this point ==
 ------------------i32 %b	 == 	i32 %b
 i32 %a	 == 	i32 %a
 
+<<<<<<< HEAD
+=======
+ user variables: 
+
+executing Allocate 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 : i32 1
@@ -40,6 +52,12 @@ State at this point ==
 ------------------i32 %b	 == 	i32 %b
 i32 %a	 == 	i32 %a
 
+<<<<<<< HEAD
+=======
+ user variables: 
+
+executing Allocate 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 : i32 %a
@@ -54,6 +72,12 @@ State at this point ==
 ------------------i32 %b	 == 	i32 %b
 i32 %a	 == 	i32 %a
 
+<<<<<<< HEAD
+=======
+ user variables: 
+
+executing Store 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 3
 operand # : 1 : !{i32* %1}
@@ -76,6 +100,10 @@ State at this point ==
 i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	i32 %a
 
+ user variables: 
+
+ variable name : -- a
+
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 : i32 %b
@@ -91,6 +119,13 @@ State at this point ==
 i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	i32 %a
 
+<<<<<<< HEAD
+=======
+ user variables: 
+a	 == 	i32 %a
+
+executing Store 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 3
 operand # : 1 : !{i32* %2}
@@ -114,6 +149,11 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	i32 %a
   %2 = alloca i32, align 4	 == 	i32 %b
 
+ user variables: 
+a	 == 	i32 %a
+
+ variable name : -- b
+
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 :   %1 = alloca i32, align 4
@@ -130,6 +170,14 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	i32 %a
   %2 = alloca i32, align 4	 == 	i32 %b
 
+<<<<<<< HEAD
+=======
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 :   %2 = alloca i32, align 4
@@ -147,6 +195,14 @@ i32 %a	 == 	i32 %a
   %2 = alloca i32, align 4	 == 	i32 %b
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
 
+<<<<<<< HEAD
+=======
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %3 = load i32* %1, align 4, !dbg !83
@@ -166,8 +222,18 @@ i32 %a	 == 	i32 %a
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
 
+<<<<<<< HEAD
 operand0 ==   %3 = load i32* %1, align 4, !dbg !83
 operand1 ==   %4 = load i32* %2, align 4, !dbg !83
+=======
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+executing ICmp 
+operand0 ==   %3 = load i32* %1, align 4, !dbg !19
+operand1 ==   %4 = load i32* %2, align 4, !dbg !19
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 lhs == i32 %a
 rhs == i32 %b
 state updated
@@ -227,6 +293,12 @@ i32 %a	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
 
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+ variable name : -- x
+
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 : i32 3
@@ -247,6 +319,15 @@ i32 %a	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
 
+<<<<<<< HEAD
+=======
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+x	 == 	  %x = alloca i32, align 4
+
+executing Store 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 : 
@@ -281,6 +362,15 @@ i32 %a	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
 
+<<<<<<< HEAD
+=======
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+x	 == 	i32 3
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %25 = load i32* %x, align 4, !dbg !98
@@ -303,7 +393,17 @@ i32 %a	 == 	i32 %a
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
   %25 = load i32* %x, align 4, !dbg !98	 == 	i32 3
 
+<<<<<<< HEAD
 operand0 ==   %25 = load i32* %x, align 4, !dbg !98
+=======
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+x	 == 	i32 3
+
+executing ICmp 
+operand0 ==   %20 = load i32* %x, align 4, !dbg !32
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 operand1 == i32 0
 lhs == i32 3
 rhs == i32 0
@@ -357,6 +457,15 @@ i32 %a	 == 	i32 %a
   %25 = load i32* %x, align 4, !dbg !98	 == 	i32 3
   %26 = icmp sgt i32 %25, 0, !dbg !98	 == 	i32 1
 
+<<<<<<< HEAD
+=======
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+x	 == 	i32 3
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %28 = load i32* %1, align 4, !dbg !100
@@ -381,6 +490,15 @@ i32 %a	 == 	i32 %a
   %26 = icmp sgt i32 %25, 0, !dbg !98	 == 	i32 1
   %28 = load i32* %1, align 4, !dbg !100	 == 	i32 %a
 
+<<<<<<< HEAD
+=======
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+x	 == 	i32 3
+
+executing Add 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 lhs not NULL
 rhs not NULL
 lhs: i32 %a
@@ -402,6 +520,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	i32 %a
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 3
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -410,6 +529,21 @@ i32 %a	 == 	i32 %a
   %28 = load i32* %1, align 4, !dbg !100	 == 	i32 %a
   %29 = add nsw i32 %28, 1, !dbg !100	 == 	(i32 %a+i32 1)
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	i32 %a
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(i32 %a+i32 1)
+
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+x	 == 	i32 3
+
+executing Store 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 :   %x = alloca i32, align 4
@@ -426,6 +560,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(i32 %a+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 3
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -434,6 +569,21 @@ i32 %a	 == 	i32 %a
   %28 = load i32* %1, align 4, !dbg !100	 == 	i32 %a
   %29 = add nsw i32 %28, 1, !dbg !100	 == 	(i32 %a+i32 1)
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	i32 %a
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(i32 %a+i32 1)
+
+ user variables: 
+a	 == 	(i32 %a+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 3
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %30 = load i32* %x, align 4, !dbg !102
@@ -451,6 +601,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(i32 %a+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 3
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -460,6 +611,22 @@ i32 %a	 == 	i32 %a
   %29 = add nsw i32 %28, 1, !dbg !100	 == 	(i32 %a+i32 1)
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 3
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	i32 %a
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(i32 %a+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 3
+
+ user variables: 
+a	 == 	(i32 %a+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 3
+
+executing Add 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 lhs not NULL
 rhs not NULL
 lhs: i32 3
@@ -481,6 +648,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(i32 %a+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 3
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -491,6 +659,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 3
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 2
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	i32 %a
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(i32 %a+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 3
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 2
+
+ user variables: 
+a	 == 	(i32 %a+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 3
+
+executing Store 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 : 
@@ -521,6 +706,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(i32 %a+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 2
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -531,6 +717,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 3
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 2
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	i32 %a
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(i32 %a+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 3
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 2
+
+ user variables: 
+a	 == 	(i32 %a+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 2
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %25 = load i32* %x, align 4, !dbg !98
@@ -548,6 +751,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(i32 %a+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 2
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -559,6 +763,24 @@ i32 %a	 == 	i32 %a
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 2
 
 operand0 ==   %25 = load i32* %x, align 4, !dbg !98
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	i32 %a
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(i32 %a+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 3
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 2
+
+ user variables: 
+a	 == 	(i32 %a+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 2
+
+executing ICmp 
+operand0 ==   %20 = load i32* %x, align 4, !dbg !32
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 operand1 == i32 0
 lhs == i32 2
 rhs == i32 0
@@ -606,6 +828,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(i32 %a+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 2
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -616,6 +839,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 3
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 2
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	i32 %a
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(i32 %a+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 3
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 2
+
+ user variables: 
+a	 == 	(i32 %a+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 2
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %28 = load i32* %1, align 4, !dbg !100
@@ -633,6 +873,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(i32 %a+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 2
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -643,6 +884,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 3
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 2
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	(i32 %a+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(i32 %a+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 3
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 2
+
+ user variables: 
+a	 == 	(i32 %a+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 2
+
+executing Add 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 lhs not NULL
 rhs not NULL
 lhs: (i32 %a+i32 1)
@@ -664,6 +922,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(i32 %a+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 2
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -674,6 +933,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 3
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 2
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	(i32 %a+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 3
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 2
+
+ user variables: 
+a	 == 	(i32 %a+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 2
+
+executing Store 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 :   %x = alloca i32, align 4
@@ -690,6 +966,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	((i32 %a+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 2
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -700,6 +977,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 3
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 2
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	(i32 %a+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 3
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 2
+
+ user variables: 
+a	 == 	((i32 %a+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 2
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %30 = load i32* %x, align 4, !dbg !102
@@ -717,6 +1011,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	((i32 %a+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 2
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -727,6 +1022,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 2
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 2
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	(i32 %a+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 2
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 2
+
+ user variables: 
+a	 == 	((i32 %a+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 2
+
+executing Add 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 lhs not NULL
 rhs not NULL
 lhs: i32 2
@@ -748,6 +1060,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	((i32 %a+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 2
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -758,6 +1071,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 2
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 1
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	(i32 %a+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 2
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 1
+
+ user variables: 
+a	 == 	((i32 %a+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 2
+
+executing Store 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 : 
@@ -788,6 +1118,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	((i32 %a+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 1
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -798,6 +1129,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 2
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 1
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	(i32 %a+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 2
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 1
+
+ user variables: 
+a	 == 	((i32 %a+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 1
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %25 = load i32* %x, align 4, !dbg !98
@@ -815,6 +1163,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	((i32 %a+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 1
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -826,6 +1175,24 @@ i32 %a	 == 	i32 %a
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 1
 
 operand0 ==   %25 = load i32* %x, align 4, !dbg !98
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	(i32 %a+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 2
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 1
+
+ user variables: 
+a	 == 	((i32 %a+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 1
+
+executing ICmp 
+operand0 ==   %20 = load i32* %x, align 4, !dbg !32
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 operand1 == i32 0
 lhs == i32 1
 rhs == i32 0
@@ -873,6 +1240,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	((i32 %a+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 1
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -883,6 +1251,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 2
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 1
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	(i32 %a+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 2
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 1
+
+ user variables: 
+a	 == 	((i32 %a+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 1
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %28 = load i32* %1, align 4, !dbg !100
@@ -900,6 +1285,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	((i32 %a+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 1
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -910,6 +1296,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 2
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 1
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 2
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 1
+
+ user variables: 
+a	 == 	((i32 %a+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 1
+
+executing Add 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 lhs not NULL
 rhs not NULL
 lhs: ((i32 %a+i32 1)+i32 1)
@@ -931,6 +1334,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	((i32 %a+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 1
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -941,6 +1345,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 2
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 1
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 2
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 1
+
+ user variables: 
+a	 == 	((i32 %a+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 1
+
+executing Store 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 :   %x = alloca i32, align 4
@@ -957,6 +1378,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 1
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -967,6 +1389,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 2
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 1
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 2
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 1
+
+ user variables: 
+a	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 1
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %30 = load i32* %x, align 4, !dbg !102
@@ -984,6 +1423,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 1
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -994,6 +1434,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 1
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 1
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 1
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 1
+
+ user variables: 
+a	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 1
+
+executing Add 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 lhs not NULL
 rhs not NULL
 lhs: i32 1
@@ -1015,6 +1472,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 1
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -1025,6 +1483,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 1
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 0
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 1
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 0
+
+ user variables: 
+a	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 1
+
+executing Store 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 : 
@@ -1055,6 +1530,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 0
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -1065,6 +1541,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 1
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 0
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 1
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 0
+
+ user variables: 
+a	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 0
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %25 = load i32* %x, align 4, !dbg !98
@@ -1082,6 +1575,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 0
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -1093,6 +1587,24 @@ i32 %a	 == 	i32 %a
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 0
 
 operand0 ==   %25 = load i32* %x, align 4, !dbg !98
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 1
+  %23 = load i32* %1, align 4, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 1
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 0
+
+ user variables: 
+a	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 0
+
+executing ICmp 
+operand0 ==   %20 = load i32* %x, align 4, !dbg !32
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 operand1 == i32 0
 lhs == i32 0
 rhs == i32 0
@@ -1139,6 +1651,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 0
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -1149,6 +1662,23 @@ i32 %a	 == 	i32 %a
   %30 = load i32* %x, align 4, !dbg !102	 == 	i32 1
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 0
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 0
+  %23 = load i32* %1, align 4, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 1
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 0
+
+ user variables: 
+a	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 0
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %33 = load i32* %2, align 4, !dbg !104
@@ -1166,6 +1696,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 0
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -1177,6 +1708,24 @@ i32 %a	 == 	i32 %a
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 0
   %33 = load i32* %2, align 4, !dbg !104	 == 	i32 %b
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 0
+  %23 = load i32* %1, align 4, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 1
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 0
+  %28 = load i32* %2, align 4, !dbg !38	 == 	i32 %b
+
+ user variables: 
+a	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 0
+
+executing Add 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 lhs not NULL
 rhs not NULL
 lhs: i32 %b
@@ -1199,6 +1748,7 @@ i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
   %2 = alloca i32, align 4	 == 	i32 %b
   %x = alloca i32, align 4	 == 	i32 0
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -1210,6 +1760,25 @@ i32 %a	 == 	i32 %a
   %31 = add nsw i32 %30, -1, !dbg !102	 == 	i32 0
   %33 = load i32* %2, align 4, !dbg !104	 == 	i32 %b
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %21 = icmp sgt i32 %20, 0, !dbg !32	 == 	i32 0
+  %23 = load i32* %1, align 4, !dbg !34	 == 	((i32 %a+i32 1)+i32 1)
+  %24 = add nsw i32 %23, 1, !dbg !34	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+  %25 = load i32* %x, align 4, !dbg !36	 == 	i32 1
+  %26 = add nsw i32 %25, -1, !dbg !36	 == 	i32 0
+  %28 = load i32* %2, align 4, !dbg !38	 == 	i32 %b
+  %29 = add nsw i32 %28, 2, !dbg !38	 == 	(i32 %b+i32 2)
+
+ user variables: 
+a	 == 	(((i32 %a+i32 1)+i32 1)+i32 1)
+b	 == 	i32 %b
+x	 == 	i32 0
+
+executing Store 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 : 
@@ -1248,6 +1817,14 @@ i32 %a	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
 
+<<<<<<< HEAD
+=======
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %7 = load i32* %1, align 4, !dbg !85
@@ -1269,6 +1846,14 @@ i32 %a	 == 	i32 %a
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
   %7 = load i32* %1, align 4, !dbg !85	 == 	i32 %a
 
+<<<<<<< HEAD
+=======
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+executing Add 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 lhs not NULL
 rhs not NULL
 lhs: i32 %a
@@ -1294,6 +1879,14 @@ i32 %a	 == 	i32 %a
   %7 = load i32* %1, align 4, !dbg !85	 == 	i32 %a
   %8 = add nsw i32 %7, 1, !dbg !85	 == 	(i32 %a+i32 1)
 
+<<<<<<< HEAD
+=======
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %8 = add nsw i32 %7, 1, !dbg !85
@@ -1310,6 +1903,7 @@ State at this point ==
 i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	i32 %a
   %2 = alloca i32, align 4	 == 	i32 %b
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -1319,6 +1913,22 @@ i32 %a	 == 	i32 %a
 
 operand0 ==   %8 = add nsw i32 %7, 1, !dbg !85
 operand1 ==   %9 = load i32* %2, align 4, !dbg !85
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %7 = load i32* %1, align 4, !dbg !21	 == 	i32 %a
+  %8 = add nsw i32 %7, 1, !dbg !21	 == 	(i32 %a+i32 1)
+  %9 = load i32* %2, align 4, !dbg !21	 == 	i32 %b
+
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+executing ICmp 
+operand0 ==   %8 = add nsw i32 %7, 1, !dbg !21
+operand1 ==   %9 = load i32* %2, align 4, !dbg !21
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 lhs == (i32 %a+i32 1)
 rhs == i32 %b
 state updated
@@ -1418,6 +2028,7 @@ State at this point ==
 i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	i32 %a
   %2 = alloca i32, align 4	 == 	i32 %b
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -1428,6 +2039,20 @@ i32 %a	 == 	i32 %a
   %15 = load i32* %1, align 4, !dbg !89	 == 	i32 %a
   %16 = add nsw i32 %15, 1, !dbg !89	 == 	(i32 %a+i32 1)
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %7 = load i32* %1, align 4, !dbg !21	 == 	i32 %a
+  %8 = add nsw i32 %7, 1, !dbg !21	 == 	(i32 %a+i32 1)
+  %9 = load i32* %2, align 4, !dbg !21	 == 	i32 %b
+
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %17 = load i32* %2, align 4, !dbg !89
@@ -1444,6 +2069,7 @@ State at this point ==
 i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	i32 %a
   %2 = alloca i32, align 4	 == 	i32 %b
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -1455,6 +2081,20 @@ i32 %a	 == 	i32 %a
   %16 = add nsw i32 %15, 1, !dbg !89	 == 	(i32 %a+i32 1)
   %17 = load i32* %2, align 4, !dbg !89	 == 	i32 %b
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %7 = load i32* %1, align 4, !dbg !21	 == 	i32 %a
+  %8 = add nsw i32 %7, 1, !dbg !21	 == 	(i32 %a+i32 1)
+  %9 = load i32* %2, align 4, !dbg !21	 == 	i32 %b
+
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+executing Add 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 lhs not NULL
 rhs not NULL
 lhs: i32 %b
@@ -1572,6 +2212,7 @@ non branch instruction to b executed
 
  executing :store instruction 
 State at this point == 
+<<<<<<< HEAD
 ------------------  %1 = alloca i32, align 4	 == 	(i32 %a+i32 1)
 i32 %d	 == 	(i32 %b+i32 2)
 i32 %c	 == 	(i32 %a+i32 1)
@@ -1599,6 +2240,27 @@ State at this point ==
 i32 %d	 == 	(i32 %b+i32 2)
 i32 %c	 == 	(i32 %a+i32 1)
 
+=======
+------------------  %10 = icmp sgt i32 %8, %9, !dbg !21	 == 	((i32 %a+i32 1)>i32 %b)
+  %15 = load i32* %2, align 4, !dbg !25	 == 	i32 %b
+  %16 = add nsw i32 %15, 2, !dbg !25	 == 	(i32 %b+i32 2)
+i32 %a	 == 	i32 %a
+i32 %b	 == 	i32 %b
+  %1 = alloca i32, align 4	 == 	i32 %a
+  %2 = alloca i32, align 4	 == 	i32 %b
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %7 = load i32* %1, align 4, !dbg !21	 == 	i32 %a
+  %8 = add nsw i32 %7, 1, !dbg !21	 == 	(i32 %a+i32 1)
+  %9 = load i32* %2, align 4, !dbg !21	 == 	i32 %b
+
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+executing Store 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 :   %1 = alloca i32, align 4
@@ -1750,6 +2412,7 @@ State at this point ==
 i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	i32 %a
   %2 = alloca i32, align 4	 == 	i32 %b
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -1758,6 +2421,20 @@ i32 %a	 == 	i32 %a
   %9 = load i32* %2, align 4, !dbg !85	 == 	i32 %b
   %10 = icmp sgt i32 %8, %9, !dbg !85	 == 	((i32 %a+i32 1)>i32 %b)
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %7 = load i32* %1, align 4, !dbg !21	 == 	i32 %a
+  %8 = add nsw i32 %7, 1, !dbg !21	 == 	(i32 %a+i32 1)
+  %9 = load i32* %2, align 4, !dbg !21	 == 	i32 %b
+
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+executing Load 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 2
 operand # : 1 :   %12 = load i32* %2, align 4, !dbg !88
@@ -1774,6 +2451,7 @@ State at this point ==
 i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	i32 %a
   %2 = alloca i32, align 4	 == 	i32 %b
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -1783,6 +2461,20 @@ i32 %a	 == 	i32 %a
   %10 = icmp sgt i32 %8, %9, !dbg !85	 == 	((i32 %a+i32 1)>i32 %b)
   %12 = load i32* %2, align 4, !dbg !88	 == 	i32 %b
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %7 = load i32* %1, align 4, !dbg !21	 == 	i32 %a
+  %8 = add nsw i32 %7, 1, !dbg !21	 == 	(i32 %a+i32 1)
+  %9 = load i32* %2, align 4, !dbg !21	 == 	i32 %b
+
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+executing Add 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 lhs not NULL
 rhs not NULL
 lhs: i32 %b
@@ -1803,6 +2495,7 @@ State at this point ==
 i32 %a	 == 	i32 %a
   %1 = alloca i32, align 4	 == 	i32 %a
   %2 = alloca i32, align 4	 == 	i32 %b
+<<<<<<< HEAD
   %3 = load i32* %1, align 4, !dbg !83	 == 	i32 %a
   %4 = load i32* %2, align 4, !dbg !83	 == 	i32 %b
   %5 = icmp sgt i32 %3, %4, !dbg !83	 == 	(i32 %a>i32 %b)
@@ -1813,6 +2506,20 @@ i32 %a	 == 	i32 %a
   %12 = load i32* %2, align 4, !dbg !88	 == 	i32 %b
   %13 = add nsw i32 %12, 1, !dbg !88	 == 	(i32 %b+i32 1)
 
+=======
+  %3 = load i32* %1, align 4, !dbg !19	 == 	i32 %a
+  %4 = load i32* %2, align 4, !dbg !19	 == 	i32 %b
+  %5 = icmp sgt i32 %3, %4, !dbg !19	 == 	(i32 %a>i32 %b)
+  %7 = load i32* %1, align 4, !dbg !21	 == 	i32 %a
+  %8 = add nsw i32 %7, 1, !dbg !21	 == 	(i32 %a+i32 1)
+  %9 = load i32* %2, align 4, !dbg !21	 == 	i32 %b
+
+ user variables: 
+a	 == 	i32 %a
+b	 == 	i32 %b
+
+executing Store 
+>>>>>>> b266aaa7905e35a212cd94d2c89f50622e3e0497
 exiting executeNonBranchingInstruction
 printing operands : 1
 operand # : 1 : 

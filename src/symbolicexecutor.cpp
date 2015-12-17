@@ -15,7 +15,6 @@
 #include <llvm/IR/DebugLoc.h>
 #include <llvm/IR/Metadata.h>
 #include <llvm/IR/IntrinsicInst.h>
-#include <llvm/IR/CallSite.h>
 #include <pthread.h>
 
 
@@ -47,10 +46,23 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 		std::cout << " executing :" << instruction->getOpcodeName() << " instruction \n";
 		std::cout << "State at this point == \n------------------" << state->toString() << "\n";
 	#endif
-
-	
-	if (instruction->getOpcode() == llvm::Instruction::Alloca)
+	if (instruction->getOpcode() == 49)
 	{
+		if (llvm::DbgDeclareInst* DbgDeclare = llvm::dyn_cast<llvm::DbgDeclareInst>(instruction)) {
+      		llvm::MDNode* Var = DbgDeclare->getVariable();
+      		if (llvm::Value * val = llvm::dyn_cast<llvm::Value>(DbgDeclare->getAddress()))
+      		{
+	      		llvm::StringRef strRef = llvm::DIVariable(Var).getName();
+	      		std::cout << " variable name : -- " << strRef.str() << std::endl << "\n";
+	      		state->addUserVar(strRef.str(), val);
+      		}
+      	}
+	}
+	else if (instruction->getOpcode() == llvm::Instruction::Alloca)
+	{
+		#ifdef DEBUG	
+			std::cout << "executing Allocate \n";
+		#endif
 	}
 	else if(instruction->getOpcode()==llvm::Instruction::Store)
 	{
@@ -82,7 +94,6 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 			std::cout << "lhs: " << lhs->toString() <<"\n";
 			std::cout << "rhs: " << rhs->toString() <<"\n";
 		#endif
-
 		state->add(instruction,new ExpressionTree("+",lhs,rhs));		
 	}
 	else if (instruction->getOpcode() == llvm::Instruction::ICmp)
@@ -117,6 +128,7 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 	#ifdef DEBUG
 		std::cout << "exiting executeNonBranchingInstruction\n";
 	#endif
+
 }
 
 
@@ -175,8 +187,8 @@ std::vector<SymbolicTreeNode*>
 			#endif
 
 			Json::Value msg;
-			msg["node"] = Json::Value(symTreeNode->id);
-			msg["parent"] = Json::Value(symTreeNode->prevId);
+			msg["node"] = Json::Value(node->id);
+			msg["parent"] = Json::Value(node->prevId);
 			msg["external"] = Json::Value("true");
 			msg["fin"] = Json::Value("0");
 			
@@ -497,7 +509,7 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 
 	std::cout << "sending this: " << output << std::endl;
 	(*socket) << output;
-	std::cout << "Function executed"	<< std::endl;
+	std::cout << "Function executed" << std::endl;
 }
 
 
@@ -590,7 +602,6 @@ void SymbolicExecutor::exclude(std::string inp, bool isNode)
 	}
 	else
 		excludedNodes[BlockStates[input]->block] = true;
-
 }
 
 void SymbolicExecutor::sendMessageAndSleep(Json::Value toSend)
@@ -600,10 +611,4 @@ void SymbolicExecutor::sendMessageAndSleep(Json::Value toSend)
 	std::cout << "sending this: " << output << std::endl;
 	if (socket)
 		(*socket) << output;
-
-	std::cout << "going to sleep" << std::endl;
-	std::unique_lock<std::mutex> lck(mtx);
-	cv.wait(lck);
-	lck.unlock();
-	std::cout << "wakeup!! " << std::endl;
 }

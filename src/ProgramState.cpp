@@ -53,6 +53,16 @@ void ProgramState::add(llvm::Value* value, ExpressionTree* exp)
 	map[value] = exp;
 }
 
+void ProgramState::addUserVar(std::string varname, llvm::Value* val)
+{
+	// std::cout << "adding this \n";
+	// int x;
+	// std::cin >> x;
+	// std::cout << "adding this expression tree to user vars:  \n " << varname << "  :  " << exp->toString();
+	userVarMap[varname] = val;
+}
+
+
 ExpressionTree* ProgramState::get(llvm::Value * s)
 {
 	if ( map.find(s) == map.end() ) return NULL;
@@ -70,6 +80,15 @@ std::string ProgramState::toString()
 	for (auto& pr : map)
 	{
 		str <<	getString(pr.first) << "\t == \t" << pr.second->toString() << '\n';
+	}
+	str << "\n user variables: \n";
+
+	for (auto& pr : userVarMap)
+	{
+		if (get(pr.second))
+			str << pr.first <<	"\t == \t" << map[pr.second]->toString() << '\n';
+		else
+			str << pr.first <<	"\t == \t" << getString(pr.second) << '\n';
 	}
 	return str.str();
 }

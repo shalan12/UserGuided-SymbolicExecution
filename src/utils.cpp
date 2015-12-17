@@ -1,7 +1,7 @@
 #include "utils.h"
+#include <sstream>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/IR/Constants.h>
-
 std::string getString(llvm::Value* val)
 {
 	if(val == NULL)
