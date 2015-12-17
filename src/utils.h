@@ -5,5 +5,4 @@
 
 std::string getString(llvm::Value* val);
 int getInteger(llvm::Value* value);
-
 #endif

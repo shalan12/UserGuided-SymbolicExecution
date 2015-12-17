@@ -1,3 +1,5 @@
+#include <iostream>
+int notmain2(int c, int d);
 int main()
 {
 	int a = 10;
@@ -20,7 +22,10 @@ void notmain(int a, int b)
 		if(a+1 > b)
 			b = b + 1;
 		else
-			b= b+2;
+		{
+			b = notmain2(a+1,b+2);
+			std::cout << b;
+		}
 	}
 	else
 	{
@@ -32,4 +37,8 @@ void notmain(int a, int b)
 		}
 		b = b + 2;
 	}
+}
+int notmain2(int c, int d)
+{
+	return c+d;
 }

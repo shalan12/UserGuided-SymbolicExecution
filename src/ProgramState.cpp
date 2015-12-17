@@ -1,26 +1,41 @@
 #include "ProgramState.h"
 #include "utils.h"
 #include <sstream>
-ProgramState::ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> inputs)
+#include <vector>
+#include <llvm/ADT/iterator_range.h>
+ProgramState::ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> inputs, 
+	std::vector<ExpressionTree*> arguments)
 {		 
 	//s = new z3::solver(c);
+	int i = 0;
 	for (auto input = inputs.begin(), last = inputs.end(); input!=last; input++)
-	{	 
-		add(input,new ExpressionTree(input));
+	{	
+		if(i >= arguments.size())
+			add(input,new ExpressionTree(input));
+		else 
+			add(input,arguments[i++]);
 	}
 	pathCondition = "";
 }
+void ProgramState::Copy(const ProgramState& from, ProgramState* to, bool copyMap = true)
+{
+	if(copyMap)
+	{
+		for (auto& pr : from.map)
+		{
+			to->add(pr.first, new ExpressionTree(*pr.second));
+		}
+	}
+	for (auto constraint : from.constraints)
+	{
+		to->constraints.push_back(constraint);
+	}
+	to->pathCondition = from.pathCondition;
+}
+
 ProgramState::ProgramState(const ProgramState & p)
 {
-	for (auto& pr : p.map)
-	{
-		add(pr.first, new ExpressionTree(*pr.second));
-	}
-	for (auto constraint : p.constraints)
-	{
-		this->constraints.push_back(constraint);
-	}
-	this->pathCondition = p.pathCondition;
+	ProgramState::Copy(p,this);
 }
 
 std::string ProgramState::getPathCondition()

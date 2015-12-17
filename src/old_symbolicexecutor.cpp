@@ -145,7 +145,7 @@ std::vector<std::pair<llvm::BasicBlock*, ProgramState*> >
 	SymbolicExecutor::getNextBlocks(llvm::Instruction* inst, ProgramState* state)
 {
 	std::vector<std::pair<llvm::BasicBlock*, ProgramState*> > pairs;
-	if(inst->getOpcode() != llvm::Instruction::Ret)
+	if(llvm::isa<BranchInst>(inst))
 	{
 		llvm::BranchInst* binst = llvm::dyn_cast<llvm::BranchInst>(inst);
 		if(binst->isConditional())

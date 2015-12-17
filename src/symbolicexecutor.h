@@ -23,30 +23,78 @@
 #include <utility>      
 #include <mutex>              // std::mutex, std::unique_lock
 #include <limits>
+typedef llvm::BasicBlock::iterator InstructionPtr;
+class SymbolicTreeNode 
+{
+  private:
+    bool hasNext, hasPrev;
+    InstructionPtr* instructionPtr;
 
-struct SymbolicTreeNode {
-  llvm::BasicBlock * block;
-  ProgramState * state;
-  SymbolicTreeNode * left;
-  SymbolicTreeNode * right;
-  bool isExecuted;
-  int prevId;
-  int id;
-  unsigned int minLineNumber,maxLineNumber;
-  static int instances;
+  public:
+    llvm::BasicBlock * block;
+    ProgramState * state;
+    SymbolicTreeNode * left;
+    SymbolicTreeNode * right;
+    SymbolicTreeNode * parent;
+    bool isExecuted;
+    int prevId;
+    int id;
+    unsigned int minLineNumber,maxLineNumber;
+    static int instances;
 
-  SymbolicTreeNode(llvm::BasicBlock * b, ProgramState * ps, int pid, SymbolicTreeNode * l = NULL, SymbolicTreeNode * r = NULL)
-  {
-    block = b;
-    left = l;
-    right = r;
-    state = ps;
-    maxLineNumber = 0;
-    minLineNumber = std::numeric_limits<unsigned int>::max();
-    prevId = pid;
-    id = instances++;
-    isExecuted = false;
-  }
+    SymbolicTreeNode(llvm::BasicBlock * b,
+                     ProgramState * ps, int pid,
+                     InstructionPtr* itr = NULL,
+                     SymbolicTreeNode * l = NULL, 
+                     SymbolicTreeNode * r = NULL, 
+                     SymbolicTreeNode * parent = NULL)
+    {
+      block = b;
+      if(itr == NULL) itr = new InstructionPtr(block->begin());
+      this->instructionPtr = itr;
+      left = l;
+      right = r;
+      state = ps;
+      hasNext = true;
+      hasPrev = false;
+      this->parent = parent;
+      maxLineNumber = 0;
+      minLineNumber = std::numeric_limits<unsigned int>::max();
+      prevId = pid;
+      id = instances++;
+      isExecuted = false;
+    }
+    bool hasNextInstruction()
+    {
+      return hasNext;
+    }
+    bool hasPrevInstruction()
+    {
+      return hasPrev;
+    }
+    InstructionPtr getPreviousInstruction()
+    {
+      if(*instructionPtr == block->begin())
+      {
+        hasPrev = false;
+        return *instructionPtr;
+      }
+      else
+      {
+        hasNext = true;
+        return --(*instructionPtr);
+      }
+    }
+    InstructionPtr getNextInstruction()
+    {
+      InstructionPtr toRet = *instructionPtr;
+      if (hasNext)
+      {
+        hasNext = (++*instructionPtr != block->end());
+      }
+      hasPrev = true;
+      return toRet;
+    }
 };
 
 class SymbolicExecutor
@@ -74,8 +122,7 @@ class SymbolicExecutor
      /**
       Executes a branching instruction and determines which block(s) need to be explored depending on the program state
     */
-    std::vector<SymbolicTreeNode*> getNextBlocks(llvm::Instruction* inst, ProgramState* state, 
-      int prevId);
+    std::vector<SymbolicTreeNode*> getNextBlocks(llvm::Instruction* inst, SymbolicTreeNode* node);
 
 
   public:
@@ -95,7 +142,7 @@ class SymbolicExecutor
   void executeFunction(llvm::Function* function);
   void proceed(bool isbfs, int stps, int d, int prev);
   void exclude(std::string id, bool);
-
+  void sendMessageAndSleep(Json::Value toSend);
 
   void execute(bool isbfs, int stps, int d, int prev);
 

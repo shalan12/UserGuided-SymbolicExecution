@@ -14,7 +14,8 @@
 #include <llvm/IR/DebugInfo.h>
 #include <llvm/IR/DebugLoc.h>
 #include <llvm/IR/Metadata.h>
-
+#include <llvm/IR/IntrinsicInst.h>
+#include <llvm/IR/CallSite.h>
 #include <pthread.h>
 
 
@@ -50,24 +51,15 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 	
 	if (instruction->getOpcode() == llvm::Instruction::Alloca)
 	{
-		#ifdef DEBUG	
-			std::cout << "executing Store \n";
-		#endif
 	}
 	else if(instruction->getOpcode()==llvm::Instruction::Store)
 	{
-		#ifdef DEBUG	
-			std::cout << "executing Store \n";
-		#endif
 		llvm::Value* memLocation = instruction->getOperand(1);
 		llvm::Value* value = instruction->getOperand(0);
 		state->add(memLocation,getExpressionTree(state,value));
 	}
 	else if(instruction->getOpcode()==llvm::Instruction::Load)
 	{
-		#ifdef DEBUG	
-			std::cout << "executing Load \n";
-		#endif
 		ExpressionTree* exptree = getExpressionTree(state,instruction->getOperand(0));
 		state->add(instruction,exptree);
 	
@@ -78,10 +70,6 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 	}
 	else if(instruction->getOpcode()==llvm::Instruction::Add)
 	{
-		#ifdef DEBUG	
-			std::cout << "executing Add \n";
-		#endif
-
 		ExpressionTree* lhs = getExpressionTree(state,instruction->getOperand(0));
 		ExpressionTree* rhs = getExpressionTree(state,instruction->getOperand(1));
 	
@@ -99,10 +87,6 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 	}
 	else if (instruction->getOpcode() == llvm::Instruction::ICmp)
 	{
-		#ifdef DEBUG	
-			std::cout << "executing ICmp \n";
-		#endif
-
 		llvm::ICmpInst* cmpInst = llvm::dyn_cast<llvm::ICmpInst>(instruction); 
 		std::string op;
 		if(cmpInst->getSignedPredicate() == llvm::ICmpInst::ICMP_SGT)
@@ -142,10 +126,12 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
  Executes a branching instruction and determines which block(s) need to be explored depending on the program state
 */
 std::vector<SymbolicTreeNode*> 
-	SymbolicExecutor::getNextBlocks(llvm::Instruction* inst, ProgramState* state, int pid)
+	SymbolicExecutor::getNextBlocks(llvm::Instruction* inst, SymbolicTreeNode* node)
 {
 	std::vector<SymbolicTreeNode*> children;
-	if(inst->getOpcode() != llvm::Instruction::Ret)
+	ProgramState* state = node->state;
+	int pid = node->id;
+	if(llvm::isa<llvm::BranchInst>(inst))
 	{
 		llvm::BranchInst* binst = llvm::dyn_cast<llvm::BranchInst>(inst);
 		if(binst->isConditional())
@@ -165,7 +151,7 @@ std::vector<SymbolicTreeNode*>
 				first->addCondition(state->get(cond)->toString());
 				std::cout << "ADDING CONDITION : " 
 						 << state->get(cond)->toString() << std::endl;
-				children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first, pid));
+				children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first, pid,NULL,NULL,node));
 			}
 			int numSuccesors = binst->getNumSuccessors();
 			if(numSuccesors == 2 && toAddFalse)
@@ -173,10 +159,64 @@ std::vector<SymbolicTreeNode*>
 				ProgramState* second = new ProgramState(*state);
 				second->constraints.push_back(std::make_pair(cond,"false"));
 				second->addCondition("not " + state->get(cond)->toString());
-				children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), second, pid));
+				children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), second, pid,NULL,NULL,node));
 			}
 		}
-		else children.push_back(new SymbolicTreeNode(binst->getSuccessor(0),state, pid));
+		else children.push_back(new SymbolicTreeNode(binst->getSuccessor(0),state, pid,NULL,NULL,node));
+	}
+	else if (llvm::isa<llvm::CallInst>(inst))
+	{
+		llvm::CallInst* callInst = llvm::dyn_cast<llvm::CallInst>(inst);
+		llvm::Function* calledFunction = callInst->getCalledFunction();
+		if(calledFunction->isDeclaration())
+		{
+			#ifdef DEBUG
+				std::cout << "EXTERNAL CALL\n";
+			#endif
+
+			Json::Value msg;
+			msg["node"] = Json::Value(symTreeNode->id);
+			msg["parent"] = Json::Value(symTreeNode->prevId);
+			msg["external"] = Json::Value("true");
+			msg["fin"] = Json::Value("0");
+			
+			sendMessageAndSleep(msg);
+			
+		}
+		else
+		{
+			std::cout << "INTERNAL CALL\n";
+			std::cout << getString(callInst->getCalledValue());
+			llvm::BasicBlock* funcStart = &calledFunction->getEntryBlock();
+			std::vector<ExpressionTree*> arguments;
+			//llvm::CallSite* callsite = llvm::dyn_cast<llvm::CallSite>(callInst);
+			for(auto arg = callInst->op_begin(); arg != callInst->op_end(); arg++)
+			{
+				//llvm::Value* val_arg = llvm::dyn_cast<llvm::Value>(arg);
+				arguments.push_back(state->get(arg->get()));
+			}
+			ProgramState* newState = new ProgramState(calledFunction->args(),arguments);
+			ProgramState::Copy(*state,newState,false);
+			children.push_back(new SymbolicTreeNode(funcStart,newState, pid,NULL,NULL,NULL,node));
+		} 
+		
+	}
+	else if (llvm::isa<llvm::ReturnInst>(inst))
+	{
+		if(node->parent)
+		{
+			llvm::ReturnInst* returninst = llvm::dyn_cast<llvm::ReturnInst>(inst);
+			SymbolicTreeNode* parent = node->parent;
+			InstructionPtr* returnptr = new InstructionPtr(parent->getPreviousInstruction());
+			ProgramState* newState = new ProgramState(*(parent->state)); // copy everything from parent state
+			ProgramState::Copy(*state,newState,false); // replace everything except map from curr state
+			newState->add(*returnptr,node->state->get(returninst->getReturnValue()));
+			(*returnptr)++;
+			children.push_back(new SymbolicTreeNode(parent->block,newState,
+								parent->id,returnptr,
+								NULL,NULL,parent->parent));	
+		}
+		
 	}
 
 	#ifdef DEBUG
@@ -186,7 +226,13 @@ std::vector<SymbolicTreeNode*>
 	return children;
 }
 
-
+bool isSplitPoint(llvm::Instruction* instruction)
+{
+	return instruction->getOpcode() == llvm::Instruction::Br 
+		   || instruction->getOpcode() == llvm::Instruction::Ret
+		   || ( llvm::isa<llvm::CallInst>(instruction) 
+				&& !llvm::isa<llvm::DbgDeclareInst>(instruction) );
+}
 /**
  executes the basicBlock, updates programstate and returns the next Block(s) to execute if it can be determined that only the "Then" block should be executed then only the "Then" block is returned. Similarly for the else block. Otherwise both are are retuarned. NULL is returned if there's nothing left to execute
  */
@@ -203,9 +249,9 @@ std::vector<SymbolicTreeNode*>
 				,block->getName().str().c_str(),block->size());
 	#endif
 
-	for (auto instruction = block->begin(), e = block->end(); instruction != e; ++instruction)
+	while(symTreeNode->hasNextInstruction())
 	{
-
+		auto instruction = symTreeNode->getNextInstruction();
 		#ifdef DEBUG
 
 			std::cout << "printing operands : " << instruction->getNumOperands() << "\n";
@@ -227,13 +273,13 @@ std::vector<SymbolicTreeNode*>
 			std::cout << "instruction == " << getString(instruction) << "\tLine Number == " << Line << "\n";
 		}
 
-		if(instruction->getOpcode() == llvm::Instruction::Br || instruction->getOpcode() == llvm::Instruction::Ret) 
+		if(isSplitPoint(instruction)) 
 		{
 			#ifdef DEBUG
-				std::cout << "Branch Instruction Hit!\n";	
+				std::cout << "Split Point Hit!\n";	
 			#endif
 
-			return getNextBlocks(instruction,state, symTreeNode->id);
+			return getNextBlocks(instruction,symTreeNode);
 		}
 		else 
 		{
@@ -370,7 +416,6 @@ void SymbolicExecutor::symbolicExecute()
 			msg["endLine"] = Json::Value(symTreeNode->maxLineNumber);
 			
 			toSend["nodes"][currObject++] = msg;
-
 			
 			for (int j = 0; j < new_blocks.size(); j++)
 			{
@@ -411,22 +456,9 @@ void SymbolicExecutor::symbolicExecute()
 			continue;
 		#endif
 
-		Json::FastWriter fastWriter;
-		std::string output = fastWriter.write(toSend);
-		std::cout << "sending this: " << output << std::endl;
-		if (socket)
-			(*socket) << output;
-
-		std::cout << "going to sleep" << std::endl;
-		std::unique_lock<std::mutex> lck(mtx);
-		cv.wait(lck);
-		lck.unlock();
-		std::cout << "wakeup!! " << std::endl;
+		sendMessageAndSleep(toSend);
 	}
 }
-
-
-
 
 
 /**
@@ -561,38 +593,17 @@ void SymbolicExecutor::exclude(std::string inp, bool isNode)
 
 }
 
-/*
-Old Execute Fnction code
-	while(blocks.size())
-	{
-		currBlock = blocks[0];
-		blocks.erase(blocks.begin());
-		std::vector<llvm::BasicBlock*> new_blocks = executeBasicBlock(currBlock,state);
-		// std::cout << "block executed" << std::endl;
-		// std::cout << "new blocks received:	" << blocks.size() << std::endl;
-		for (int i = 0; i < new_blocks.size(); i++)
-		{
-		if (blocks[i])
-		{
-			blocks.push_back(new_blocks[i]);
-			#ifdef DEBUG
-			std::cout << "new block not null" << std::endl;
-			#endif
-		}
-		else
-		{
-			#ifdef DEBUG
-			std::cout << "new block NULL!!" << std::endl;
-			#endif
-		}
-		}
-		#ifdef DEBUG
-		std::cout << "new blocks added!!" << blocks.size() << std::endl;
-		#endif
+void SymbolicExecutor::sendMessageAndSleep(Json::Value toSend)
+{
+	Json::FastWriter fastWriter;
+	std::string output = fastWriter.write(toSend);
+	std::cout << "sending this: " << output << std::endl;
+	if (socket)
+		(*socket) << output;
 
-		// int y;
-		// std::cin >> y;
-		// if(blocks.size() > 0) currBlock = blocks[0];
-	}
-	// std::cout << state->getPathCondition();
-*/
+	std::cout << "going to sleep" << std::endl;
+	std::unique_lock<std::mutex> lck(mtx);
+	cv.wait(lck);
+	lck.unlock();
+	std::cout << "wakeup!! " << std::endl;
+}

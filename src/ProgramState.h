@@ -12,13 +12,15 @@ class ProgramState
   private:
   std::map<llvm::Value*, ExpressionTree*> map;
   std::string pathCondition;
-  static int instances;
   
   public:
   z3::context c;
   std::map<std::string, z3::expr> variables;
   std::vector<std::pair<llvm::Value*, std::string> > constraints;
-  ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> inputs);
+  static void Copy(const ProgramState& other, ProgramState* to, bool copyMap);
+  ProgramState(){};
+  ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> inputs,
+              std::vector<ExpressionTree*> arguments = std::vector<ExpressionTree*>(0));
   ProgramState(const ProgramState & p);
 
   std::string getPathCondition();
