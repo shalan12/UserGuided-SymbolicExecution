@@ -112,6 +112,11 @@ class SymbolicExecutor
     SymbolicTreeNode * rootNode;
     bool isBFS;
     int dir,steps,prevId;
+    JsonReader reader;
+    Json::Value currMsg;
+
+
+
 
     llvm::Module* loadCode(std::string filename);
     ExpressionTree* getExpressionTree(ProgramState* state, llvm::Value* value);
@@ -142,7 +147,7 @@ class SymbolicExecutor
   void executeFunction(llvm::Function* function);
   void proceed(bool isbfs, int stps, int d, int prev);
   void exclude(std::string id, bool);
-  void sendMessageAndSleep(Json::Value toSend);
+  void proceed(Json::Value val);
 
   void execute(bool isbfs, int stps, int d, int prev);
 

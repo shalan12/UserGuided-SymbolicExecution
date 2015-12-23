@@ -532,6 +532,10 @@ llvm::Module* SymbolicExecutor::loadCode(std::string filename)
 	(**mainModuleOrError).materializeAllPermanently();
 	return *mainModuleOrError;
 }
+void SymbolicExecutor::proceed(Json::Value val)
+{
+	reader.wakeUp(val);
+}
 
 void SymbolicExecutor::proceed(bool isbfs, int stps, int d, int prev)
 {

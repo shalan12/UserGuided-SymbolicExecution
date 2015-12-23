@@ -9,17 +9,16 @@
 
 std::map< std::string, std::pair<std::thread,SymbolicExecutor*> > threads_sym;
 
-void runOnThread(SymbolicExecutor * sym, int isBFS, int isRightBranch, int steps, int prevId)
+void runOnThread(SymbolicExecutor * sym, Json::Value val)
 {
-  sym->execute(isBFS, steps, isRightBranch, prevId);
+  sym->execute(val);
 }
 
 int executeSym(int isBFS, int isRightBranch, int steps, int prevId, std::string id, ServerSocket * s)
 {
   if (threads_sym.find(id) == threads_sym.end())
   {
-    SymbolicExecutor * sym = new SymbolicExecutor(id, s);
-    threads_sym[id] = std::make_pair(std::thread(runOnThread,sym,isBFS,isRightBranch,steps,prevId),sym);
+
   }
   else
   {
@@ -45,12 +44,27 @@ int communicate(ServerSocket* new_sock)
         bool isParsed = reader.parse(message, val);
         if (isParsed)
         {
+          std::string id = val["id"].asString();
+          val = val["val"];
+          if (threads_sym.find(id) != threads_sym.end())
+          {
+            threads_sym[id].second.proceed(val);
+          }
+          else
+          {
+            SymbolicExecutor * sym = new SymbolicExecutor(id, s);
+            threads_sym[id] = std::make_pair(std::thread(runOnThread,sym,val);
+          }
+
+          if (threads_sym[val["id"].asString()])
+          threads_sym[val["id"].asString()].second->exclude(val["exclude"].asString(), stoi(val["isNode"].asString()));
+
             std::cout << "prevId : " << val["prevId"].asString() << "\n";
             std::cout << "id : " << val["id"].asString() << "\n";
             std::cout << "proceed? : \n";
             if(val["exclude"].asString() != "")
             {
-               threads_sym[val["id"].asString()].second->exclude(val["exclude"].asString(), stoi(val["isNode"].asString()));
+              threads_sym[val["id"].asString()].second->exclude(val["exclude"].asString(), stoi(val["isNode"].asString()));
                continue;
             }
             std::cout << "isBFS : " << val["isBFS"].asString() << "\n";
