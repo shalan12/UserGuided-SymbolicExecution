@@ -17,7 +17,7 @@
 #include <llvm/IR/Instructions.h>
 
 #include "jsoncpp/dist/json/json.h"
-
+#include "jsonreader.h"
 #include <thread>
 #include <condition_variable>
 #include <utility>      
@@ -103,19 +103,11 @@ class SymbolicExecutor
     unsigned int minLineNumber;
     unsigned int maxLineNumber;
     std::vector<llvm::BasicBlock*> blocksArr; 
-    std::mutex mtx;
-    std::condition_variable cv;
-    ServerSocket * socket;
     std::string filename;
     std::map<int, SymbolicTreeNode* > BlockStates;
     std::map<llvm::BasicBlock*, bool > excludedNodes;
     SymbolicTreeNode * rootNode;
-    bool isBFS;
-    int dir,steps,prevId;
-    JsonReader reader;
-    Json::Value currMsg;
-
-
+    JsonReader * reader;
 
 
     llvm::Module* loadCode(std::string filename);
@@ -148,8 +140,7 @@ class SymbolicExecutor
   void proceed(bool isbfs, int stps, int d, int prev);
   void exclude(std::string id, bool);
   void proceed(Json::Value val);
-
-  void execute(bool isbfs, int stps, int d, int prev);
+  void execute(Json::Value val);
 
 };
 #endif

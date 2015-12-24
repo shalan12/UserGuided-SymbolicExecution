@@ -139,6 +139,11 @@ void ProgramState::printZ3Variables()
 	}
 }
 
+std::map<std::string, llvm::Value*> ProgramState::getUserVarMap()
+{
+	return userVarMap;
+}
+
 void ProgramState::Z3solver()
 { 
 	z3::solver s(c);

@@ -22,13 +22,9 @@ int SymbolicTreeNode::instances = 0;
 
 SymbolicExecutor::SymbolicExecutor(std::string f, ServerSocket * s)
 {
-	socket = s;
+	reader = new JsonReader(s);
 	filename = f;
 	rootNode = NULL;
-    isBFS = false;
-    dir = 0;
-    steps = -1;
-    prevId = -1;
 }
 
 ExpressionTree* SymbolicExecutor::getExpressionTree(ProgramState* state, llvm::Value* value)
@@ -191,9 +187,8 @@ std::vector<SymbolicTreeNode*>
 			msg["parent"] = Json::Value(node->prevId);
 			msg["external"] = Json::Value("true");
 			msg["fin"] = Json::Value("0");
-			
-			sendMessageAndSleep(msg);
-			
+			std::vector<std::pair<ExpressionTree*, std::string> > vals =
+			 reader->getModel(msg, state->getUserVarMap());
 		}
 		else
 		{
@@ -334,13 +329,13 @@ void SymbolicExecutor::symbolicExecute()
 			std::cout << "prev id: "<< prevId << "\n";
 		#endif
 		std::deque<SymbolicTreeNode*> deque;
-		if (prevId == -1)
+		if (reader->getPrevId() == -1)
 		{
 			deque.push_back(rootNode);
 		}
 		else
 		{
-			SymbolicTreeNode * symTreeNode = BlockStates[prevId];
+			SymbolicTreeNode * symTreeNode = BlockStates[reader->getPrevId()];
 
 			if (!symTreeNode)
 			{
@@ -355,7 +350,7 @@ void SymbolicExecutor::symbolicExecute()
 					std::cout << "left child started!!\n";
 				#endif
 
-				if (dir)
+				if (reader->getDir())
 					deque.push_back(symTreeNode->left);
 				else
 					deque.push_front(symTreeNode->left);
@@ -370,7 +365,7 @@ void SymbolicExecutor::symbolicExecute()
 					std::cout << "right child started!!\n"; 
 				#endif
 				
-				if (dir) 
+				if (reader->getDir()) 
 					deque.push_back(symTreeNode->right);
 				else
 					deque.push_front(symTreeNode->right);
@@ -382,7 +377,7 @@ void SymbolicExecutor::symbolicExecute()
 		}
 
 
-		for (int i = 0; i < steps || steps == -1; i++)
+		for (int i = 0; i < reader->getSteps() || reader->getSteps() == -1; i++)
 		{
 
 			if (deque.empty()) break;
@@ -396,7 +391,7 @@ void SymbolicExecutor::symbolicExecute()
 				for (int j = 0; j < 2; j++)
 				{
 					int k = j;
-					if (dir) k = 1 - j;
+					if (reader->getDir()) k = 1 - j;
 
 					SymbolicTreeNode * tempSymTreeNode;
 					if (k == 0)
@@ -407,7 +402,7 @@ void SymbolicExecutor::symbolicExecute()
 					{
 						tempSymTreeNode = symTreeNode->right;
 					}
-					if (isBFS)
+					if (reader->getIsBFS())
 						if (tempSymTreeNode) deque.push_back(tempSymTreeNode);	
 					else
 						if (tempSymTreeNode) deque.push_front(tempSymTreeNode);
@@ -432,7 +427,7 @@ void SymbolicExecutor::symbolicExecute()
 			for (int j = 0; j < new_blocks.size(); j++)
 			{
 				int k = j;
-				if (dir) k = new_blocks.size() - 1 - j;
+				if (reader->getDir()) k = new_blocks.size() - 1 - j;
 
 				SymbolicTreeNode * tempSymTreeNode;
 				if (k == 0)
@@ -446,7 +441,7 @@ void SymbolicExecutor::symbolicExecute()
 					symTreeNode->right = new_blocks[k];
 					tempSymTreeNode = symTreeNode->right;
 				}
-				if (isBFS)
+				if (reader->getIsBFS())
 					deque.push_back(tempSymTreeNode);	
 				else
 					deque.push_front(tempSymTreeNode);
@@ -468,7 +463,7 @@ void SymbolicExecutor::symbolicExecute()
 			continue;
 		#endif
 
-		sendMessageAndSleep(toSend);
+		reader->proceedSymbolicExecution(toSend);
 	}
 }
 
@@ -502,14 +497,14 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 	rootNode = new SymbolicTreeNode(rootBlock, rootState, -1);	
 	symbolicExecute();
 	
-	Json::Value msg;
-	msg["fin"] = Json::Value("1");
-	Json::FastWriter fastWriter;
-	std::string output = fastWriter.write(msg);
+	// Json::Value msg;
+	// msg["fin"] = Json::Value("1");
+	// Json::FastWriter fastWriter;
+	// std::string output = fastWriter.write(msg);
 
-	std::cout << "sending this: " << output << std::endl;
-	(*socket) << output;
-	std::cout << "Function executed" << std::endl;
+	// std::cout << "sending this: " << output << std::endl;
+	// (*socket) << output;
+	// std::cout << "Function executed" << std::endl;
 }
 
 
@@ -534,33 +529,20 @@ llvm::Module* SymbolicExecutor::loadCode(std::string filename)
 }
 void SymbolicExecutor::proceed(Json::Value val)
 {
-	reader.wakeUp(val);
+	reader->wakeUp(val);
 }
 
-void SymbolicExecutor::proceed(bool isbfs, int stps, int d, int prev)
+void SymbolicExecutor::execute(Json::Value val)
 {
-	isBFS = isbfs;
-	steps = stps;
-	dir = d;
-	prevId = prev; 
+    if(val["exclude"].asString() != "")
+    {
+      exclude(val["exclude"].asString(), stoi(val["isNode"].asString()));
+       return;
+    }
+    reader->updateMsg(val);
+    reader->setExecutionVars();
 	
-	std::cout << "WAKE UP!!!!!" << std::endl;
-	std::unique_lock<std::mutex> lck(mtx);
-	cv.notify_all();
-	std::cout << "AWAKEN UP!!!!!" << std::endl;
-}
-
-
-void SymbolicExecutor::execute(bool isbfs, int stps, int d, int prev)
-{
-	isBFS = isbfs;
-	steps = stps;
-	dir = d;
-	prevId = prev; 
-
-	std::cout << filename.c_str() << " \n";
 	llvm::Module* module = loadCode(filename.c_str());
-	std::cout << filename.c_str() << " \n";
 
 	auto function = module->getFunction("_Z7notmainii");
 	executeFunction(function);
@@ -592,27 +574,9 @@ void SymbolicExecutor::exclude(std::string inp, bool isNode)
 		msg["type"] = Json::Value(MSG_TYPE_EXCLUDENODE);
 		msg["minLine"] = Json::Value(minLine);
 		msg["maxLine"] = Json::Value(maxLine);
-		Json::FastWriter fastWriter;
-		std::string output = fastWriter.write(msg);
-		std::cout << "sending this: " << output << std::endl;
-		if (socket)
-			(*socket) << output;
 
-		std::cout << "going to sleep" << std::endl;
-		std::unique_lock<std::mutex> lck(mtx);
-		cv.wait(lck);
-		lck.unlock();
-		std::cout << "wakeup!! " << std::endl;
+		reader->proceedSymbolicExecution(msg);
 	}
 	else
 		excludedNodes[BlockStates[input]->block] = true;
-}
-
-void SymbolicExecutor::sendMessageAndSleep(Json::Value toSend)
-{
-	Json::FastWriter fastWriter;
-	std::string output = fastWriter.write(toSend);
-	std::cout << "sending this: " << output << std::endl;
-	if (socket)
-		(*socket) << output;
 }

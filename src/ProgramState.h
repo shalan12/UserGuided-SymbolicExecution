@@ -34,5 +34,7 @@ class ProgramState
   std::string toString();
   void printZ3Variables();
   void Z3solver();
+  std::map<std::string, llvm::Value*> getUserVarMap();
+
 };
 #endif
