@@ -216,10 +216,11 @@ app.get('/next',function(req,res){
   {
     toSendToExecutor = {};
     var fileId = map[req.cookies.sessionid]; 
-    toSendToExecutor["isBFS"] = (typeof query["isBFS"] === 'undefined') ? 0:query["isBFS"];
-    toSendToExecutor["branch"] = (typeof query["branch"] === 'undefined') ? 0:query["branch"];
-    toSendToExecutor["steps"] = (typeof query["steps"] === 'undefined') ? 1:query["steps"];
-    toSendToExecutor["prevId"] = (typeof query["prevId"] === 'undefined') ? -1:query["prevId"];
+    toSendToExecutor["val"] = {}
+    toSendToExecutor["val"]["isBFS"] = (typeof query["isBFS"] === 'undefined') ? 0:query["isBFS"];
+    toSendToExecutor["val"]["branch"] = (typeof query["branch"] === 'undefined') ? 0:query["branch"];
+    toSendToExecutor["val"]["steps"] = (typeof query["steps"] === 'undefined') ? 1:query["steps"];
+    toSendToExecutor["val"]["prevId"] = (typeof query["prevId"] === 'undefined') ? -1:query["prevId"];
     toSendToExecutor["id"] = fileId;
     console.log("Sending to Executor : " );
     console.log(toSendToExecutor);
@@ -245,10 +246,10 @@ app.get('/exclude', function(req,res){
   if(!isPingQuery(query))
   {
     if(query["lineno"]) 
-      toSendToExecutor = {"id":fileId, "exclude":query["lineno"], "isNode":"0"};
+      toSendToExecutor = {"id":fileId, "val": {"exclude":query["lineno"], "isNode":"0"}};
     else
     {
-      toSendToExecutor = {"id":fileId, "exclude":query["nodeid"], "isNode":"1"};
+      toSendToExecutor = {"id":fileId, "val": {"exclude":query["nodeid"], "isNode":"1"}};
       //temp - because ubaid not replying in this case
     }
     res.send({});

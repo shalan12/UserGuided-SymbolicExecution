@@ -1,4 +1,4 @@
-objects = main.o symbolicexecutor.o ProgramState.o llvmExpressionTree.o utils.o jsoncpp.o Socket.o ServerSocket.o
+objects = main.o symbolicexecutor.o ProgramState.o llvmExpressionTree.o utils.o jsoncpp.o Socket.o ServerSocket.o JsonReader.o
 objectPaths = $(shell find build/*.o)
 llvmPath = /usr/lib/llvm-3.5/build/include
 INCLUDES = -I$(llvmPath)
@@ -46,6 +46,9 @@ hello.bc: hello.cpp
 	llvm-dis-3.5 $(BUILD_DIR)/hello.bc -o $(BUILD_DIR)/humanreadable_hello.bc
 jsoncpp.o: jsoncpp.cpp json.h
 	$(PREFIX)jsoncpp/dist/jsoncpp.cpp -c -o $(SUFFIX)
+JsonReader.o: jsonreader.h jsonreader.cpp llvmExpressionTree.h ServerSocket.h json.h utils.h
+	$(PREFIX)jsonreader.cpp $(INCLUDES) $(CPPFLAGS) -c -o $(SUFFIX)
+
 
 setup:
 	@mkdir -p build

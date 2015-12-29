@@ -20,3 +20,25 @@ int getInteger(llvm::Value* value)
 
     else throw std::invalid_argument("not a constant");
 }
+
+Json::Value getMessage()
+{
+    Json::Value value;
+    std::string key;
+    std::string val;
+    int count;
+    std::cout << "how many key vall pairs you want? : ";
+    std::cin >> count;
+    // std::cout << "\n";
+
+    for (int i = 0; i < count; i++)
+    {
+
+        std::cout << "Enter a Key : ";
+        std::cin >> key;
+        std::cout << "Enter a Value : ";
+        std::cin >>val;
+        value[key] = Json::Value(val);
+    }
+    return value;
+}

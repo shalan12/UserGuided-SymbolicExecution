@@ -25,6 +25,10 @@ void ProgramState::Copy(const ProgramState& from, ProgramState* to, bool copyMap
 		{
 			to->add(pr.first, new ExpressionTree(*pr.second));
 		}
+		for (auto& pr : from.userVarMap)
+		{
+			to->userVarMap[pr.first] = pr.second;
+		}
 	}
 	for (auto constraint : from.constraints)
 	{
@@ -77,18 +81,18 @@ std::map<llvm::Value*, ExpressionTree*> ProgramState::getMap()
 std::string ProgramState::toString()
 {
 	std::stringstream str;
-	for (auto& pr : map)
+	/*for (auto& pr : map)
 	{
 		str <<	getString(pr.first) << "\t == \t" << pr.second->toString() << '\n';
-	}
-	str << "\n user variables: \n";
+	}*/
+	/*str << "\n user variables: \n";*/
 
 	for (auto& pr : userVarMap)
 	{
 		if (get(pr.second))
-			str << pr.first <<	"\t == \t" << map[pr.second]->toString() << '\n';
+			str << pr.first <<	"\t = \t" << map[pr.second]->toString() << '\n';
 		else
-			str << pr.first <<	"\t == \t" << getString(pr.second) << '\n';
+			str << pr.first <<	"\t = \t" << getString(pr.second) << '\n';
 	}
 	return str.str();
 }
@@ -137,6 +141,11 @@ void ProgramState::printZ3Variables()
 			}
 		}
 	}
+}
+
+std::map<std::string, llvm::Value*> ProgramState::getUserVarMap()
+{
+	return userVarMap;
 }
 
 void ProgramState::Z3solver()
