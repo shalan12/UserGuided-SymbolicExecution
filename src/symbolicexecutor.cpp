@@ -542,12 +542,6 @@ void SymbolicExecutor::proceed(Json::Value val)
 
 void SymbolicExecutor::execute(Json::Value val)
 {
-    // if(val["exclude"].asString() != "")
-    // {
-    // 	std::cout << "excluding! \n";
-    //   	exclude(val["exclude"].asString(), stoi(val["isNode"].asString()));
-    //   	return;
-    // }
     reader->updateMsg(val);
     reader->setExecutionVars();
 	
@@ -591,6 +585,6 @@ void SymbolicExecutor::exclude(int input, int isNode)
 	val["maxLine"] = Json::Value(maxLine);
 
 	reader->proceedSymbolicExecution(val);
-	if (reader->getIsExclude())
+	if (reader->getIsExclude() != -1)
 		exclude(reader->getExcludedId(), reader->getIsExclude());
 }

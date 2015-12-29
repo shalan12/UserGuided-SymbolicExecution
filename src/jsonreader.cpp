@@ -79,7 +79,6 @@ void JsonReader::setExecutionVars()
     }
     isExclude = -1;
     excludedId = -1;
-
 	isBFS = stoi(msg["isBFS"].asString());
 	steps = stoi(msg["steps"].asString());
 	dir = stoi(msg["branch"].asString());
