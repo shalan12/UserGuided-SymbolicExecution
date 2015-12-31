@@ -79,6 +79,24 @@ function isPingQuery(query)
 {
   return (query['isPing'].valueOf() != 'false');
 }
+function makeBitCodeFile(oldpath,newpath,id)
+{
+  fs.readFile(oldpath, function (err, data) 
+  {
+    fs.writeFile(newpath+".cpp", data,function(err)
+    {      
+      console.log(newpath+".cpp" + " file written")
+      bcFile = newpath+".bc";
+      toExec = "clang-3.5 -emit-llvm " + newpath  + ".cpp -g -c -o " + bcFile;
+      exec(toExec, function (error, stdout, stderr) {
+        console.log(newpath+".bc" + " file emitted")
+        map[id] = bcFile; // store mapping between sessionid and filename
+        // things from this map will need to be deleted later .. when client leaves .. or when execution is completed
+      });
+    });
+     
+  });
+}
 ////////////////////////////////////
 //////////END-UTILS////////////////
 //////////////////////////////////
@@ -183,29 +201,19 @@ app.get('/contact', function(req, res){
   title: 'Contact'
   });
 });
+app.get('/sample',function(req,res)
+{
+  var path = __dirname + "/samples/" + req.query["fileID"];
+  var filename = req.cookies.sessionid;
+  var newPath = __dirname + "/uploads/" + filename;
+  makeBitCodeFile(path, newPath, req.cookies.sessionid);
+  res.sendfile(path);
+});
 app.post('/upload',function(req,res){
-
-  var filename = req.files.SelectedFile.name; //fileToUpload is the name of the inputfield
-  var base = filename.substring(0,filename.length - 4); // remove extension
   var extension = '.cpp'; 
-  //filename = base + "_" + req.cookies.sessionid + extension; 
-  filename = req.cookies.sessionid;
-  fs.readFile(req.files.SelectedFile.path, function (err, data) 
-  {
-    var newPath = __dirname + "/uploads/" + filename; //__dirname is a global, containing the current dir
-    fs.writeFile(newPath+extension, data,function(err)
-    {      
-      console.log(newPath+extension + " file written")
-      bcFile = newPath+".bc";
-      toExec = "clang-3.5 -emit-llvm " + newPath  + ".cpp -g -c -o " + bcFile;
-      exec(toExec, function (error, stdout, stderr) {
-        console.log(newPath+".bc" + " file emitted")
-        map[req.cookies.sessionid] = bcFile; // store mapping between sessionid and filename
-        // things from this map will need to be deleted later .. when client leaves .. or when execution is completed
-      });
-    });
-     
-  }); 
+  var filename = req.cookies.sessionid;
+  var newPath = __dirname + "/uploads/" + filename; //__dirname is a global, containing the current dir 
+  makeBitCodeFile(req.files.SelectedFile.path, newPath, req.cookies.sessionid);
   res.redirect('back'); // return to the previous page
 });
 
