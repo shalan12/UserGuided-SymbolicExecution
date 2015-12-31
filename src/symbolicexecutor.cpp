@@ -20,6 +20,21 @@
 
 int SymbolicTreeNode::instances = 0;
 
+void printBlock(llvm::BasicBlock * b)
+{
+	for (auto instruction = b->begin(), e = b->end(); instruction != e; ++instruction)
+	{
+		std::cout << "printing operands : " << instruction->getNumOperands() << "\n";
+			for (int j = 0; j < instruction->getNumOperands(); j++)
+			{
+				std::cout << "operand # : " << j+1 << " : " << getString(instruction->getOperand(j)) << "\n";
+			}
+			std::cout << "printing instruction: " << getString(instruction) << "\n";
+			std::cout << "getOpcode: " << instruction->getOpcode() << "\n";
+	}
+}
+
+
 SymbolicExecutor::SymbolicExecutor(std::string f, ServerSocket * s)
 {
 	reader = new JsonReader(s);
@@ -159,7 +174,7 @@ std::vector<SymbolicTreeNode*>
 				first->addCondition(state->get(cond)->toString());
 				std::cout << "ADDING CONDITION : " 
 						 << state->get(cond)->toString() << std::endl;
-				children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first, pid,NULL,NULL,node));
+				children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first, pid,NULL,NULL,NULL,node));
 			}
 			int numSuccesors = binst->getNumSuccessors();
 			if(numSuccesors == 2 && toAddFalse)
@@ -167,10 +182,10 @@ std::vector<SymbolicTreeNode*>
 				ProgramState* second = new ProgramState(*state);
 				second->constraints.push_back(std::make_pair(cond,"false"));
 				second->addCondition("not " + state->get(cond)->toString());
-				children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), second, pid,NULL,NULL,node));
+				children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), second, pid,NULL,NULL,NULL,node));
 			}
 		}
-		else children.push_back(new SymbolicTreeNode(binst->getSuccessor(0),state, pid,NULL,NULL,node));
+		else children.push_back(new SymbolicTreeNode(binst->getSuccessor(0),state, pid,NULL,NULL,NULL,node));
 	}
 	else if (llvm::isa<llvm::CallInst>(inst))
 	{
@@ -379,28 +394,56 @@ void SymbolicExecutor::symbolicExecute()
 
 		for (int i = 0; i < reader->getSteps() || reader->getSteps() == -1; i++)
 		{
+				int xyz;
+			#ifdef DEBUG
+				std::cout << "1: size of deque : " << deque.size() << "\n";
+				std::cin >> xyz;
+			#endif
 
 			if (deque.empty()) break;
 
 			SymbolicTreeNode* symTreeNode = deque.front();
 			deque.pop_front();
+			// printBlock(symTreeNode->block);
+
+			#ifdef DEBUG
+				std::cout << "2: size of deque : " << deque.size() << "\n";
+				std::cin >> xyz;
+			#endif
+
 			if (excludedNodes.find(symTreeNode->block) != excludedNodes.end())
+			{
+				#ifdef DEBUG
+				std::cout << "is Excluded! : \n";
+				std::cin >> xyz;
+				#endif
 				continue;
+			}
 			if (symTreeNode->isExecuted)
 			{
+				#ifdef DEBUG
+					std::cout << "Already executed" << "\n";
+					std::cin >> xyz;
+				#endif
+
 				for (int j = 0; j < 2; j++)
 				{
 					int k = j;
 					if (reader->getDir()) k = 1 - j;
 
-					SymbolicTreeNode * tempSymTreeNode;
+					SymbolicTreeNode * tempSymTreeNode = NULL;
 					if (k == 0)
 					{
 						tempSymTreeNode = symTreeNode->left;
+						std::cout << "left\n";
+						// printBlock(tempSymTreeNode->block);
 					}
 					else
 					{
 						tempSymTreeNode = symTreeNode->right;
+						std::cout << "right\n";
+						// printBlock(tempSymTreeNode->block);
+
 					}
 					if (reader->getIsBFS())
 						if (tempSymTreeNode) deque.push_back(tempSymTreeNode);	
@@ -424,6 +467,11 @@ void SymbolicExecutor::symbolicExecute()
 			
 			toSend["nodes"][currObject++] = msg;
 			
+			#ifdef DEBUG
+				std::cout << "number of blocks :  " << new_blocks.size() << "\n";
+				std::cin >> xyz;
+			#endif
+
 			for (int j = 0; j < new_blocks.size(); j++)
 			{
 				int k = j;
@@ -435,11 +483,23 @@ void SymbolicExecutor::symbolicExecute()
 
 					symTreeNode->left = new_blocks[k];
 					tempSymTreeNode = symTreeNode->left;
+					#ifdef DEBUG
+						std::cout << "left child done!!\n";
+						if (!symTreeNode->right)
+							std::cout << "right child NULL!!\n";
+						std::cin >> xyz;
+					#endif
 				}
 				else
 				{
 					symTreeNode->right = new_blocks[k];
 					tempSymTreeNode = symTreeNode->right;
+					#ifdef DEBUG
+						std::cout << "right child done!!\n";
+						if (!symTreeNode->left)
+							std::cout << "left child NULL!!\n";
+						std::cin >> xyz;
+					#endif
 				}
 				if (reader->getIsBFS())
 					deque.push_back(tempSymTreeNode);	
@@ -447,7 +507,7 @@ void SymbolicExecutor::symbolicExecute()
 					deque.push_front(tempSymTreeNode);
 			}
 			#ifdef DEBUG
-				std::cout << "size of deque : " << deque.size() << "\n";
+				std::cout << "3: size of deque : " << deque.size() << "\n";
 			#endif
 		}
 		// #ifdef CIN_SERVER
@@ -465,7 +525,7 @@ void SymbolicExecutor::symbolicExecute()
 
 		reader->proceedSymbolicExecution(toSend);
 		if (reader->getIsExclude() != -1)
-			exclude(reader->getIsExclude(), reader->getExcludedId());
+			exclude(reader->getExcludedId(), reader->getIsExclude());
 		// add exclude
 	}
 }
@@ -588,3 +648,4 @@ void SymbolicExecutor::exclude(int input, int isNode)
 	if (reader->getIsExclude() != -1)
 		exclude(reader->getExcludedId(), reader->getIsExclude());
 }
+

@@ -18,7 +18,7 @@ CPPFLAGS = -g
 
 all: hello.bc sfse
 
-debug: CPPFLAGS += -DDEBUG -DCIN_SERVER
+debug: CPPFLAGS += -DDEBUG
 debug: all
 
 sfse: $(objects)
