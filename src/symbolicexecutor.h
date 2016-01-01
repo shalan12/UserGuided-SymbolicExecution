@@ -4,7 +4,7 @@
 #include "llvmExpressionTree.h"
 #include "server/ServerSocket.h"
 #include "ProgramState.h"
-
+#include "utils.h"
 
 #include <iostream>
 #include <map>
@@ -29,6 +29,7 @@ class SymbolicTreeNode
   private:
     bool hasNext, hasPrev;
     InstructionPtr* instructionPtr;
+    int prevId;
 
   public:
     llvm::BasicBlock * block;
@@ -37,32 +38,38 @@ class SymbolicTreeNode
     SymbolicTreeNode * right;
     SymbolicTreeNode * parent;
     bool isExecuted;
-    int prevId;
     int id;
     unsigned int minLineNumber,maxLineNumber;
-    static int instances;
+    SymbolicTreeNode* returnNode;
 
     SymbolicTreeNode(llvm::BasicBlock * b,
-                     ProgramState * ps, int pid,
-                     InstructionPtr* itr = NULL,
-                     SymbolicTreeNode * l = NULL, 
-                     SymbolicTreeNode * r = NULL, 
-                     SymbolicTreeNode * parent = NULL)
+                     ProgramState * ps, int id, int pid)
     {
       block = b;
-      if(itr == NULL) itr = new InstructionPtr(block->begin());
-      this->instructionPtr = itr;
-      left = l;
-      right = r;
+      this->id = id;
       state = ps;
+      prevId = pid;
+      
+      this->instructionPtr = new InstructionPtr(block->begin());
+      this->returnNode = NULL;
+      left = NULL;
+      right = NULL;
       hasNext = true;
       hasPrev = false;
-      this->parent = parent;
       maxLineNumber = 0;
       minLineNumber = std::numeric_limits<unsigned int>::max();
-      prevId = pid;
-      id = instances++;
       isExecuted = false;
+    }
+    SymbolicTreeNode(llvm::BasicBlock * b,ProgramState * ps, int id, int pid,
+                     InstructionPtr* itr,SymbolicTreeNode * returnNode) 
+                    : SymbolicTreeNode(b,ps,id,pid)
+    {
+      if(itr != NULL) this->instructionPtr = itr;
+      this->returnNode = returnNode;
+    }
+    int getPrevId()
+    {
+        return prevId;
     }
     bool hasNextInstruction()
     {
@@ -74,26 +81,34 @@ class SymbolicTreeNode
     }
     InstructionPtr getPreviousInstruction()
     {
-      if(*instructionPtr == block->begin())
-      {
-        hasPrev = false;
-        return *instructionPtr;
-      }
-      else
-      {
         hasNext = true;
-        return --(*instructionPtr);
-      }
+
+        if(*instructionPtr == block->begin())
+        {
+            hasPrev = false;
+            return *instructionPtr;
+        }
+        else
+        {
+            return --(*instructionPtr);
+        }
     }
+
     InstructionPtr getNextInstruction()
     {
-      InstructionPtr toRet = *instructionPtr;
-      if (hasNext)
-      {
-        hasNext = (++*instructionPtr != block->end());
-      }
-      hasPrev = true;
-      return toRet;
+        InstructionPtr toRet = *instructionPtr;
+        if (hasNext)
+        {
+            hasNext = (++(*instructionPtr) != block->end());
+        }
+        std::cout << "hasNext == " << hasNext << "\nInstructionPtr now at ";
+        if(*instructionPtr == block->end())
+        {
+            std::cout << "END of block\n";
+        }
+        else std::cout << getString(*instructionPtr) << "\n";
+        hasPrev = true;
+        return toRet;
     }
 };
 
@@ -108,6 +123,7 @@ class SymbolicExecutor
     std::map<llvm::BasicBlock*, bool > excludedNodes;
     SymbolicTreeNode * rootNode;
     JsonReader * reader;
+    int numNodes;
 
 
     llvm::Module* loadCode(std::string filename);

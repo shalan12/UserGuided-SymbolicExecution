@@ -18,8 +18,6 @@
 #include <pthread.h>
 
 
-int SymbolicTreeNode::instances = 0;
-
 void printBlock(llvm::BasicBlock * b)
 {
 	for (auto instruction = b->begin(), e = b->end(); instruction != e; ++instruction)
@@ -40,6 +38,7 @@ SymbolicExecutor::SymbolicExecutor(std::string f, ServerSocket * s)
 	reader = new JsonReader(s);
 	filename = f;
 	rootNode = NULL;
+	numNodes = 0;
 }
 
 ExpressionTree* SymbolicExecutor::getExpressionTree(ProgramState* state, llvm::Value* value)
@@ -174,7 +173,7 @@ std::vector<SymbolicTreeNode*>
 				first->addCondition(state->get(cond)->toString());
 				std::cout << "ADDING CONDITION : " 
 						 << state->get(cond)->toString() << std::endl;
-				children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first, pid,NULL,NULL,NULL,node));
+				children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first, numNodes++,node->id));
 			}
 			int numSuccesors = binst->getNumSuccessors();
 			if(numSuccesors == 2 && toAddFalse)
@@ -182,10 +181,10 @@ std::vector<SymbolicTreeNode*>
 				ProgramState* second = new ProgramState(*state);
 				second->constraints.push_back(std::make_pair(cond,"false"));
 				second->addCondition("not " + state->get(cond)->toString());
-				children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), second, pid,NULL,NULL,NULL,node));
+				children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), second, numNodes++,node->id));
 			}
 		}
-		else children.push_back(new SymbolicTreeNode(binst->getSuccessor(0),state, pid,NULL,NULL,NULL,node));
+		else children.push_back(new SymbolicTreeNode(binst->getSuccessor(0),state, numNodes++,node->id));
 	}
 	else if (llvm::isa<llvm::CallInst>(inst))
 	{
@@ -199,7 +198,7 @@ std::vector<SymbolicTreeNode*>
 
 			Json::Value msg;
 			msg["node"] = Json::Value(node->id);
-			msg["parent"] = Json::Value(node->prevId);
+			msg["parent"] = Json::Value(node->getPrevId());
 			msg["external"] = Json::Value("true");
 			msg["fin"] = Json::Value("0");
 			std::vector<std::pair<ExpressionTree*, std::string> > vals =
@@ -219,24 +218,23 @@ std::vector<SymbolicTreeNode*>
 			}
 			ProgramState* newState = new ProgramState(calledFunction->args(),arguments);
 			ProgramState::Copy(*state,newState,false);
-			children.push_back(new SymbolicTreeNode(funcStart,newState, pid,NULL,NULL,NULL,node));
+			children.push_back(new SymbolicTreeNode(funcStart,newState, numNodes++,node->id,NULL,node));
 		} 
 		
 	}
 	else if (llvm::isa<llvm::ReturnInst>(inst))
 	{
-		if(node->parent)
+		if(node->returnNode)
 		{
 			llvm::ReturnInst* returninst = llvm::dyn_cast<llvm::ReturnInst>(inst);
-			SymbolicTreeNode* parent = node->parent;
-			InstructionPtr* returnptr = new InstructionPtr(parent->getPreviousInstruction());
-			ProgramState* newState = new ProgramState(*(parent->state)); // copy everything from parent state
+			SymbolicTreeNode* returnNode = node->returnNode;
+			InstructionPtr* returnptr = new InstructionPtr(returnNode->getPreviousInstruction());
+			ProgramState* newState = new ProgramState(*(returnNode->state)); // copy everything from parent state
 			ProgramState::Copy(*state,newState,false); // replace everything except map from curr state
 			newState->add(*returnptr,node->state->get(returninst->getReturnValue()));
 			(*returnptr)++;
-			children.push_back(new SymbolicTreeNode(parent->block,newState,
-								parent->id,returnptr,
-								NULL,NULL,parent->parent));	
+			children.push_back(new SymbolicTreeNode(returnNode->block,newState,
+								numNodes++,node->id,returnptr,returnNode->returnNode));	
 		}
 		
 	}
@@ -274,6 +272,10 @@ std::vector<SymbolicTreeNode*>
 	while(symTreeNode->hasNextInstruction())
 	{
 		auto instruction = symTreeNode->getNextInstruction();
+		if(instruction == symTreeNode->block->end())
+		{
+			std::cout << "wtf\n";
+		}
 		#ifdef DEBUG
 
 			std::cout << "printing operands : " << instruction->getNumOperands() << "\n";
@@ -336,8 +338,10 @@ void SymbolicExecutor::symbolicExecute()
 	while (1)
 	{
 		Json::Value toSend;
+		Json::Value nodes = Json::arrayValue;
 		toSend["type"] = Json::Value(MSG_TYPE_EXPANDNODE);
 		toSend["fileId"] = Json::Value(filename.c_str());
+
 
 		int currObject = 0;
 		#ifdef DEBUG
@@ -417,6 +421,7 @@ void SymbolicExecutor::symbolicExecute()
 				std::cout << "is Excluded! : \n";
 				std::cin >> xyz;
 				#endif
+				i--;
 				continue;
 			}
 			if (symTreeNode->isExecuted)
@@ -425,7 +430,7 @@ void SymbolicExecutor::symbolicExecute()
 					std::cout << "Already executed" << "\n";
 					std::cin >> xyz;
 				#endif
-
+				i--;
 				for (int j = 0; j < 2; j++)
 				{
 					int k = j;
@@ -458,14 +463,14 @@ void SymbolicExecutor::symbolicExecute()
 			
 			Json::Value msg;
 			msg["node"] = Json::Value(symTreeNode->id);
-			msg["parent"] = Json::Value(symTreeNode->prevId);
+			msg["parent"] = Json::Value(symTreeNode->getPrevId());
 			msg["text"] = Json::Value(symTreeNode->state->toString());
 			msg["fin"] = Json::Value("0");
 			msg["constraints"] = Json::Value(symTreeNode->state->getPathCondition());
 			msg["startLine"] = Json::Value(symTreeNode->minLineNumber);
 			msg["endLine"] = Json::Value(symTreeNode->maxLineNumber);
 			
-			toSend["nodes"][currObject++] = msg;
+			nodes[currObject++] = msg;
 			
 			#ifdef DEBUG
 				std::cout << "number of blocks :  " << new_blocks.size() << "\n";
@@ -522,7 +527,7 @@ void SymbolicExecutor::symbolicExecute()
 		// 	// std::cin >> dir; 
 		// 	continue;
 		// #endif
-
+		toSend["nodes"] = nodes;
 		reader->proceedSymbolicExecution(toSend);
 		if (reader->getIsExclude() != -1)
 			exclude(reader->getExcludedId(), reader->getIsExclude());
@@ -562,7 +567,7 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 
 	auto rootState = new ProgramState(function->args());
 	auto rootBlock = &function->getEntryBlock();
-	rootNode = new SymbolicTreeNode(rootBlock, rootState, -1);	
+	rootNode = new SymbolicTreeNode(rootBlock, rootState, numNodes++,-1);	
 	symbolicExecute();
 	
 	// Json::Value msg;

@@ -89,7 +89,8 @@ function makeBitCodeFile(oldpath,newpath,id)
       bcFile = newpath+".bc";
       toExec = "clang-3.5 -emit-llvm " + newpath  + ".cpp -g -c -o " + bcFile;
       exec(toExec, function (error, stdout, stderr) {
-        console.log(newpath+".bc" + " file emitted")
+        if(error) console.log(error)
+        else console.log(newpath+".bc" + " file emitted")
         map[id] = bcFile; // store mapping between sessionid and filename
         // things from this map will need to be deleted later .. when client leaves .. or when execution is completed
       });
@@ -272,7 +273,7 @@ app.get('/exclude', function(req,res){
   }
 });
 server = http.createServer(app).listen(app.get('port'), function(){
-  console.log("Express server listening on port " + app.get('port'));
+  console.log("Express server listening on " + server.address().address + ":" + app.get('port'));
 });
 server.on('connection', function(socket){
   console.log('Connection :  ' + socket.remoteAddress);
