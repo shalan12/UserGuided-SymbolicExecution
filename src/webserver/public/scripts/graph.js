@@ -1,10 +1,12 @@
 /* --------------------- Symbolic Tree --------------------- */
-              var margin = { top: 40, right: 120, bottom: 20, left: 250 };
+              var margin = { top: 40, right: 120, bottom: 20, left: 50 };
               var width = 960 - margin.right - margin.left;
-              var height = 700 - margin.top - margin.bottom;
+              var height = 1000 - margin.top - margin.bottom;
 /*var margin = {top: 200.5, right: 120, bottom: 20, left: 275},
 width = 1040,//960 - margin.right - margin.left,
 height = 1040;//margin.top - margin.bottom;*/
+var y = d3.scale.linear(),  
+yAxis = d3.svg.axis().scale(y).orient("left").tickSize(-width, 0).tickPadding(6); 
 var i = 0,
 duration = 750,
 root;
@@ -12,11 +14,23 @@ var tree = d3.layout.tree()
 .size([height, width]);
 var diagonal = d3.svg.diagonal()
 .projection(function(d) { return [d.x, d.y]; });
-var svg = d3.select("#graph").append("svg")
+var svg = d3.select("#graph")
+.attr("width", 100)
+.attr("height", 100)
+.style("overflow", "visible")
+.append("svg")
 .attr("width", width+ margin.right + margin.left)
 .attr("height", height+ margin.top + margin.bottom)
 .append("g")
-.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+/*var rect = svg.append("svg:rect")
+    .attr("width", width)
+    .attr("height", height);
+
+rect.call(d3.behavior.zoom().y(y).on("zoom", function(){svg.select("g.y.axis").call(yAxis);}))*/
+
 var treeData = [];
 var numSteps, branchSelected, explore;
 var contextMenuShowing = false;
@@ -34,7 +48,8 @@ var contextmenu = [
                             while (todo)
                             {
                                 var curr = todo.pop();
-                                d3.select("#name"+curr.node).style("fill", "grey");
+                                excludeNode(curr.node);
+                                //d3.select("#name"+curr.node).style("fill", "grey");
                                 for (var line = curr.startLine; line <= curr.endLine; line++)
                                 {
                                     document.getElementById(line).style.backgroundColor = 'red';
@@ -72,8 +87,8 @@ var contextmenu = [
                         .append("div")
                         .attr("class", "well bs-component col-lg-3")
                         .attr("id", "formmenu")
-                        .style("margin-left", d.x+120 +"px")
-                        .style("margin-top", -500+d.y+50 +"px");
+                        .style("margin-left", d.x-50 +"px")
+                        .style("margin-top", -1000+d.y+50 +"px");
                         menu.html(
                                 '<legend>Options:</legend>'+
                                 '<form class=\'form-group\' id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
@@ -221,7 +236,20 @@ function update(source) {
 
     nodeUpdate.select("circle")
     .attr("r", 10)
-    .style("fill", function(d) { return d.children ? "lightsteelblue" : "#fff"; });
+    .style("fill", function(d) { 
+        if(d.children)
+        {   
+            return "lightsteelblue";
+        } 
+        else if(d.excluded === true)
+        {
+            return "grey";
+        }
+        else
+        { 
+            return "#fff";
+        }
+    });
 
     nodeUpdate.select("text")
     .style("fill-opacity", 1);
@@ -298,6 +326,14 @@ function click(d) {
     getNext(d.node);
 }
 
+function excludeNode(nodeID)
+{
+    var toExclude = treeData.filter(function ( obj ) {
+        return obj.node === nodeID;
+    })[0];
+    toExclude.excluded = true; 
+}
+
 function excludeStatement(startLine,isPing)
 {
     isPing = isPing || false;
@@ -324,7 +360,7 @@ function excludeStatement(startLine,isPing)
 function addNode(nodeObj)
 {
     var node = {"node": nodeObj.node, "text": nodeObj["text"], "parent": nodeObj["parent"], "children": [], "constraints": nodeObj["constraints"], 
-            "startLine": nodeObj["startLine"], "endLine": nodeObj["endLine"], "addModel": false};
+            "startLine": nodeObj["startLine"], "endLine": nodeObj["endLine"], "excluded":false, "addModel": false};
     treeData.push(node);
     for (var j = 0; j < treeData.length; j++)
     {
