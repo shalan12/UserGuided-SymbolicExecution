@@ -7007,6 +7007,13 @@ a.list-group-item-danger.active:focus {
   -moz-border-radius:10px;
   border-radius:10px;
 }*/
+
+div#graph {
+  height: 800px;
+  width: 1000px;
+  border:2px solid #4E5D6C;
+  overflow-y: scroll;
+}
 .node {
   cursor: pointer;http://localhost:3000/
 }
