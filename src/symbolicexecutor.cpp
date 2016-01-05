@@ -491,14 +491,42 @@ void SymbolicExecutor::symbolicExecute()
 
 					}
 					if (reader->getIsBFS())
-						if (tempSymTreeNode) deque.push_back(tempSymTreeNode);	
+					{
+						if (tempSymTreeNode)
+						{
+							deque.push_back(tempSymTreeNode);	
+							std::cout << "child added!\n";
+						}
+						else
+						{	
+							std::cout << "shit happenS!\n";
+						}  
+						
+					}
+							
 					else
-						if (tempSymTreeNode) deque.push_front(tempSymTreeNode);
+					{
+						if (tempSymTreeNode)
+						{
+							deque.push_front(tempSymTreeNode);
+							std::cout << "child added!\n";
+						}
+						else
+						{	
+							std::cout << "shit happenS!\n";
+						} 
+						
+					}
 				}
 				continue;	
 			}
 			std::vector<SymbolicTreeNode*> new_blocks = executeBasicBlock(symTreeNode);
 			symTreeNode->isExecuted = true;
+			#ifdef DEBUG
+					printBlock(symTreeNode->block);
+					std::cout << "Executed !" << "\n";
+					std::cin >> xyz;
+				#endif
 			BlockStates[symTreeNode->id]=symTreeNode;
 			
 			Json::Value msg;
