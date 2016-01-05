@@ -239,6 +239,7 @@ app.get('/next',function(req,res){
   if(toSend[fileId])
   {
     //sendCopy = lodash.cloneDeep(toSend[fileId]);
+    console.log("sending to client " + JSON.stringify(toSend[fileId]));
     res.send(toSend[fileId]);
     toSend[fileId] = null;
   }

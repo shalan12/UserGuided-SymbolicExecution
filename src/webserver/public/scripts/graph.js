@@ -33,6 +33,12 @@ rect.call(d3.behavior.zoom().y(y).on("zoom", function(){svg.select("g.y.axis").c
 
 var treeData = [];
 var numSteps, branchSelected, explore;
+function setDefaults()
+{
+    numSteps = 1;
+    branchSelected = 0;
+    explore = 1;
+}
 var numOfCodeLines = 0;
 var contextMenuShowing = false;
 var contextmenu = [
@@ -266,6 +272,7 @@ function click(d) {
       //----------------//
       //update(d);
       //----------------//
+    setDefaults();
     getNext(d.node);
 }
 
