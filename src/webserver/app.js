@@ -185,6 +185,30 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
+app.get('/main',function(req,res){
+  res.render('main',{
+    title: 'Home'
+  });
+});
+app.get('/refresh',function(req,res){
+  console.log("here");
+  var filename = map[req.cookies.sessionid].slice(0,-3);
+  console.log(filename);
+  var idx = map.indexOf(filename);
+  if(idx > -1)
+  {
+    map.splice(idx,1);
+  }
+  res.clearCookie(req.cookies.sessionid);
+  exec('rm /uploads/' + filename+'.bc',  function(error, stdout, stderr){
+      if(error) console.log(error);
+  });
+  exec('rm /uploads/' + filename+'.cpp',function(error, stdout, stderr){
+      if(error) console.log(error);
+  });
+  res.redirect('/');
+});
+
 app.get('/', function(req, res){
   res.render('index', {
   title: 'Home'
@@ -249,6 +273,7 @@ app.get('/next',function(req,res){
   }
   
 });
+
 app.get('/exclude', function(req,res){
   query = req.query;
   fileId = map[req.cookies.sessionid];

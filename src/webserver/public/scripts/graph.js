@@ -10,19 +10,22 @@ yAxis = d3.svg.axis().scale(y).orient("left").tickSize(-width, 0).tickPadding(6)
 var i = 0,
 duration = 750,
 root;
-var tree = d3.layout.tree()
-.size([height, width]);
-var diagonal = d3.svg.diagonal()
-.projection(function(d) { return [d.x, d.y]; });
-var svg = d3.select("#graph")
-.append("svg")
-.attr("viewbox", "0,0,960,500")
-.attr("width", width+ margin.right + margin.left)
-.attr("height", height+ margin.top + margin.bottom)
-.append("g")
-.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var tree,diagonal,svg;
 
-
+function setup()
+{
+    tree = d3.layout.tree()
+    .size([height, width]);
+    diagonal = d3.svg.diagonal()
+    .projection(function(d) { return [d.x, d.y]; });
+    svg = d3.select("#graph")
+    .append("svg")
+    .attr("viewbox", "0,0,960,500")
+    .attr("width", width+ margin.right + margin.left)
+    .attr("height", height+ margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+}
 /*var rect = svg.append("svg:rect")
     .attr("width", width)
     .attr("height", height);
@@ -550,17 +553,20 @@ function uploadSample(isPing)
         url: "/sample",
         data: {"fileID": sampleName, "isPing":isPing} 
     }).done(function(resp){
-        console.log(resp)
-        var fileString = resp.replace(/\r/g, "\n");
-        var splitted = fileString.split("\n");
-        document.getElementById("filecode").style.display = "block";
-        numOfCodeLines = splitted.length;
-        for (var i = 1; i <= splitted.length; i++)
-        {
-            $("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
-        }
-        document.getElementById('instructions').style.display = "none";
-        document.getElementById('beginSymbolicExecutiom').style.display = "block";
+        $.get("/main",function (data){
+            $("#mainContent").html(data);
+            setup();
+            var fileString = resp.replace(/\r/g, "\n");
+            var splitted = fileString.split("\n");
+            // document.getElementById("filecode").style.display = "block";
+            numOfCodeLines = splitted.length;
+            for (var i = 1; i <= splitted.length; i++)
+            {
+                $("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
+            }
+            // document.getElementById('instructions').style.display = "none";
+            // document.getElementById('beginSymbolicExecutiom').style.display = "block";
+        });
        /* if(resp.file !== undefined)
         {
             document.getElementById('instructions').style.display = "none";
@@ -572,5 +578,12 @@ function uploadSample(isPing)
            // setTimeout(uploadSample(true),1000);
         
         }*/
+    });
+}
+
+function goBack()
+{
+    $.get({
+        url: "/refresh",
     });
 }

@@ -16,6 +16,7 @@
 	<div class= "navbar navbar-default navbar-fixed-top">
 		<div class="container">
 			<div class="navbar-header">
+			  <a class="nav navbar-nav navbar-left" id="Back" href="/refresh">&#x2190;</a> 		
 	          <a class="navbar-brand" href="">Symbolic Execution</a>
 	        </div>
 	        <div class="navbar-collapse collapse" id="navbar-main">
@@ -45,8 +46,8 @@
 			</div>
 	</div>
 	<div class="container-fluid">
-			<div class="row">
-			    <div class="col-md-2">
+			<div class="row" id="mainContent">
+			    <div class="col-md-2" id="features">
 			        <div class="panel">
 				        <div class="panel-body">
 				        	<p class="lead" href="#features">Features:</p>
@@ -57,11 +58,11 @@
 			        	</div>
 			        </div>
 			    </div>
-			    <div class="col-md-7" style="display:none" id="beginSymbolicExecutiom">
+			    <!-- <div class="col-md-7" style="display:none" id="beginSymbolicExecutiom">
 			    	<button class="btn btn-default" id="Step" onclick="getNext()">Begin Symbolic Execution</button>
 			    	<div id="graph"></div>
 			    
-			    </div>
+			    </div> -->
 			    <div class="col-md-7" id="instructions">
 					<div id="codeinstructions">
 						<p class="panel-body lead">Our framework allows you to run symbolic execution with user-guided approach. Currently, the framework only supports C++ files. You can choose any of the sample code files for a demo of the functioality implemented.</p> 
@@ -91,13 +92,13 @@
 						</div> -->
 					</div>
 				</div>
-				<div class="col-md-3 panel" id="filecode" style="display:none">
+				<!-- <div class="col-md-3 panel" id="filecode" style="display:none">
 					<div class="code">
 						<div id="codedata">
 							<p class="panel-body lead">Code:</p>
 						</div>
 					</div>
-				</div>	 
+				</div>	 --> 
 			</div>
 	</div>
 
