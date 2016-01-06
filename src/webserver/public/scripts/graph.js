@@ -1,30 +1,64 @@
 /* --------------------- Symbolic Tree --------------------- */
-              var margin = { top: 40, right: 120, bottom: 20, left: 50 };
-              var width = 960 - margin.right - margin.left;
-              var height = 1000 - margin.top - margin.bottom;
+var margin = { top: 40, right: 120, bottom: 20, left: 80};
+var width = 960 - margin.right - margin.left;
+var height = 1000 - margin.top - margin.bottom;
 /*var margin = {top: 200.5, right: 120, bottom: 20, left: 275},
 width = 1040,//960 - margin.right - margin.left,
 height = 1040;//margin.top - margin.bottom;*/
-var y = d3.scale.linear(),  
-yAxis = d3.svg.axis().scale(y).orient("left").tickSize(-width, 0).tickPadding(6); 
+var zoomStep = 0.2;
+var actualZoomLevel = 1.0;
 var i = 0,
 duration = 750,
 root;
 var tree,diagonal,svg;
-
+var zoom = d3.behavior.zoom()
+            .on("zoom", function(){
+                if (contextMenuShowing == false)
+                    svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+            });
+var container;
 function setup()
 {
     tree = d3.layout.tree()
     .size([height, width]);
     diagonal = d3.svg.diagonal()
     .projection(function(d) { return [d.x, d.y]; });
-    svg = d3.select("#graph")
-    .append("svg")
-    .attr("viewbox", "0,0,960,500")
-    .attr("width", width+ margin.right + margin.left)
-    .attr("height", height+ margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    var temp = d3.select("#graph")
+        .append("svg")
+        .attr("viewbox", "0,0,960,500");
+    svg = temp
+        // .attr("width", width+ margin.right + margin.left)
+        // .attr("height", height+ margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    container = svg;
+    temp.on("mousedown", function(){
+            if(d3.event.button === 2){
+                d3.event.stopImmediatePropagation();
+            };
+        })
+        .call(zoom).on("dblclick.zoom", function(){svg.attr("transform", "translate(" + margin.left + "," + margin.top + ")");});
+}
+function zoomIn(){
+    //Calculate and set the new zoom level 
+    actualZoomLevel = roundFloat(parseFloat(actualZoomLevel) + parseFloat(zoomStep));
+    zoom.scale(actualZoomLevel);
+    //Get the actual position of the container
+    var xPosition = d3.transform(container.attr("transform")).translate[0];
+    var yPosition = d3.transform(container.attr("transform")).translate[1];
+    //Esecute the transformation setting the actual position and the new zoom level
+    container.attr("transform", "translate(" + xPosition + ", " + yPosition + ")scale(" + zoom.scale() + ")");
+}
+
+function zoomOut(){
+    actualZoomLevel = roundFloat(parseFloat(actualZoomLevel) - parseFloat(zoomStep));
+    zoom.scale(actualZoomLevel);
+    var xPosition = d3.transform(container.attr("transform")).translate[0];
+    var yPosition = d3.transform(container.attr("transform")).translate[1];
+    container.attr("transform", "translate(" + xPosition + ", " + yPosition + ")scale(" + zoom.scale() + ")");
+}
+function roundFloat(value){
+    return value.toFixed(2);
 }
 /*var rect = svg.append("svg:rect")
     .attr("width", width)
@@ -47,32 +81,40 @@ var contextmenu = [
                 title: 'Exclude',
                 action: function(elm,d,i) {
                     //console.log(elm + " " + d.node + " " + i);
-                    $.ajax({
-                        url: "/exclude",
-                        data: {"nodeid":d.node, "isPing":false}  // temp -- isPing should be false at first, then should keep pinging until EXPECTED reply received
-                    }).done(function(){
-                            console.log(d3.select("#name"+d.node).style("fill", "grey"));
-                            var todo = [d];
-                            while (todo)
-                            {
-                                var curr = todo.pop();
-                                excludeNode(curr.node);
-                                //d3.select("#name"+curr.node).style("fill", "grey");
-                                for (var line = curr.startLine; line <= curr.endLine; line++)
+                    if (contextMenuShowing == true)
+                    {
+                        d3.select("#formmenu").remove();
+                        contextMenuShowing = false;
+                    }
+                    else
+                    {
+                        $.ajax({
+                            url: "/exclude",
+                            data: {"nodeid":d.node, "isPing":false}  // temp -- isPing should be false at first, then should keep pinging until EXPECTED reply received
+                        }).done(function(){
+                                console.log(d3.select("#name"+d.node).style("fill", "grey"));
+                                var todo = [d];
+                                while (todo)
                                 {
-                                    document.getElementById(line).style.backgroundColor = 'red';
-                                }   
-                                d3.select("#name"+curr.node).on('contextmenu', function(d, i){
-                                    console.log("Don't do anything");
-                                });
-                                d3.select("#name"+curr.node).on('click', function(d,i){
-                                    console.log("Dont get next element");
-                                });
-                                if(curr.children)
-                                    todo = todo.concat(curr.children);
-                            }
+                                    var curr = todo.pop();
+                                    excludeNode(curr.node);
+                                    //d3.select("#name"+curr.node).style("fill", "grey");
+                                    for (var line = curr.startLine; line <= curr.endLine; line++)
+                                    {
+                                        document.getElementById(line).style.backgroundColor = 'red';
+                                    }   
+                                    d3.select("#name"+curr.node).on('contextmenu', function(d, i){
+                                        console.log("Don't do anything");
+                                    });
+                                    d3.select("#name"+curr.node).on('click', function(d,i){
+                                        console.log("Dont get next element");
+                                    });
+                                    if(curr.children)
+                                        todo = todo.concat(curr.children);
+                                }
 
-                    });
+                        });
+                    }
                 }
             },
             {
@@ -94,9 +136,9 @@ var contextmenu = [
                         menu = d3.select("#graph")
                         .append("div")
                         .attr("class", "well bs-component col-lg-3")
-                        .attr("id", "formmenu")
-                        .style("margin-left", d.x-50 +"px")
-                        .style("margin-top", -1000+d.y+50 +"px");
+                        .attr("id", "formmenu");
+                        // .style("margin-left", d.x-50 +"px")
+                        // .style("margin-top", -500 + d.y + 50 +"px");
                         menu.html(
                                 '<legend>Options:</legend>'+
                                 '<form class=\'form-group\' id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
@@ -131,7 +173,7 @@ function update(source) {
     links = tree.links(nodes);
 
     // Normalize for fixed-depth.
-    nodes.forEach(function(d) { d.y = d.depth * 100; });
+    nodes.forEach(function(d) { d.y = (d.depth * 100)+30; });
 
     // Update the nodes…
     var node = svg.selectAll("g.node")
@@ -295,7 +337,7 @@ function highlightPathToNode(node)
 function hightlightCode(startLine, endLine, color)
 {
     for (var line = startLine; line <= endLine; line++)
-    {
+    {   
         document.getElementById(line).style.backgroundColor = color;
     }    
 }
@@ -351,6 +393,8 @@ function addNode(nodeObj)
     }
     updateGraph();
     console.log(numOfCodeLines);
+    d3.selectAll("circle").style("stroke", "steelblue");
+    document.getElementById("name"+node.node).style.stroke = '#FF6347';
     /*hightlightCode(1, numOfCodeLines, '#ebebeb');*/
     hightlightCode(node.startLine, node.endLine, 'gold');
 }
@@ -367,9 +411,7 @@ function getNext(nodeID,isPing)
                     var noNodeAlert = d3.select("#graph")
                         .append("div")
                         .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-warning")
-                        .attr("id", "noNode-alert")
-                        .style("margin-left", 300 + "px")
-                        .style("margin-top", -500 + "px");
+                        .attr("id", "noNode-alert");
                     noNodeAlert.html(
                     '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
                     'This node has no more branches to explore.\n' +

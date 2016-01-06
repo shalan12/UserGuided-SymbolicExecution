@@ -7009,10 +7009,29 @@ a.list-group-item-danger.active:focus {
 }*/
 
 div#graph {
-  height: 800px;
-  width: 1000px;
+  height: 600px;
+  width: 100%;
   border:2px solid #4E5D6C;
-  overflow-y: scroll;
+}
+div#graph svg {
+  height: 100%;
+  width: 100%;
+}
+#formmenu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 360px;
+  width: 246px;
+  margin-left: -123px;
+  margin-top: -180px;
+}
+#noNode-alert {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -123px;
+  margin-top: -180px;
 }
 .node {
   cursor: pointer;http://localhost:3000/
