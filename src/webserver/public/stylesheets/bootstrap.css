@@ -7013,6 +7013,15 @@ div#graph {
   width: 100%;
   border:2px solid #4E5D6C;
 }
+div#features {
+  height: 300px;
+  width: 100%;
+}
+div#filecode {
+  height: 1000px;
+  width: 100%;
+  overflow: scroll;
+}
 div#graph svg {
   height: 100%;
   width: 100%;

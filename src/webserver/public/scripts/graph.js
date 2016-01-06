@@ -597,6 +597,7 @@ function uploadSample(isPing)
     }).done(function(resp){
         $.get("/main",function (data){
             $("#mainContent").html(data);
+            document.getElementById('Back').style.display = "block";
             setup();
             var fileString = resp.replace(/\r/g, "\n");
             var splitted = fileString.split("\n");
