@@ -456,9 +456,9 @@ function getModelData(node)
     var modelForm = d3.select("#graph")
     .append("div")
     .attr("id", "model-input")
-    .attr("class", "well bs-component col-lg-3")
-    .style("margin-left", node.x+120+"px")
-    .style("margin-top",node.y-350+"px");
+    .attr("class", "well bs-component col-lg-3");
+/*    .style("margin-left", node.x+120+"px")
+    .style("margin-top",node.y-350+"px");*/
     modelForm.html(
         '<legend>Add Model for function:</legend>' +
         'Available variables to choose: x, y, z' +
@@ -480,10 +480,10 @@ function checkForModel(selection)
         {   
             var modelAlert = d3.select("#graph")
             .append("div")
-            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-info")
-            .attr("id", "model-alert")
-            .style("margin-left", selection.x+120 + "px")
-            .style("margin-top", selection.y-350 + "px");
+            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-warning")
+            .attr("id", "model-alert");
+/*            .style("margin-left", selection.x+120 + "px")
+            .style("margin-top", selection.y-350 + "px");*/
             var a = selection;
     /*        modelAlert.append("button")
             .attr("type", "button")
@@ -499,7 +499,7 @@ function checkForModel(selection)
             modelAlert.html(
                 '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
                 'An external function call was executed at node \''+selection.node+'\'. Please provide a model for the function.\n' +
-                '<input type="button" class="btn btn-success" id="addModelBtn" value="Add Model">');
+                '<input type="button" class="btn btn-primary" id="addModelBtn" value="Add Model">');
             $("#addModelBtn").on("click", function(){getModelData(selection)});
         }    
 }

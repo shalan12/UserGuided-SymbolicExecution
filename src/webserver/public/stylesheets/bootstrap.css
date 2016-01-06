@@ -7033,6 +7033,20 @@ div#graph svg {
   margin-left: -123px;
   margin-top: -180px;
 }
+#model-input {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -123px;
+  margin-top: -180px;
+}
+#model-alert {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -123px;
+  margin-top: -180px;
+}
 .node {
   cursor: pointer;http://localhost:3000/
 }
