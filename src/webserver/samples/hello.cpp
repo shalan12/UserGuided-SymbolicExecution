@@ -9,7 +9,7 @@ void notmain(int a, int b)
 		else
 		{
 			b = notmain2(a+1,b+2);
-			//std::cout << b;
+			std::cout << b;
 		}
 	}
 	else
