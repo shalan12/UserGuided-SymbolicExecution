@@ -37,7 +37,8 @@ function setup()
                 d3.event.stopImmediatePropagation();
             };
         })
-        .call(zoom).on("dblclick.zoom", function(){svg.attr("transform", "translate(" + margin.left + "," + margin.top + ")");});
+        .call(zoom).on("dblclick.zoom", function(){svg.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        zoom.scale(1);});
 }
 function zoomIn(){
     //Calculate and set the new zoom level 
@@ -63,7 +64,6 @@ function roundFloat(value){
 /*var rect = svg.append("svg:rect")
     .attr("width", width)
     .attr("height", height);
-
 rect.call(d3.behavior.zoom().y(y).on("zoom", function(){svg.select("g.y.axis").call(yAxis);}))*/
 
 var treeData = [];
@@ -376,7 +376,7 @@ function excludeStatement(startLine,isPing)
 function addNode(nodeObj)
 {
     var node = {"node": nodeObj.node, "text": nodeObj["text"], "parent": nodeObj["parent"], "children": [], "constraints": nodeObj["constraints"], 
-            "startLine": nodeObj["startLine"], "endLine": nodeObj["endLine"], "excluded":false, "addModel": false};
+            "startLine": nodeObj["startLine"], "endLine": nodeObj["endLine"], "excluded":false, "addModel": nodeObj["addModel"]};
     treeData.push(node);
     for (var j = 0; j < treeData.length; j++)
     {
