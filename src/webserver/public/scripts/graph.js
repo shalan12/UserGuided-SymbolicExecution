@@ -366,7 +366,7 @@ function excludeStatement(startLine,isPing)
                 document.getElementById(line).style.backgroundColor = 'red';
             } 
         } 
-        else setTimeout(excludeStatement(startLine,true), 1000);
+        else setTimeout(function(){excludeStatement(startLine,true);}, 1000);
     });
 }
 /*var exclusionMenu = {
@@ -399,6 +399,26 @@ function addNode(nodeObj)
     hightlightCode(node.startLine, node.endLine, 'gold');
 }
 /* ---------------- Step To Get Next Node --------------------------------------- */
+function addNodes(data)
+{
+    if (data.nodes === undefined || data.nodes.length == 0)
+    {
+        var noNodeAlert = d3.select("#graph")
+            .append("div")
+            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-warning")
+            .attr("id", "noNode-alert");
+        noNodeAlert.html(
+        '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+        'This node has no more branches to explore.\n' +
+        '<input type="button" class="btn btn-primary" id="noNodeBtn" value="OK">');
+        $("#noNodeBtn").on("click", function(){d3.select("#noNode-alert").remove();});   
+    }
+    else
+    {
+        for (var i =0; i < data.nodes.length; i++)
+            addNode(data.nodes[i]);
+    }
+}
 function getNext(nodeID,isPing)
 {
     isPing = isPing || false;
@@ -406,27 +426,11 @@ function getNext(nodeID,isPing)
                  'steps': numSteps, 'prevId': nodeID, 'isPing': isPing}, function(data){
             if(data.updated)
             {
-                if (data.nodes === undefined || data.nodes.length == 0)
-                {
-                    var noNodeAlert = d3.select("#graph")
-                        .append("div")
-                        .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-warning")
-                        .attr("id", "noNode-alert");
-                    noNodeAlert.html(
-                    '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
-                    'This node has no more branches to explore.\n' +
-                    '<input type="button" class="btn btn-primary" id="noNodeBtn" value="OK">');
-                    $("#noNodeBtn").on("click", function(){d3.select("#noNode-alert").remove();});   
-                }
-                else
-                {
-                    for (var i =0; i < data.nodes.length; i++)
-                    addNode(data.nodes[i]);
-                }
+                addNodes(data);
             }
             if(!data.completed)
             {
-                setTimeout(getNext(nodeID,true), 1000);
+                setTimeout(function(){getNext(nodeID,true);}, 1000);
             }
     });
 }
@@ -436,15 +440,35 @@ function addModel(nodeID)
     var _modelOptions = document.getElementById('modelData');
     var inputConstraints = _modelOptions.elements.namedItem('focusedInput').value;
     var expectedOutput = _modelOptions.elements.namedItem('focusedOutput').value;
+    d3.select("#model-input").remove();
+
     console.log(inputConstraints);
     console.log(expectedOutput);
     console.log(nodeID);
-    $.ajax({
+    console.log(JSON.stringify({
         url: "/constraints",
         data: {"nodeid": nodeID, "inputConstraints": inputConstraints, "expectedOutput": expectedOutput}
-    }).done(function(resp){
-        console.log("Inputs posted");
-    });
+    }));
+    url = "/constraints";
+    query = {"nodeid": nodeID, "inputConstraints": inputConstraints, 
+    "expectedOutput": expectedOutput};
+    var f = function sendReq(isPing)
+    {
+        query["isPing"] = isPing;
+        $.ajax({
+                url: "/constraints",
+                data: query}).done(function(resp){
+                if(!resp.completed)
+                {
+                    setTimeout(function(){sendReq(true);}, 1000);
+                }
+                else
+                {
+                    addNodes(resp);
+                }
+            });
+    };
+    f(false);
     return false;
 }        
 
@@ -462,13 +486,13 @@ function getModelData(node)
     modelForm.html(
         '<legend>Add Model for function:</legend>' +
         'Available variables to choose: x, y, z' +
-        '<form class=\'form-group\' id=\'modelData\' onsubmit="addModel(\''+node.node+'\')">' +
+        '<form class=\'form-group\' id=\'modelData\' onsubmit="return addModel(\''+node.node+'\')">' +
         '<br>' +
         '<label class="control-label" for="focusedInput"> Provide the input constraints: </label>' +
-        '<input class="form-control" id="focusedInput[]" type="text">' +
+        '<input class="form-control" id="focusedInput" type="text">' +
         '<br><br>' +
         '<label class="control-label" for="focusedOutput"> Provide the output for the input constraint: </label>' +
-        '<input class="form-control" id="focusedOutput[]" type="text">'+
+        '<input class="form-control" id="focusedOutput" type="text">'+
         '<br><br>' +
         '<input type="submit" value="Submit">' +
         '</form>');
@@ -476,7 +500,7 @@ function getModelData(node)
 
 function checkForModel(selection)
 {
-        if (selection.addModel == true)
+        if (selection.addModel.valueOf() == 'true')
         {   
             var modelAlert = d3.select("#graph")
             .append("div")
@@ -534,53 +558,53 @@ function handleMenuOptions(nodeID)
 
 /* ---------------- Upload File and Code --------------------- */
 
-var _submit = document.getElementById('_submit'), 
-_file = document.getElementById('_file');
-//_progress = document.getElementById('_progress'); 
-var data = new FormData();
-function loaded(file) {
-    var reader = new FileReader();
-    reader.readAsBinaryString(file);
-    reader.onload = function(evt) {
-        var fileString = evt.target.result.replace(/\r/g, "\n");
-        var splitted = fileString.split("\n");
-        document.getElementById("filecode").style.display = "block";
-        numOfCodeLines = splitted.length;    
-        for (var i = 1; i <= splitted.length; i++)
-        {
-            $("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
-        }
-    }
+// var _submit = document.getElementById('_submit'), 
+// _file = document.getElementById('_file');
+// //_progress = document.getElementById('_progress'); 
+// var data = new FormData();
+// function loaded(file) {
+//     var reader = new FileReader();
+//     reader.readAsBinaryString(file);
+//     reader.onload = function(evt) {
+//         var fileString = evt.target.result.replace(/\r/g, "\n");
+//         var splitted = fileString.split("\n");
+//         document.getElementById("filecode").style.display = "block";
+//         numOfCodeLines = splitted.length;    
+//         for (var i = 1; i <= splitted.length; i++)
+//         {
+//             $("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
+//         }
+//     }
         
-}
-var upload = function(){
-    document.getElementById('instructions').style.display = "none";
-    document.getElementById('beginSymbolicExecutiom').style.display = "block";
-    if(_file.files.length === 0){
-      return;
-    }
+// }
+// var upload = function(){
+//     document.getElementById('instructions').style.display = "none";
+//     document.getElementById('beginSymbolicExecutiom').style.display = "block";
+//     if(_file.files.length === 0){
+//       return;
+//     }
 
-    data.append('SelectedFile', _file.files[0]);
-    var request = new XMLHttpRequest();
-    request.onreadystatechange = function(){
-        if(request.readyState == 4){
-            try {
-                var resp = JSON.parse(request.response);
-            } catch (e){
-                var resp = {
-                    status: 'error',
-                    data: 'Unknown error occurred: [' + request.responseText + ']'
-                };
-            }
-            console.log(resp.status + ': ' + resp.data);
-            $("#codeinstructions").append('<p class="panel-body">Upload Successful!</p>');
-        }
-    };
-    request.open('POST', 'upload');
-    request.send(data);
-    loaded(_file.files[0]);
-}
-_submit.addEventListener('click', upload);
+//     data.append('SelectedFile', _file.files[0]);
+//     var request = new XMLHttpRequest();
+//     request.onreadystatechange = function(){
+//         if(request.readyState == 4){
+//             try {
+//                 var resp = JSON.parse(request.response);
+//             } catch (e){
+//                 var resp = {
+//                     status: 'error',
+//                     data: 'Unknown error occurred: [' + request.responseText + ']'
+//                 };
+//             }
+//             console.log(resp.status + ': ' + resp.data);
+//             $("#codeinstructions").append('<p class="panel-body">Upload Successful!</p>');
+//         }
+//     };
+//     request.open('POST', 'upload');
+//     request.send(data);
+//     loaded(_file.files[0]);
+// }
+// _submit.addEventListener('click', upload);
 
 
 /*----------------------- Upload Sample File and Code ----------------- */

@@ -1,4 +1,4 @@
-#include <iostream>
+#include <stdlib.h>     /* abs */
 int notmain2(int c, int d);
 void notmain(int a, int b)
 {
@@ -9,7 +9,7 @@ void notmain(int a, int b)
 		else
 		{
 			b = notmain2(a+1,b+2);
-			std::cout << b;
+			b = b + abs(a);
 		}
 	}
 	else

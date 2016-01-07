@@ -17,6 +17,7 @@
 #include <llvm/IR/IntrinsicInst.h>
 #include <pthread.h>
 
+std::pair<ProgramState*,InstructionPtr*> getReturnState(SymbolicTreeNode* node, ExpressionTree* returnValue);
 
 void printBlock(llvm::BasicBlock * b)
 {
@@ -229,32 +230,30 @@ std::vector<SymbolicTreeNode*>
 	{
 		llvm::CallInst* callInst = llvm::dyn_cast<llvm::CallInst>(inst);
 		llvm::Function* calledFunction = callInst->getCalledFunction();
+		llvm::BasicBlock* funcStart = NULL;
 		if(calledFunction->isDeclaration())
 		{
 			#ifdef DEBUG
 				std::cout << "EXTERNAL CALL\n";
 			#endif
 
-			
-			std::vector<std::pair<ExpressionTree*, std::string> > vals =
-			 reader->getModel(state->getUserVarMap());
+			node->isModel = true;
+			// node->model = LLVM::VALUE;
 		}
 		else
 		{
 			std::cout << "INTERNAL CALL\n";
-			std::cout << getString(callInst->getCalledValue());
-			llvm::BasicBlock* funcStart = &calledFunction->getEntryBlock();
-			std::vector<ExpressionTree*> arguments;
-			//llvm::CallSite* callsite = llvm::dyn_cast<llvm::CallSite>(callInst);
-			for(auto arg = callInst->op_begin(); arg != callInst->op_end(); arg++)
-			{
-				//llvm::Value* val_arg = llvm::dyn_cast<llvm::Value>(arg);
-				arguments.push_back(state->get(arg->get()));
-			}
-			ProgramState* newState = new ProgramState(calledFunction->args(),arguments);
-			ProgramState::Copy(*state,newState,false);
-			children.push_back(new SymbolicTreeNode(funcStart,newState, numNodes++,node->id,NULL,node));
-		} 
+			funcStart = &calledFunction->getEntryBlock();
+		}
+		std::cout << getString(callInst->getCalledValue());
+		std::vector<ExpressionTree*> arguments;
+		for(auto arg = callInst->op_begin(); arg != callInst->op_end(); arg++)
+		{
+			arguments.push_back(state->get(arg->get()));
+		}
+		ProgramState* newState = new ProgramState(calledFunction->args(),arguments);
+		ProgramState::Copy(*state,newState,false);
+		children.push_back(new SymbolicTreeNode(funcStart,newState, numNodes++,node->id,NULL,node)); 
 		
 	}
 	else if (llvm::isa<llvm::ReturnInst>(inst))
@@ -263,12 +262,9 @@ std::vector<SymbolicTreeNode*>
 		{
 			llvm::ReturnInst* returninst = llvm::dyn_cast<llvm::ReturnInst>(inst);
 			SymbolicTreeNode* returnNode = node->returnNode;
-			InstructionPtr* returnptr = new InstructionPtr(returnNode->getPreviousInstruction());
-			ProgramState* newState = new ProgramState(*(returnNode->state)); // copy everything from parent state
-			ProgramState::Copy(*state,newState,false); // replace everything except map from curr state
-			newState->add(*returnptr,node->state->get(returninst->getReturnValue()));
-			(*returnptr)++;
-			returnNode->getNextInstruction(); // DONT REMOVE
+			auto pair = getReturnState(node,state->get(returninst->getReturnValue()));
+			ProgramState* newState = pair.first;
+			InstructionPtr* returnptr = pair.second;
 			children.push_back(new SymbolicTreeNode(returnNode->block,newState,
 								numNodes++,node->id,returnptr,returnNode->returnNode));	
 		}
@@ -281,7 +277,22 @@ std::vector<SymbolicTreeNode*>
 
 	return children;
 }
-
+std::pair<ProgramState*,InstructionPtr*> getReturnState(SymbolicTreeNode* node, ExpressionTree* returnValue)
+{
+	SymbolicTreeNode* returnNode = node->returnNode;
+	ProgramState* state = node->state;
+	ProgramState* newState = new ProgramState(*(returnNode->state)); // copy everything from parent state
+	ProgramState::Copy(*state,newState,false); // replace everything except map from curr state
+	InstructionPtr* returnptr = NULL;
+	if(returnNode)
+	{
+		returnptr = new InstructionPtr(returnNode->getPreviousInstruction());
+		newState->add(*returnptr,returnValue);
+		(*returnptr)++;
+	}
+	returnNode->getNextInstruction(); // DONT REMOVE
+	return std::make_pair(newState,returnptr);
+}
 bool isSplitPoint(llvm::Instruction* instruction)
 {
 	return instruction->getOpcode() == llvm::Instruction::Br 
@@ -289,12 +300,32 @@ bool isSplitPoint(llvm::Instruction* instruction)
 		   || ( llvm::isa<llvm::CallInst>(instruction) 
 				&& !llvm::isa<llvm::DbgDeclareInst>(instruction) );
 }
+std::vector<SymbolicTreeNode*>
+	SymbolicExecutor::executeModel(SymbolicTreeNode* symTreeNode)
+{
+	std::vector<SymbolicTreeNode*> to_ret;
+	for (int i = 0; i < (symTreeNode->modelVals).size(); i++)
+	{
+		// ProgramState * s  = new ProgramState(*(symTreeNode->state));
+		auto pair = getReturnState(symTreeNode,symTreeNode->modelVals[i].first);
+		ProgramState* newState = pair.first;
+		newState->addCondition(symTreeNode->modelVals[i].second);
+		InstructionPtr* returnptr = pair.second;
+		//s->add((returnvalue, symTreeNode->modelVals[i].first);
+		SymbolicTreeNode * node = new SymbolicTreeNode(symTreeNode->returnNode->block,
+			newState, numNodes++, symTreeNode->id,returnptr,
+			symTreeNode->returnNode->returnNode);
+	}
+	return to_ret;
+}
 /**
  executes the basicBlock, updates programstate and returns the next Block(s) to execute if it can be determined that only the "Then" block should be executed then only the "Then" block is returned. Similarly for the else block. Otherwise both are are retuarned. NULL is returned if there's nothing left to execute
  */
 std::vector<SymbolicTreeNode*>
 	SymbolicExecutor::executeBasicBlock(SymbolicTreeNode* symTreeNode)
 {
+	if (!symTreeNode->block)
+		return executeModel(symTreeNode);
 	ProgramState* state = symTreeNode->state;
 	llvm::BasicBlock* block = symTreeNode->block;
 	
@@ -533,9 +564,18 @@ void SymbolicExecutor::symbolicExecute()
 			msg["startLine"] = Json::Value(symTreeNode->minLineNumber);
 			msg["endLine"] = Json::Value(symTreeNode->maxLineNumber);
 			msg["addModel"] = Json::Value("false");
-
-			
 			reader->addObject(msg);
+			
+			if (symTreeNode->isModel)
+			{
+				symTreeNode->modelVals = reader->getModel(symTreeNode->state->getUserVarMap());
+			 	toSend.clear();
+				toSend["type"] = Json::Value(MSG_TYPE_EXPANDNODE);
+				toSend["fileId"] = Json::Value(filename.c_str());
+				reader->updateToSend(toSend);
+				reader->initializeJsonArray();
+			}
+			
 			
 			#ifdef DEBUG
 				std::cout << "number of blocks :  " << new_blocks.size() << "\n";

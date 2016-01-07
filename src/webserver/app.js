@@ -274,7 +274,27 @@ app.get('/next',function(req,res){
   }
   
 });
+app.get('/constraints',function(req,res){
+  query = req.query;
+  console.log(query);
+  fileid = map[req.cookies.sessionid];
+    
+  if(!isPingQuery(query))
+  {
+    client.write(JSON.stringify({"id":fileid, "val":{"nodeid": query["nodeid"], "pairs":[{"constraints": query["inputConstraints"], 
+        "returnValue": query["expectedOutput"]}]}}));
+  }
+  else if (toSend[fileid])
+  {
+      res.send(toSend[fileid]);
+      console.log("sending" + JSON.stringify(toSend[fileid]))
+      toSend[fileid] = null;
+      return;
+  }
+  res.send({});
+ 
 
+});
 app.get('/exclude', function(req,res){
   query = req.query;
   fileId = map[req.cookies.sessionid];

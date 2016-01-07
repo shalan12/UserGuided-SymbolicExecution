@@ -23,6 +23,9 @@ void JsonReader::sendMessageAndSleep()
 	std::cout << "I am UP! " << std::endl;
 	jsonArrSize = 0;
 	toSend.clear();
+	std::cout << "clear successful!\n";
+	int xyz;
+	std::cin >> xyz;
 }
 
 void JsonReader::proceedSymbolicExecution()
@@ -40,6 +43,7 @@ void JsonReader::proceedSymbolicExecution()
 std::vector<std::pair<ExpressionTree*, std::string> > JsonReader::getModel(
 	std::map<std::string, llvm::Value*> userVarMap)
 {
+	int xyz;
 	modelRequiredForLast();
 	std::vector<std::pair<ExpressionTree*, std::string> > to_ret;
 	#ifdef CIN_SERVER
@@ -50,12 +54,19 @@ std::vector<std::pair<ExpressionTree*, std::string> > JsonReader::getModel(
 	#else 
 		sendMessageAndSleep();
 	#endif
+	Json::FastWriter fastWriter;
+	std::string output = fastWriter.write(msg);
+	std::cout << "message received : " << output << std::endl;
+	std::cin >> xyz;
 	for (const Json::Value& pair : msg["pairs"])
     {
     	ExpressionTree * tree = new ExpressionTree(pair["expression"].asString(), userVarMap);
 		std::string constraint = pair["constraint"].asString();
-		to_ret.push_back(std::make_pair(tree, constraint));    
+		to_ret.push_back(std::make_pair(tree, constraint));
+		std::cout << "iteration" << std::endl;
+		std::cin >> xyz;    
     }
+
     return to_ret;
 }
 

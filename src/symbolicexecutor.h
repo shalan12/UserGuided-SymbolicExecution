@@ -36,12 +36,12 @@ class SymbolicTreeNode
     ProgramState * state;
     SymbolicTreeNode * left;
     SymbolicTreeNode * right;
-    SymbolicTreeNode * parent;
-    bool isExecuted;
+    bool isExecuted, isModel;
     int id;
     unsigned int minLineNumber,maxLineNumber;
     SymbolicTreeNode* returnNode;
-
+    std::vector<std::pair<ExpressionTree*, std::string> > modelVals;
+    
     SymbolicTreeNode(llvm::BasicBlock * b,
                      ProgramState * ps, int id, int pid)
     {
@@ -50,7 +50,10 @@ class SymbolicTreeNode
       state = ps;
       prevId = pid;
       
-      this->instructionPtr = new InstructionPtr(block->begin());
+      if (block)
+        this->instructionPtr = new InstructionPtr(block->begin());
+      else
+        this->instructionPtr = NULL;
       this->returnNode = NULL;
       left = NULL;
       right = NULL;
@@ -59,6 +62,7 @@ class SymbolicTreeNode
       maxLineNumber = 0;
       minLineNumber = std::numeric_limits<unsigned int>::max();
       isExecuted = false;
+      isModel = false;
     }
     SymbolicTreeNode(llvm::BasicBlock * b,ProgramState * ps, int id, int pid,
                      InstructionPtr* itr,SymbolicTreeNode * returnNode) 
@@ -145,6 +149,7 @@ class SymbolicExecutor
    executes the basicBlock, updates programstate and returns the next Block(s) to execute if it can be determined that only the "Then" block should be executed then only the "Then" block is returned. Similarly for the else block. Otherwise both are are retuarned. NULL is returned if there's nothing left to execute
    */
   std::vector<SymbolicTreeNode*> executeBasicBlock(SymbolicTreeNode*);
+  std::vector<SymbolicTreeNode*> executeModel(SymbolicTreeNode*);
 
   void symbolicExecute();
 

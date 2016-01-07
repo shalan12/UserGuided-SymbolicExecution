@@ -117,6 +117,7 @@ ExpressionTree::ExpressionTree(std::string str, std::map<std::string, llvm::Valu
 {
     std::stringstream iss(str);
     this->userVarMap = userVarMap;
+    top = new ExpressionTreeNode("", NULL);
     constructTree(iss, top);   
 }
 
