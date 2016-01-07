@@ -25,5 +25,8 @@ void notmain(int a, int b)
 }
 int notmain2(int c, int d)
 {
-	return c+d;
+	if(c > d)
+		return c+d;
+	else
+		return c-d;
 }

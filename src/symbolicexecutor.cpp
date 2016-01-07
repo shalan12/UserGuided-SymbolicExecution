@@ -106,6 +106,22 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 		#endif
 		state->add(instruction,new ExpressionTree("+",lhs,rhs));		
 	}
+	else if(instruction->getOpcode()==llvm::Instruction::Sub)
+	{
+		ExpressionTree* lhs = getExpressionTree(state,instruction->getOperand(0));
+		ExpressionTree* rhs = getExpressionTree(state,instruction->getOperand(1));
+	
+		#ifdef DEBUG
+			if (lhs)
+				std::cout << "lhs not NULL\n";
+			if (rhs)
+				std::cout << "rhs not NULL\n";
+
+			std::cout << "lhs: " << lhs->toString() <<"\n";
+			std::cout << "rhs: " << rhs->toString() <<"\n";
+		#endif
+		state->add(instruction,new ExpressionTree("-",lhs,rhs));		
+	}
 	else if (instruction->getOpcode() == llvm::Instruction::ICmp)
 	{
 		llvm::ICmpInst* cmpInst = llvm::dyn_cast<llvm::ICmpInst>(instruction); 
@@ -156,35 +172,58 @@ std::vector<SymbolicTreeNode*>
 	if(llvm::isa<llvm::BranchInst>(inst))
 	{
 		llvm::BranchInst* binst = llvm::dyn_cast<llvm::BranchInst>(inst);
+		SymbolicTreeNode* returnNode = node->returnNode;
 		if(binst->isConditional())
 		{
 			ProgramState* first = new ProgramState(*state);
 			llvm::Value* cond = binst->getCondition();
 			int toAddTrue = 1;
 			int toAddFalse = 1;
+			bool toAddConstraint = true;
 			if(state->getMap()[cond]->isConstant())
 			{
 				toAddTrue = state->getMap()[cond]->getInteger();
 				toAddFalse = !toAddTrue;
+				toAddConstraint = false;
 			}
 			if(toAddTrue)
 			{
-				first->constraints.push_back(std::make_pair(cond,"true"));
-				first->addCondition(state->get(cond)->toString());
-				std::cout << "ADDING CONDITION : " 
-						 << state->get(cond)->toString() << std::endl;
-				children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), first, numNodes++,node->id));
+				if(toAddConstraint) 
+				{
+					first->constraints.push_back(std::make_pair(cond,"true"));
+					first->addCondition(state->get(cond)->toString());
+				}
+				#ifdef DEBUG
+					std::cout << "ADDING CONDITION : " << state->get(cond)->toString() << std::endl;
+				#endif
+				/*first->printZ3Variables(); 
+				bool satisfiableFirst = first->Z3solver();
+				if (satisfiableFirst)
+				{*/
+					children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), 
+						first, numNodes++,node->id,NULL,returnNode));
+				//}
 			}
 			int numSuccesors = binst->getNumSuccessors();
 			if(numSuccesors == 2 && toAddFalse)
 			{
 				ProgramState* second = new ProgramState(*state);
-				second->constraints.push_back(std::make_pair(cond,"false"));
-				second->addCondition("not " + state->get(cond)->toString());
-				children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), second, numNodes++,node->id));
+				if (toAddConstraint)
+				{
+					second->constraints.push_back(std::make_pair(cond,"false"));
+					second->addCondition("not " + state->get(cond)->toString());
+				}
+				/*second->printZ3Variables();
+				bool satisfiableSecond = second->Z3solver();
+				if (satisfiableSecond)
+				{*/
+					children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), 
+						second, numNodes++,node->id,NULL,returnNode));
+				//}
 			}
 		}
-		else children.push_back(new SymbolicTreeNode(binst->getSuccessor(0),state, numNodes++,node->id));
+		else children.push_back(new SymbolicTreeNode(binst->getSuccessor(0),state, 
+			numNodes++,node->id,NULL,returnNode));
 	}
 	else if (llvm::isa<llvm::CallInst>(inst))
 	{
@@ -233,6 +272,7 @@ std::vector<SymbolicTreeNode*>
 			ProgramState::Copy(*state,newState,false); // replace everything except map from curr state
 			newState->add(*returnptr,node->state->get(returninst->getReturnValue()));
 			(*returnptr)++;
+			returnNode->getNextInstruction(); // DONT REMOVE
 			children.push_back(new SymbolicTreeNode(returnNode->block,newState,
 								numNodes++,node->id,returnptr,returnNode->returnNode));	
 		}

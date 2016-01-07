@@ -7007,6 +7007,55 @@ a.list-group-item-danger.active:focus {
   -moz-border-radius:10px;
   border-radius:10px;
 }*/
+
+div#graph {
+  height: 600px;
+  width: 100%;
+  border:2px solid #4E5D6C;
+}
+div#features {
+  height: 300px;
+  width: 100%;
+}
+div#filecode {
+  height: 1000px;
+  width: 100%;
+  overflow: scroll;
+}
+div#graph svg {
+  height: 100%;
+  width: 100%;
+}
+#formmenu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 360px;
+  width: 246px;
+  margin-left: -123px;
+  margin-top: -180px;
+}
+#noNode-alert {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -123px;
+  margin-top: -180px;
+}
+#model-input {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -123px;
+  margin-top: -180px;
+}
+#model-alert {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -123px;
+  margin-top: -180px;
+}
 .node {
   cursor: pointer;http://localhost:3000/
 }

@@ -148,7 +148,7 @@ std::map<std::string, llvm::Value*> ProgramState::getUserVarMap()
 	return userVarMap;
 }
 
-void ProgramState::Z3solver()
+bool ProgramState::Z3solver()
 { 
 	z3::solver s(c);
 	#ifdef DEBUG
@@ -187,8 +187,12 @@ void ProgramState::Z3solver()
 			}
 		}
 	}
-	std::cout << this->getPathCondition();
-	std::cout << s.check() << "\n";
-	z3::model m = s.get_model();
-	std::cout << m << std::endl;
+	bool toRet = (s.check() == z3::sat);
+	#ifdef DEBUG
+		std::cout << this->getPathCondition() << "\n";
+		std::cout << toRet << "\n";
+		z3::model m = s.get_model();
+		std::cout << m << std::endl;
+	#endif
+	return toRet;
 }

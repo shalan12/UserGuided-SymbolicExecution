@@ -1,30 +1,65 @@
 /* --------------------- Symbolic Tree --------------------- */
-              var margin = { top: 40, right: 120, bottom: 20, left: 50 };
-              var width = 960 - margin.right - margin.left;
-              var height = 1000 - margin.top - margin.bottom;
+var margin = { top: 40, right: 120, bottom: 20, left: 80};
+var width = 960 - margin.right - margin.left;
+var height = 1000 - margin.top - margin.bottom;
 /*var margin = {top: 200.5, right: 120, bottom: 20, left: 275},
 width = 1040,//960 - margin.right - margin.left,
 height = 1040;//margin.top - margin.bottom;*/
-var y = d3.scale.linear(),  
-yAxis = d3.svg.axis().scale(y).orient("left").tickSize(-width, 0).tickPadding(6); 
+var zoomStep = 0.2;
+var actualZoomLevel = 1.0;
 var i = 0,
 duration = 750,
 root;
-var tree = d3.layout.tree()
-.size([height, width]);
-var diagonal = d3.svg.diagonal()
-.projection(function(d) { return [d.x, d.y]; });
-var svg = d3.select("#graph")
-.attr("width", 100)
-.attr("height", 100)
-.style("overflow", "visible")
-.append("svg")
-.attr("width", width+ margin.right + margin.left)
-.attr("height", height+ margin.top + margin.bottom)
-.append("g")
-.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var tree,diagonal,svg;
+var zoom = d3.behavior.zoom()
+            .on("zoom", function(){
+                if (contextMenuShowing == false)
+                    svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+            });
+var container;
+function setup()
+{
+    tree = d3.layout.tree()
+    .size([height, width]);
+    diagonal = d3.svg.diagonal()
+    .projection(function(d) { return [d.x, d.y]; });
+    var temp = d3.select("#graph")
+        .append("svg")
+        .attr("viewbox", "0,0,960,500");
+    svg = temp
+        // .attr("width", width+ margin.right + margin.left)
+        // .attr("height", height+ margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    container = svg;
+    temp.on("mousedown", function(){
+            if(d3.event.button === 2){
+                d3.event.stopImmediatePropagation();
+            };
+        })
+        .call(zoom).on("dblclick.zoom", function(){svg.attr("transform", "translate(" + margin.left + "," + margin.top + ")");});
+}
+function zoomIn(){
+    //Calculate and set the new zoom level 
+    actualZoomLevel = roundFloat(parseFloat(actualZoomLevel) + parseFloat(zoomStep));
+    zoom.scale(actualZoomLevel);
+    //Get the actual position of the container
+    var xPosition = d3.transform(container.attr("transform")).translate[0];
+    var yPosition = d3.transform(container.attr("transform")).translate[1];
+    //Esecute the transformation setting the actual position and the new zoom level
+    container.attr("transform", "translate(" + xPosition + ", " + yPosition + ")scale(" + zoom.scale() + ")");
+}
 
-
+function zoomOut(){
+    actualZoomLevel = roundFloat(parseFloat(actualZoomLevel) - parseFloat(zoomStep));
+    zoom.scale(actualZoomLevel);
+    var xPosition = d3.transform(container.attr("transform")).translate[0];
+    var yPosition = d3.transform(container.attr("transform")).translate[1];
+    container.attr("transform", "translate(" + xPosition + ", " + yPosition + ")scale(" + zoom.scale() + ")");
+}
+function roundFloat(value){
+    return value.toFixed(2);
+}
 /*var rect = svg.append("svg:rect")
     .attr("width", width)
     .attr("height", height);
@@ -33,38 +68,53 @@ rect.call(d3.behavior.zoom().y(y).on("zoom", function(){svg.select("g.y.axis").c
 
 var treeData = [];
 var numSteps, branchSelected, explore;
+function setDefaults()
+{
+    numSteps = 1;
+    branchSelected = 0;
+    explore = 1;
+}
+var numOfCodeLines = 0;
 var contextMenuShowing = false;
 var contextmenu = [
             {
                 title: 'Exclude',
                 action: function(elm,d,i) {
                     //console.log(elm + " " + d.node + " " + i);
-                    $.ajax({
-                        url: "/exclude",
-                        data: {"nodeid":d.node, "isPing":false}  // temp -- isPing should be false at first, then should keep pinging until EXPECTED reply received
-                    }).done(function(){
-                            console.log(d3.select("#name"+d.node).style("fill", "grey"));
-                            var todo = [d];
-                            while (todo)
-                            {
-                                var curr = todo.pop();
-                                excludeNode(curr.node);
-                                //d3.select("#name"+curr.node).style("fill", "grey");
-                                for (var line = curr.startLine; line <= curr.endLine; line++)
+                    if (contextMenuShowing == true)
+                    {
+                        d3.select("#formmenu").remove();
+                        contextMenuShowing = false;
+                    }
+                    else
+                    {
+                        $.ajax({
+                            url: "/exclude",
+                            data: {"nodeid":d.node, "isPing":false}  // temp -- isPing should be false at first, then should keep pinging until EXPECTED reply received
+                        }).done(function(){
+                                console.log(d3.select("#name"+d.node).style("fill", "grey"));
+                                var todo = [d];
+                                while (todo)
                                 {
-                                    document.getElementById(line).style.backgroundColor = 'red';
-                                }   
-                                d3.select("#name"+curr.node).on('contextmenu', function(d, i){
-                                    console.log("Don't do anything");
-                                });
-                                d3.select("#name"+curr.node).on('click', function(d,i){
-                                    console.log("Dont get next element");
-                                });
-                                if(curr.children)
-                                    todo = todo.concat(curr.children);
-                            }
+                                    var curr = todo.pop();
+                                    excludeNode(curr.node);
+                                    //d3.select("#name"+curr.node).style("fill", "grey");
+                                    for (var line = curr.startLine; line <= curr.endLine; line++)
+                                    {
+                                        document.getElementById(line).style.backgroundColor = 'red';
+                                    }   
+                                    d3.select("#name"+curr.node).on('contextmenu', function(d, i){
+                                        console.log("Don't do anything");
+                                    });
+                                    d3.select("#name"+curr.node).on('click', function(d,i){
+                                        console.log("Dont get next element");
+                                    });
+                                    if(curr.children)
+                                        todo = todo.concat(curr.children);
+                                }
 
-                    });
+                        });
+                    }
                 }
             },
             {
@@ -86,9 +136,9 @@ var contextmenu = [
                         menu = d3.select("#graph")
                         .append("div")
                         .attr("class", "well bs-component col-lg-3")
-                        .attr("id", "formmenu")
-                        .style("margin-left", d.x-50 +"px")
-                        .style("margin-top", -1000+d.y+50 +"px");
+                        .attr("id", "formmenu");
+                        // .style("margin-left", d.x-50 +"px")
+                        // .style("margin-top", -500 + d.y + 50 +"px");
                         menu.html(
                                 '<legend>Options:</legend>'+
                                 '<form class=\'form-group\' id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
@@ -113,78 +163,6 @@ var contextmenu = [
             }
         ]
 
-function addModel(nodeID)
-{
-    var _modelOptions = document.getElementById('modelData');
-    var inputConstraints = _modelOptions.elements.namedItem('focusedInput').value;
-    var expectedOutput = _modelOptions.elements.namedItem('focusedOutput').value;
-    console.log(inputConstraints);
-    console.log(expectedOutput);
-    console.log(nodeID);
-    $.ajax({
-        url: "/constraints",
-        data: {"nodeid": nodeID, "inputConstraints": inputConstraints, "expectedOutput": expectedOutput}
-    }).done(function(resp){
-        console.log("Inputs posted");
-    });
-    return false;
-}        
-
-function getModelData(node)
-{
-    console.log(node.x);
-    console.log(node.y);
-    d3.select("#model-alert").remove();
-    var modelForm = d3.select("#graph")
-    .append("div")
-    .attr("id", "model-input")
-    .attr("class", "well bs-component col-lg-3")
-    .style("margin-left", node.x+120+"px")
-    .style("margin-top",node.y-350+"px");
-    modelForm.html(
-        '<legend>Add Model for function:</legend>' +
-        'Available variables to choose: x, y, z' +
-        '<form class=\'form-group\' id=\'modelData\' onsubmit="addModel(\''+node.node+'\')">' +
-        '<br>' +
-        '<label class="control-label" for="focusedInput"> Provide the input constraints: </label>' +
-        '<input class="form-control" id="focusedInput[]" type="text">' +
-        '<br><br>' +
-        '<label class="control-label" for="focusedOutput"> Provide the output for the input constraint: </label>' +
-        '<input class="form-control" id="focusedOutput[]" type="text">'+
-        '<br><br>' +
-        '<input type="submit" value="Submit">' +
-        '</form>');
-}
-
-function checkForModel(selection)
-{
-        if (selection.addModel == true)
-        {   
-            var modelAlert = d3.select("#graph")
-            .append("div")
-            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-info")
-            .attr("id", "model-alert")
-            .style("margin-left", selection.x+120 + "px")
-            .style("margin-top", selection.y-350 + "px");
-            var a = selection;
-    /*        modelAlert.append("button")
-            .attr("type", "button")
-            .attr("class","close")
-            .attr("value", "&times;");
-            modelAlert.append("text")
-            .text('An external function call was executed at node \''+selection.node+'\'. Please provide a model for the function.\n');
-            modelAlert.append("button")
-            .attr("type", "button")
-            .attr("class","btn btn-success")
-            .attr("value", "Add Model")
-            .on('click', getModelData(selection));*/
-            modelAlert.html(
-                '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
-                'An external function call was executed at node \''+selection.node+'\'. Please provide a model for the function.\n' +
-                '<input type="button" class="btn btn-success" id="addModelBtn" value="Add Model">');
-            $("#addModelBtn").on("click", function(){getModelData(selection)});
-        }    
-}
 
 
 /* ---------------------- Tree update and node handling ------------------------- */
@@ -195,7 +173,7 @@ function update(source) {
     links = tree.links(nodes);
 
     // Normalize for fixed-depth.
-    nodes.forEach(function(d) { d.y = d.depth * 100; });
+    nodes.forEach(function(d) { d.y = (d.depth * 100)+30; });
 
     // Update the nodes…
     var node = svg.selectAll("g.node")
@@ -205,12 +183,26 @@ function update(source) {
     var nodeEnter = node.enter().append("g")
     .attr("class", "node")
     .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-    .on("click", click);
+    .on("click", function(d){highlightPathToNode(d);})
+    .on("dblclick", click);
     
     nodeEnter.append("circle")
     .attr("r", 1e-6)
     .attr("id", function(d){ return 'name' + d.node; })
-    .style("fill", function(d) { return d.children ? "lightsteelblue" : "#fff"; })
+    .style("fill", function(d) {         
+        if(d.excluded === true)
+        {
+            return "grey";
+        }
+        else if(d.children)
+        {   
+            return "lightsteelblue";
+        } 
+        else
+        { 
+            return "#fff";
+        }
+    })   // return d.children ? "lightsteelblue" : "#fff"; 
     .call(d3.helper.tooltip(
         function(d, i){
             return d.text + " \n<b>Constraint: </b> \n" + d.constraints;
@@ -237,14 +229,14 @@ function update(source) {
     nodeUpdate.select("circle")
     .attr("r", 10)
     .style("fill", function(d) { 
-        if(d.children)
-        {   
-            return "lightsteelblue";
-        } 
-        else if(d.excluded === true)
+        if(d.excluded === true)
         {
             return "grey";
         }
+        else if(d.children)
+        {   
+            return "lightsteelblue";
+        } 
         else
         { 
             return "#fff";
@@ -323,7 +315,31 @@ function click(d) {
       //----------------//
       //update(d);
       //----------------//
+    setDefaults();
     getNext(d.node);
+}
+
+function highlightPathToNode(node)
+{
+    d3.selectAll("circle").style("stroke", "steelblue");
+    hightlightCode(1, numOfCodeLines, '#ebebeb');
+    document.getElementById("name"+node.node).style.stroke = '#FF6347';
+    hightlightCode(node.startLine, node.endLine, '#FF6347');
+    var curr = node;
+    while (curr.parent)
+    {
+        document.getElementById("name"+curr.parent.node).style.stroke = '#FFB2A4';
+        hightlightCode(curr.parent.startLine, curr.parent.endLine, '#FFB2A4');
+        curr = curr.parent;
+    }
+}
+
+function hightlightCode(startLine, endLine, color)
+{
+    for (var line = startLine; line <= endLine; line++)
+    {   
+        document.getElementById(line).style.backgroundColor = color;
+    }    
 }
 
 function excludeNode(nodeID)
@@ -376,10 +392,11 @@ function addNode(nodeObj)
         console.log(treeData[j]);
     }
     updateGraph();
-    for (var line = node.startLine; line <= node.endLine; line++)
-    {
-        document.getElementById(line).style.backgroundColor = 'gold';
-    }
+    console.log(numOfCodeLines);
+    d3.selectAll("circle").style("stroke", "steelblue");
+    document.getElementById("name"+node.node).style.stroke = '#FF6347';
+    /*hightlightCode(1, numOfCodeLines, '#ebebeb');*/
+    hightlightCode(node.startLine, node.endLine, 'gold');
 }
 /* ---------------- Step To Get Next Node --------------------------------------- */
 function getNext(nodeID,isPing)
@@ -389,8 +406,23 @@ function getNext(nodeID,isPing)
                  'steps': numSteps, 'prevId': nodeID, 'isPing': isPing}, function(data){
             if(data.updated)
             {
-                for (var i =0; i < data.nodes.length; i++)
+                if (data.nodes === undefined || data.nodes.length == 0)
+                {
+                    var noNodeAlert = d3.select("#graph")
+                        .append("div")
+                        .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-warning")
+                        .attr("id", "noNode-alert");
+                    noNodeAlert.html(
+                    '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                    'This node has no more branches to explore.\n' +
+                    '<input type="button" class="btn btn-primary" id="noNodeBtn" value="OK">');
+                    $("#noNodeBtn").on("click", function(){d3.select("#noNode-alert").remove();});   
+                }
+                else
+                {
+                    for (var i =0; i < data.nodes.length; i++)
                     addNode(data.nodes[i]);
+                }
             }
             if(!data.completed)
             {
@@ -399,6 +431,78 @@ function getNext(nodeID,isPing)
     });
 }
 
+function addModel(nodeID)
+{
+    var _modelOptions = document.getElementById('modelData');
+    var inputConstraints = _modelOptions.elements.namedItem('focusedInput').value;
+    var expectedOutput = _modelOptions.elements.namedItem('focusedOutput').value;
+    console.log(inputConstraints);
+    console.log(expectedOutput);
+    console.log(nodeID);
+    $.ajax({
+        url: "/constraints",
+        data: {"nodeid": nodeID, "inputConstraints": inputConstraints, "expectedOutput": expectedOutput}
+    }).done(function(resp){
+        console.log("Inputs posted");
+    });
+    return false;
+}        
+
+function getModelData(node)
+{
+    console.log(node.x);
+    console.log(node.y);
+    d3.select("#model-alert").remove();
+    var modelForm = d3.select("#graph")
+    .append("div")
+    .attr("id", "model-input")
+    .attr("class", "well bs-component col-lg-3");
+/*    .style("margin-left", node.x+120+"px")
+    .style("margin-top",node.y-350+"px");*/
+    modelForm.html(
+        '<legend>Add Model for function:</legend>' +
+        'Available variables to choose: x, y, z' +
+        '<form class=\'form-group\' id=\'modelData\' onsubmit="addModel(\''+node.node+'\')">' +
+        '<br>' +
+        '<label class="control-label" for="focusedInput"> Provide the input constraints: </label>' +
+        '<input class="form-control" id="focusedInput[]" type="text">' +
+        '<br><br>' +
+        '<label class="control-label" for="focusedOutput"> Provide the output for the input constraint: </label>' +
+        '<input class="form-control" id="focusedOutput[]" type="text">'+
+        '<br><br>' +
+        '<input type="submit" value="Submit">' +
+        '</form>');
+}
+
+function checkForModel(selection)
+{
+        if (selection.addModel == true)
+        {   
+            var modelAlert = d3.select("#graph")
+            .append("div")
+            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-warning")
+            .attr("id", "model-alert");
+/*            .style("margin-left", selection.x+120 + "px")
+            .style("margin-top", selection.y-350 + "px");*/
+            var a = selection;
+    /*        modelAlert.append("button")
+            .attr("type", "button")
+            .attr("class","close")
+            .attr("value", "&times;");
+            modelAlert.append("text")
+            .text('An external function call was executed at node \''+selection.node+'\'. Please provide a model for the function.\n');
+            modelAlert.append("button")
+            .attr("type", "button")
+            .attr("class","btn btn-success")
+            .attr("value", "Add Model")
+            .on('click', getModelData(selection));*/
+            modelAlert.html(
+                '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                'An external function call was executed at node \''+selection.node+'\'. Please provide a model for the function.\n' +
+                '<input type="button" class="btn btn-primary" id="addModelBtn" value="Add Model">');
+            $("#addModelBtn").on("click", function(){getModelData(selection)});
+        }    
+}
 
 /* ---------------- Nodes Right Click Menu Options ------------------------------ */
 
@@ -441,6 +545,7 @@ function loaded(file) {
         var fileString = evt.target.result.replace(/\r/g, "\n");
         var splitted = fileString.split("\n");
         document.getElementById("filecode").style.display = "block";
+        numOfCodeLines = splitted.length;    
         for (var i = 1; i <= splitted.length; i++)
         {
             $("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
@@ -490,16 +595,21 @@ function uploadSample(isPing)
         url: "/sample",
         data: {"fileID": sampleName, "isPing":isPing} 
     }).done(function(resp){
-        console.log(resp)
-        var fileString = resp.replace(/\r/g, "\n");
-        var splitted = fileString.split("\n");
-        document.getElementById("filecode").style.display = "block";
-        for (var i = 1; i <= splitted.length; i++)
-        {
-            $("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
-        }
-        document.getElementById('instructions').style.display = "none";
-        document.getElementById('beginSymbolicExecutiom').style.display = "block";
+        $.get("/main",function (data){
+            $("#mainContent").html(data);
+            document.getElementById('Back').style.display = "block";
+            setup();
+            var fileString = resp.replace(/\r/g, "\n");
+            var splitted = fileString.split("\n");
+            // document.getElementById("filecode").style.display = "block";
+            numOfCodeLines = splitted.length;
+            for (var i = 1; i <= splitted.length; i++)
+            {
+                $("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
+            }
+            // document.getElementById('instructions').style.display = "none";
+            // document.getElementById('beginSymbolicExecutiom').style.display = "block";
+        });
        /* if(resp.file !== undefined)
         {
             document.getElementById('instructions').style.display = "none";
@@ -511,5 +621,12 @@ function uploadSample(isPing)
            // setTimeout(uploadSample(true),1000);
         
         }*/
+    });
+}
+
+function goBack()
+{
+    $.get({
+        url: "/refresh",
     });
 }

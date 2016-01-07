@@ -50,12 +50,12 @@ ExpressionTree::ExpressionTree(std::string op, ExpressionTree* lhs, ExpressionTr
     {
         this->top = new ExpressionTreeNode(ExpressionTreeNode("",evaluate(lhs->top->value, rhs->top->value, op)));
     }
-    else if (op == "+" && rhs->isConstant() && rhs->getInteger() == 0)
+    else if ((op == "+" || op == "-" ) && rhs->isConstant() && rhs->getInteger() == 0)
     {
         this->top = new ExpressionTreeNode(ExpressionTreeNode("",lhs->top->value));
         
     }
-    else if (op == "+" && lhs->isConstant() && lhs->getInteger() == 0)
+    else if ((op == "+") && lhs->isConstant() && lhs->getInteger() == 0)
     {
     	this->top = new ExpressionTreeNode(ExpressionTreeNode("",rhs->top->value));
     }
@@ -74,9 +74,13 @@ ExpressionTree::ExpressionTree(std::string op, llvm::Value* lhs, llvm::Value* rh
     {
         this->top = new ExpressionTreeNode(ExpressionTreeNode("",evaluate(lhs, rhs, op)));
     }
-    else if (op == "+" && isConstant(rhs))
+    else if ((op == "+" || op == "-") && isConstant(rhs))
     {
         if (::getInteger(rhs) == 0) this->top = new ExpressionTreeNode(ExpressionTreeNode("",lhs));
+    }
+    else if (op == "+" && isConstant(lhs) && ::getInteger(lhs) == 0)
+    {
+        this->top = new ExpressionTreeNode(ExpressionTreeNode("",rhs));
     }
     else
     {   
@@ -131,6 +135,8 @@ llvm::Value* ExpressionTree::evaluate(llvm::Value* lhs, llvm::Value* rhs, std::s
         int rhsInt = ::getInteger(rhs);
         if (op == "+")
             result = lhsInt + rhsInt;
+        else if (op == "-")
+            result = lhsInt - rhsInt;
         else if (op == ">")
             result = lhsInt > rhsInt;
         llvm::Value* ans = llvm::ConstantInt::get( llvm::getGlobalContext() , llvm::APInt(32, result, false));

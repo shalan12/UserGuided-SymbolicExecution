@@ -16,6 +16,7 @@
 	<div class= "navbar navbar-default navbar-fixed-top">
 		<div class="container">
 			<div class="navbar-header">
+			  <a class="nav navbar-brand navbar-left" id="Back" href="/refresh" style="display:none"><b>&#x2190;</b></a> 		
 	          <a class="navbar-brand" href="">Symbolic Execution</a>
 	        </div>
 	        <div class="navbar-collapse collapse" id="navbar-main">
@@ -45,10 +46,10 @@
 			</div>
 	</div>
 	<div class="container-fluid">
-			<div class="row">
-			    <div class="col-md-2">
+			<div class="row" id="mainContent">
+			    <div class="col-md-2" >
 			        <div class="panel">
-				        <div class="panel-body">
+				        <div class="panel-body" id="features">
 				        	<p class="lead" href="#features">Features:</p>
 				            <a class="list-group-item" href="#models">Models</a>
 				            <a class="list-group-item" href="#focus">Focus</a>
@@ -57,16 +58,16 @@
 			        	</div>
 			        </div>
 			    </div>
-			    <div class="col-md-7" style="display:none" id="beginSymbolicExecutiom">
+			    <!-- <div class="col-md-7" style="display:none" id="beginSymbolicExecutiom">
 			    	<button class="btn btn-default" id="Step" onclick="getNext()">Begin Symbolic Execution</button>
 			    	<div id="graph"></div>
 			    
-			    </div>
+			    </div> -->
 			    <div class="col-md-7" id="instructions">
 					<div id="codeinstructions">
-						<p class="panel-body lead">Our framework allows you to run symbolic execution with user-guided approach. Currently, the framework only supports C++ files. You can choose any of the sample code files for a demo of the functioality implemented or you can upload your own code file.</p> 
+						<p class="panel-body lead">Our framework allows you to run symbolic execution with user-guided approach. Currently, the framework only supports C++ files. You can choose any of the sample code files for a demo of the functioality implemented.</p> 
 						<p class="panel-body lead">Instructions:</p>
-						<p class="panel-body">If you want to run symbolic execution on the sample codes available, please select a sample code file.</p>
+						<p class="panel-body">In order to run symbolic execution on the sample codes available, please select a sample code file.</p>
 						<p class="panel-body">Select The Sample Code File:</p>
 						<div class="form-group">
 							<p class="col-md-2">Options:</p> 
@@ -82,22 +83,22 @@
 							</div>
                       	</div>
                       	<br>
-						<p class="panel-body">Or Select Your Own Code File:</p>
+<!-- 						<p class="panel-body">Or Select Your Own Code File:</p>
 						<div class="panel-body">
 							<input type='file' id='_file'>
 						</div>
 						<div class="panel-body">
 							<input class="btn btn-default" type='button' id='_submit' value='Upload!'>
-						</div>
+						</div> -->
 					</div>
 				</div>
-				<div class="col-md-3 panel" id="filecode" style="display:none">
+				<!-- <div class="col-md-3 panel" id="filecode" style="display:none">
 					<div class="code">
 						<div id="codedata">
 							<p class="panel-body lead">Code:</p>
 						</div>
 					</div>
-				</div>	 
+				</div>	 --> 
 			</div>
 	</div>
 
