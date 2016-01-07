@@ -5,10 +5,12 @@
 JsonReader::JsonReader(ServerSocket * s)
 {
 	socket = s;
+	jsonArrSize = 0;
 }
 
-void JsonReader::sendMessageAndSleep(Json::Value toSend)
+void JsonReader::sendMessageAndSleep()
 {
+	toSend["nodes"] = nodes;
 	Json::FastWriter fastWriter;
 	std::string output = fastWriter.write(toSend);
 	std::cout << "sending this: " << output << std::endl;
@@ -19,9 +21,11 @@ void JsonReader::sendMessageAndSleep(Json::Value toSend)
 	cv.wait(lck);
 	lck.unlock();
 	std::cout << "I am UP! " << std::endl;
+	jsonArrSize = 0;
+	toSend.clear();
 }
 
-void JsonReader::proceedSymbolicExecution(Json::Value toSend)
+void JsonReader::proceedSymbolicExecution()
 {
 	#ifdef CIN_SERVER
 		Json::FastWriter fastWriter;
@@ -29,13 +33,14 @@ void JsonReader::proceedSymbolicExecution(Json::Value toSend)
 		std::cout << "got this: " << output << std::endl;
 		msg = getMessage();
 	#else 
-		sendMessageAndSleep(toSend);
+		sendMessageAndSleep();
 	#endif
 	setExecutionVars();
 }
 std::vector<std::pair<ExpressionTree*, std::string> > JsonReader::getModel(
-	Json::Value toSend, std::map<std::string, llvm::Value*> userVarMap)
+	std::map<std::string, llvm::Value*> userVarMap)
 {
+	modelRequiredForLast();
 	std::vector<std::pair<ExpressionTree*, std::string> > to_ret;
 	#ifdef CIN_SERVER
 		Json::FastWriter fastWriter;
@@ -43,7 +48,7 @@ std::vector<std::pair<ExpressionTree*, std::string> > JsonReader::getModel(
 		std::cout << "got this: " << output << std::endl;
 		msg = getMessage();
 	#else 
-		sendMessageAndSleep(toSend);
+		sendMessageAndSleep();
 	#endif
 	for (const Json::Value& pair : msg["pairs"])
     {
@@ -66,6 +71,11 @@ void JsonReader::wakeUp(Json::Value val)
 void JsonReader::updateMsg(Json::Value val)
 {
 	msg = val;
+}
+
+void JsonReader::updateToSend(Json::Value val)
+{
+	toSend = val;
 }
 
 void JsonReader::setExecutionVars()
@@ -93,4 +103,17 @@ void JsonReader::setExecutionVars()
 		int abc;
 		std::cin >> abc;
     #endif
+}
+
+void JsonReader::addObject(Json::Value obj)
+{
+	nodes[jsonArrSize++] = obj;
+}
+void JsonReader::modelRequiredForLast()
+{
+	nodes[jsonArrSize-1]["addModel"] = Json::Value("true");
+}
+void JsonReader::initializeJsonArray()
+{
+	nodes = Json::arrayValue;
 }

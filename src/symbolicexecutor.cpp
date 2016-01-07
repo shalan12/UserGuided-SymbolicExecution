@@ -235,13 +235,9 @@ std::vector<SymbolicTreeNode*>
 				std::cout << "EXTERNAL CALL\n";
 			#endif
 
-			Json::Value msg;
-			msg["node"] = Json::Value(node->id);
-			msg["parent"] = Json::Value(node->getPrevId());
-			msg["external"] = Json::Value("true");
-			msg["fin"] = Json::Value("0");
+			
 			std::vector<std::pair<ExpressionTree*, std::string> > vals =
-			 reader->getModel(msg, state->getUserVarMap());
+			 reader->getModel(state->getUserVarMap());
 		}
 		else
 		{
@@ -378,12 +374,11 @@ void SymbolicExecutor::symbolicExecute()
 	while (1)
 	{
 		Json::Value toSend;
-		Json::Value nodes = Json::arrayValue;
 		toSend["type"] = Json::Value(MSG_TYPE_EXPANDNODE);
 		toSend["fileId"] = Json::Value(filename.c_str());
+		reader->updateToSend(toSend);
+		reader->initializeJsonArray();
 
-
-		int currObject = 0;
 		#ifdef DEBUG
 			// std::cout << "prev id: "<< prevId << "\n";
 		#endif
@@ -537,8 +532,10 @@ void SymbolicExecutor::symbolicExecute()
 			msg["constraints"] = Json::Value(symTreeNode->state->getPathCondition());
 			msg["startLine"] = Json::Value(symTreeNode->minLineNumber);
 			msg["endLine"] = Json::Value(symTreeNode->maxLineNumber);
+			msg["addModel"] = Json::Value("false");
+
 			
-			nodes[currObject++] = msg;
+			reader->addObject(msg);
 			
 			#ifdef DEBUG
 				std::cout << "number of blocks :  " << new_blocks.size() << "\n";
@@ -595,8 +592,7 @@ void SymbolicExecutor::symbolicExecute()
 		// 	// std::cin >> dir; 
 		// 	continue;
 		// #endif
-		toSend["nodes"] = nodes;
-		reader->proceedSymbolicExecution(toSend);
+		reader->proceedSymbolicExecution();
 		if (reader->getIsExclude() != -1)
 			exclude(reader->getExcludedId(), reader->getIsExclude());
 		// add exclude
@@ -716,8 +712,9 @@ void SymbolicExecutor::exclude(int input, int isNode)
 	val["type"] = Json::Value(MSG_TYPE_EXCLUDENODE);
 	val["minLine"] = Json::Value(minLine);
 	val["maxLine"] = Json::Value(maxLine);
+	reader->updateToSend(val);
 
-	reader->proceedSymbolicExecution(val);
+	reader->proceedSymbolicExecution();
 	if (reader->getIsExclude() != -1)
 		exclude(reader->getExcludedId(), reader->getIsExclude());
 }
