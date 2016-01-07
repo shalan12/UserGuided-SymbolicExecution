@@ -134,6 +134,7 @@ client.on('data',function(data)
           toSendToUser["constraints"] = data[i]["constraints"];
           toSendToUser["startLine"] = data[i]["startLine"];
           toSendToUser["endLine"] = data[i]["endLine"];
+          toSendToUser["addModel"] = data[i]["addModel"];
           toSend[fileid]['nodes'].push(lodash.cloneDeep(toSendToUser));
         }
       }

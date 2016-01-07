@@ -334,7 +334,7 @@ function excludeStatement(startLine,isPing)
 function addNode(nodeObj)
 {
     var node = {"node": nodeObj.node, "text": nodeObj["text"], "parent": nodeObj["parent"], "children": [], "constraints": nodeObj["constraints"], 
-            "startLine": nodeObj["startLine"], "endLine": nodeObj["endLine"], "excluded":false, "addModel": false};
+            "startLine": nodeObj["startLine"], "endLine": nodeObj["endLine"], "excluded":false, "addModel": nodeObj["addModel"]};
     treeData.push(node);
     for (var j = 0; j < treeData.length; j++)
     {
