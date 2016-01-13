@@ -152,40 +152,19 @@ bool ProgramState::Z3solver()
 { 
 	z3::solver s(c);
 	#ifdef DEBUG
-		std::cout << "size of constraints = " << constraints.size() << "\n";
+		std::cout << "size of constraints = " << z3Constraints.size() << "\n";
 	#endif
-	for (int i = 0; i < constraints.size(); i++)
+	for (int i = 0; i < z3Constraints.size(); i++)
 	{
 		std::cout << "i = " << i << "\n";
-		ExpressionTree* exptree = get(constraints[i].first);
-		if (exptree->top->left != NULL && exptree->top->right != NULL)
+		if(z3Constraints[i].second == "true")
 		{
-			std::string left = getString(exptree->top->left->value);
-			std::string right = getString(exptree->top->right->value);
-
-			if (constraints[i].second == "true")
-			{
-				if(exptree->top->data == ">")
-				{
-					s.add(variables.at(left) > variables.at(right));
-				}	
-				else if(exptree->top->data == "<")
-				{
-					s.add(variables.at(left) < variables.at(right));
-				}
-			}
-			else if (constraints[i].second == "false")
-			{
-				if(exptree->top->data == ">")
-				{
-					s.add(variables.at(left) <= variables.at(right));
-				}
-				else if(exptree->top->data == "<")
-				{
-					s.add(variables.at(left) >= variables.at(right)); 
-				}
-			}
+			s.add(z3Constraints[i].first);
 		}
+		else if(z3Constraints[i].second == "false")
+		{
+			s.add(!z3Constraints[i].first);
+		} 
 	}
 	bool toRet = (s.check() == z3::sat);
 	#ifdef DEBUG
