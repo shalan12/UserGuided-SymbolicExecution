@@ -68,6 +68,7 @@ rect.call(d3.behavior.zoom().y(y).on("zoom", function(){svg.select("g.y.axis").c
 
 var treeData = [];
 var numSteps, branchSelected, explore;
+var beginSymbolicExecution = false;
 function setDefaults()
 {
     numSteps = 1;
@@ -106,7 +107,7 @@ var contextmenu = [
                                     d3.select("#name"+curr.node).on('contextmenu', function(d, i){
                                         console.log("Don't do anything");
                                     });
-                                    d3.select("#name"+curr.node).on('click', function(d,i){
+                                    d3.select("#name"+curr.node).on('dblclick', function(d,i){
                                         console.log("Dont get next element");
                                     });
                                     if(curr.children)
@@ -355,7 +356,7 @@ function excludeStatement(startLine,isPing)
     isPing = isPing || false;
     $.ajax({
         url: "/exclude",
-        data: {"lineno": startLine, "isPing":isPing} 
+        data: {"lineno": startLine, "isPing":isPing, "isNode":false} 
     }).done(function(resp){
         if (resp.minLine !== undefined)
         {
@@ -401,6 +402,11 @@ function addNode(nodeObj)
 /* ---------------- Step To Get Next Node --------------------------------------- */
 function getNext(nodeID,isPing)
 {
+    if(!beginSymbolicExecution)
+    {
+        document.getElementById("Step").style.display = "none";
+        beginSymbolicExecution = true;
+    }
     isPing = isPing || false;
     $.get('next', {'isBFS': explore, 'branch': branchSelected, 
                  'steps': numSteps, 'prevId': nodeID, 'isPing': isPing}, function(data){
@@ -605,7 +611,8 @@ function uploadSample(isPing)
             numOfCodeLines = splitted.length;
             for (var i = 1; i <= splitted.length; i++)
             {
-                $("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
+                //$("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
+                $("#codedata").append('<pre ondoubleclick="excludeStatement(\''+i+'\')" id = "'+i+'">'+ i + "." + splitted[i-1]+'></pre>');
             }
             // document.getElementById('instructions').style.display = "none";
             // document.getElementById('beginSymbolicExecutiom').style.display = "block";
