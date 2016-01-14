@@ -12,12 +12,17 @@ class ProgramState
   private:
   std::map<llvm::Value*, ExpressionTree*> map;
   std::map<std::string, llvm::Value*> userVarMap;
+
   std::string pathCondition;
   
   public:
   z3::context c;
   std::map<std::string, z3::expr> variables;
-  std::vector<std::pair<llvm::Value*, std::string> > constraints;
+  std::map<llvm::Value*, z3::expr*> z3Variables;
+  std::vector<std::pair<z3::expr*, std::string> > z3Constraints;
+
+  //std::vector<std::pair<llvm::Value*, std::string> > constraints;
+  
   static void Copy(const ProgramState& other, ProgramState* to, bool copyMap);
   ProgramState(){};
   ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> inputs,

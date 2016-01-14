@@ -191,19 +191,23 @@ std::vector<SymbolicTreeNode*>
 			{
 				if(toAddConstraint) 
 				{
-					first->constraints.push_back(std::make_pair(cond,"true"));
+					//first->constraints.push_back(std::make_pair(cond,"true"));
+					first->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(first->z3Variables, first->c),"true")); // added for z3
 					first->addCondition(state->get(cond)->toString());
 				}
 				#ifdef DEBUG
 					std::cout << "ADDING CONDITION : " << state->get(cond)->toString() << std::endl;
 				#endif
-				/*first->printZ3Variables(); 
+				
 				bool satisfiableFirst = first->Z3solver();
+
+				// added for constraint checking
+
 				if (satisfiableFirst)
-				{*/
+				{
 					children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), 
 						first, numNodes++,node->id,NULL,returnNode));
-				//}
+				}
 			}
 			int numSuccesors = binst->getNumSuccessors();
 			if(numSuccesors == 2 && toAddFalse)
@@ -211,16 +215,17 @@ std::vector<SymbolicTreeNode*>
 				ProgramState* second = new ProgramState(*state);
 				if (toAddConstraint)
 				{
-					second->constraints.push_back(std::make_pair(cond,"false"));
+					//second->constraints.push_back(std::make_pair(cond,"false"));
+					second->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(second->z3Variables, second->c),"false")); // added for z3
 					second->addCondition("not " + state->get(cond)->toString());
 				}
-				/*second->printZ3Variables();
+				// added for constraint checking
 				bool satisfiableSecond = second->Z3solver();
 				if (satisfiableSecond)
-				{*/
+				{
 					children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), 
 						second, numNodes++,node->id,NULL,returnNode));
-				//}
+				}
 			}
 		}
 		else children.push_back(new SymbolicTreeNode(binst->getSuccessor(0),state, 

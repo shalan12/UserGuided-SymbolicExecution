@@ -183,6 +183,71 @@ void ExpressionTree::getExpressionString(ExpressionTreeNode* node, std::stringst
     }
 }
 
+z3::expr* ExpressionTree::toZ3Expression(std::map<llvm::Value*, z3::expr*>& z3Map, z3::context& c)
+{
+    return getZ3Expression(this->top, z3Map, c);
+    
+}
+
+void ExpressionTree::addZ3ExpressionToMap(llvm::Value* value, std::map<llvm::Value*, z3::expr*>& z3Map, z3::context& c)
+{
+    std::string str = getString(value);
+    if (isConstant(value))
+    {
+        z3::expr val = c.real_val(str.c_str());
+        z3Map.insert(std::make_pair(value, &val)); 
+    }
+    else
+    {
+        z3::expr val = c.int_const(str.c_str());
+        z3Map.insert(std::make_pair(value, &val)); 
+    }
+}
+
+
+z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node, std::map<llvm::Value*, z3::expr*>& z3Map, z3::context& c)
+{
+    if (node != NULL)
+    {
+        if (node->left == NULL && node->right == NULL)
+        {
+            std::string str = getString(node->value);
+            if (z3Map.find(node->value) == z3Map.end())
+            {
+                addZ3ExpressionToMap(node->value, z3Map,c);
+            }
+            return z3Map[node->value];
+         
+        }
+        else if (node->left != NULL && node->right != NULL)
+        {
+            z3::expr * constraint = new z3::expr(c);
+            z3::expr left = *getZ3Expression(node->left, z3Map, c);
+            z3::expr right = *getZ3Expression(node->right, z3Map, c);
+            std::string op = node->data;
+            if (op == "+")
+                *constraint = left+right;
+            else if (op == "-")
+                *constraint = left-right;
+            else if (op == "*")
+                *constraint = left*right;
+            else if (op == "/")
+                *constraint = left/right;
+            else if (op == ">")
+                *constraint = left>right;
+            else if (op == "<")
+                *constraint = left<right;
+            else if (op == ">=")
+                *constraint = left>=right;
+            else if (op == "<=")
+                *constraint = left<=right;
+            else if (op == "==")
+                *constraint = left==right;
+            return constraint;
+        }
+    }
+}
+
 int ExpressionTree::compare(int value)
 {
     if(isConstant(this->top->value))
