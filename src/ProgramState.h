@@ -18,8 +18,8 @@ class ProgramState
   public:
   z3::context c;
   std::map<std::string, z3::expr> variables;
-  std::map<llvm::Value*, z3::expr> z3Variables;
-  std::vector<std::pair<z3::expr, std::string> > z3Constraints;
+  std::map<llvm::Value*, z3::expr*> z3Variables;
+  std::vector<std::pair<z3::expr*, std::string> > z3Constraints;
 
   //std::vector<std::pair<llvm::Value*, std::string> > constraints;
   

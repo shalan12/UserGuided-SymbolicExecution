@@ -30,9 +30,9 @@ void ProgramState::Copy(const ProgramState& from, ProgramState* to, bool copyMap
 			to->userVarMap[pr.first] = pr.second;
 		}
 	}
-	for (auto constraint : from.constraints)
+	for (auto constraint : from.z3Constraints)
 	{
-		to->constraints.push_back(constraint);
+		to->z3Constraints.push_back(constraint);
 	}
 	to->pathCondition = from.pathCondition;
 }
@@ -159,11 +159,11 @@ bool ProgramState::Z3solver()
 		std::cout << "i = " << i << "\n";
 		if(z3Constraints[i].second == "true")
 		{
-			s.add(z3Constraints[i].first);
+			s.add(*z3Constraints[i].first);
 		}
 		else if(z3Constraints[i].second == "false")
 		{
-			s.add(!z3Constraints[i].first);
+			s.add(!(*z3Constraints[i].first));
 		} 
 	}
 	bool toRet = (s.check() == z3::sat);
