@@ -26,6 +26,7 @@ class ExpressionTreeNode
 class ExpressionTree
 {
 private:
+    std::map<llvm::Value*, ExpressionTree*> map;
     std::map<std::string, llvm::Value*> userVarMap;
     bool isConstant(llvm::Value* value);
     void getExpressionString(ExpressionTreeNode* node, std::stringstream& toReturn);
@@ -39,7 +40,8 @@ public:
         top = NULL;
     }
     ExpressionTree(llvm::Value* value);
-    ExpressionTree(std::string str, std::map<std::string, llvm::Value*> userVarMap);
+    ExpressionTree(std::string str, std::map<std::string, llvm::Value*> userVarMap,
+        std::map<llvm::Value*, ExpressionTree*> map);
     //ExpressionTree(const ExpressionTree & e);
     ExpressionTree(std::string op, ExpressionTree* lhs, ExpressionTree* rhs);
     ExpressionTree(std::string op, llvm::Value* lhs, llvm::Value* rhs);

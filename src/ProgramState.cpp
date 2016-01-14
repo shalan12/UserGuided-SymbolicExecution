@@ -14,6 +14,7 @@ ProgramState::ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> in
 			add(input,new ExpressionTree(input));
 		else 
 			add(input,arguments[i++]);
+		std::cout << "program state constructor, function parameters : " << getString(input) << "\n";
 	}
 	pathCondition = "";
 }

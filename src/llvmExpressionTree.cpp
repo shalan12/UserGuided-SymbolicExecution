@@ -109,14 +109,20 @@ void ExpressionTree::constructTree(std::stringstream & iss, ExpressionTreeNode* 
     else
     {
         //set value using map in state.
-        node->value = userVarMap[curr];
+        ExpressionTreeNode * temp_top = map[userVarMap[curr]]->top;
+        node->value = temp_top->value;
+        node->left = temp_top->left;
+        node->right = temp_top->right;
+        node->data = temp_top->data;
     }
 }
 
-ExpressionTree::ExpressionTree(std::string str, std::map<std::string, llvm::Value*> userVarMap)
+ExpressionTree::ExpressionTree(std::string str, std::map<std::string, llvm::Value*>
+    userVarMap, std::map<llvm::Value*, ExpressionTree*> map)
 {
     std::stringstream iss(str);
     this->userVarMap = userVarMap;
+    this->map = map;
     top = new ExpressionTreeNode("", NULL);
     constructTree(iss, top);   
 }

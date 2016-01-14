@@ -251,10 +251,10 @@ app.get('/next',function(req,res){
     toSendToExecutor = {};
     var fileId = map[req.cookies.sessionid]; 
     toSendToExecutor["val"] = {}
-    toSendToExecutor["val"]["isBFS"] = (typeof query["isBFS"] === 'undefined') ? 0:query["isBFS"];
-    toSendToExecutor["val"]["branch"] = (typeof query["branch"] === 'undefined') ? 0:query["branch"];
-    toSendToExecutor["val"]["steps"] = (typeof query["steps"] === 'undefined') ? 1:query["steps"];
-    toSendToExecutor["val"]["prevId"] = (typeof query["prevId"] === 'undefined') ? -1:query["prevId"];
+    toSendToExecutor["val"]["isBFS"] = (typeof query["isBFS"] === 'undefined' || query["isBFS"] === '') ? 0:query["isBFS"];
+    toSendToExecutor["val"]["branch"] = (typeof query["branch"] === 'undefined' || query["branch"] === '' ) ? 0:query["branch"];
+    toSendToExecutor["val"]["steps"] = (typeof query["steps"] === 'undefined' || query["steps"] === '') ? 1:query["steps"];
+    toSendToExecutor["val"]["prevId"] = (typeof query["prevId"] === 'undefined' || query["prevId"] === '') ? -1:query["prevId"];
     toSendToExecutor["id"] = fileId;
     console.log("Sending to Executor : " );
     console.log(toSendToExecutor);
@@ -318,6 +318,7 @@ app.get('/exclude', function(req,res){
       console.log("sending" + JSON.stringify(toSend[fileId]))
       toSend[fileId] = null;
   }
+  else res.send({});
 });
 server = http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on " + server.address().address + ":" + app.get('port'));

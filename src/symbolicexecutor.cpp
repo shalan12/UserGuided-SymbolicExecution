@@ -303,6 +303,11 @@ bool isSplitPoint(llvm::Instruction* instruction)
 std::vector<SymbolicTreeNode*>
 	SymbolicExecutor::executeModel(SymbolicTreeNode* symTreeNode)
 {
+	int xyz;
+	#ifdef DEBUG
+		std::cout << "executing Model\n";
+	#endif
+
 	std::vector<SymbolicTreeNode*> to_ret;
 	for (int i = 0; i < (symTreeNode->modelVals).size(); i++)
 	{
@@ -312,10 +317,14 @@ std::vector<SymbolicTreeNode*>
 		newState->addCondition(symTreeNode->modelVals[i].second);
 		InstructionPtr* returnptr = pair.second;
 		//s->add((returnvalue, symTreeNode->modelVals[i].first);
-		SymbolicTreeNode * node = new SymbolicTreeNode(symTreeNode->returnNode->block,
+		to_ret.push_back(new SymbolicTreeNode(symTreeNode->returnNode->block,
 			newState, numNodes++, symTreeNode->id,returnptr,
-			symTreeNode->returnNode->returnNode);
+			symTreeNode->returnNode->returnNode));
 	}
+	#ifdef DEBUG
+		std::cout << "exiting execute Model with blocks : " << to_ret.size() << " \n";
+		std::cin >> xyz;
+	#endif
 	return to_ret;
 }
 /**
@@ -483,7 +492,7 @@ void SymbolicExecutor::symbolicExecute()
 
 			if (excludedNodes.find(symTreeNode->block) != excludedNodes.end())
 			{
-				#ifdef DEBUG
+				#ifdef DEBUGEXCLUDE
 				std::cout << "is Excluded! : \n";
 				std::cin >> xyz;
 				#endif
@@ -549,10 +558,10 @@ void SymbolicExecutor::symbolicExecute()
 			std::vector<SymbolicTreeNode*> new_blocks = executeBasicBlock(symTreeNode);
 			symTreeNode->isExecuted = true;
 			#ifdef DEBUG
-					printBlock(symTreeNode->block);
-					std::cout << "Executed !" << "\n";
-					std::cin >> xyz;
-				#endif
+				// printBlock(symTreeNode->block);
+				std::cout << "Executed !" << "\n";
+				std::cin >> xyz;
+			#endif
 			BlockStates[symTreeNode->id]=symTreeNode;
 			
 			Json::Value msg;
@@ -566,15 +575,8 @@ void SymbolicExecutor::symbolicExecute()
 			msg["addModel"] = Json::Value("false");
 			reader->addObject(msg);
 			
-			if (symTreeNode->isModel)
-			{
-				symTreeNode->modelVals = reader->getModel(symTreeNode->state->getUserVarMap());
-			 	toSend.clear();
-				toSend["type"] = Json::Value(MSG_TYPE_EXPANDNODE);
-				toSend["fileId"] = Json::Value(filename.c_str());
-				reader->updateToSend(toSend);
-				reader->initializeJsonArray();
-			}
+			
+			
 			
 			
 			#ifdef DEBUG
@@ -615,6 +617,20 @@ void SymbolicExecutor::symbolicExecute()
 					deque.push_back(tempSymTreeNode);	
 				else
 					deque.push_front(tempSymTreeNode);
+
+				if (symTreeNode->isModel)
+				{
+					tempSymTreeNode->modelVals = reader->getModel(
+						symTreeNode->state->getUserVarMap(),
+						symTreeNode->state->getMap());
+				 	std::cout << "modelVals size : " << tempSymTreeNode->modelVals.size() << "\n";
+				 	toSend.clear();
+					toSend["type"] = Json::Value(MSG_TYPE_EXPANDNODE);
+					toSend["fileId"] = Json::Value(filename.c_str());
+					reader->updateToSend(toSend);
+					reader->initializeJsonArray();
+					// i = 0;
+				}
 			}
 			#ifdef DEBUG
 				std::cout << "3: size of deque : " << deque.size() << "\n";
@@ -650,8 +666,8 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 
 	for (llvm::Function::iterator b = function->begin(), be = function->end(); b != be; ++b)
 	{
-		minLineNumber = std::numeric_limits<unsigned int>::max();
-		maxLineNumber = 0;
+		unsigned int minLineNumber = std::numeric_limits<unsigned int>::max();
+		unsigned int maxLineNumber = 0;
 		for (auto instruction = b->begin(), e = b->end(); instruction != e; ++instruction)
 		{
 			if (llvm::MDNode *N = instruction->getMetadata("dbg")) 
@@ -664,7 +680,9 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 		}
 		for(int i = minLineNumber; i <= maxLineNumber; i++)
 		{
-			lineToBlock[i] = b;
+			if (lineToBlock.find(i) == lineToBlock.end())
+				lineToBlock[i] = std::vector< llvm::BasicBlock* >(0);
+			lineToBlock[i].push_back(b);
 		}
 
 	}
@@ -724,26 +742,35 @@ void SymbolicExecutor::exclude(int input, int isNode)
 { 
 	std::cout << "input : " << input << "\n";
 	std::cout << "isNode : " << isNode << "\n";
-	unsigned int minLine = input;
-	unsigned int maxLine = input;
-	llvm::BasicBlock * b;
+	unsigned int minLine = std::numeric_limits<unsigned int>::max();
+	unsigned int maxLine = std::numeric_limits<unsigned int>::min();
+	std::vector< llvm::BasicBlock* > blocks;
+	
 	if (!isNode)
 	{
-		b = lineToBlock[input-minLineNumber];
+		blocks = lineToBlock[input];
 	}
 	else
 	{
-		b = BlockStates[input]->block;
-		excludedNodes[b] = true;
-	}	
-	for (auto instruction = b->begin(), e = b->end(); instruction != e; ++instruction)
+		llvm::BasicBlock * b = BlockStates[input]->block;
+		blocks.push_back(b);
+	}
+	for (auto b : blocks)
 	{
-		if (llvm::MDNode *N = instruction->getMetadata("dbg")) 
-		{  
-			llvm::DILocation Loc(N);
-			unsigned Line = Loc.getLineNumber();
-			minLine = std::min(minLine,Line);
-			maxLine = std::max(maxLine,Line);
+		excludedNodes[b] = true;
+		std::cout << "excluded block : \n";
+		printBlock(b);
+		int xyz;
+		std::cin >> xyz;
+		for (auto instruction = b->begin(), e = b->end(); instruction != e; instruction++)
+		{
+			if (llvm::MDNode *N = instruction->getMetadata("dbg")) 
+			{  
+				llvm::DILocation Loc(N);
+				unsigned int Line = Loc.getLineNumber();
+				minLine = std::min(minLine,Line);
+				maxLine = std::max(maxLine,Line);
+			}
 		}
 	}
 	

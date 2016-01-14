@@ -119,9 +119,7 @@ class SymbolicTreeNode
 class SymbolicExecutor
 {
   private:
-    unsigned int minLineNumber;
-    unsigned int maxLineNumber;
-    std::map<int, llvm::BasicBlock*> lineToBlock; 
+    std::map<int, std::vector< llvm::BasicBlock* > > lineToBlock; 
     std::string filename;
     std::map<int, SymbolicTreeNode* > BlockStates;
     std::map<llvm::BasicBlock*, bool > excludedNodes;

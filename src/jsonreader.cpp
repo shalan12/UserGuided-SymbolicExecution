@@ -10,7 +10,10 @@ JsonReader::JsonReader(ServerSocket * s)
 
 void JsonReader::sendMessageAndSleep()
 {
-	toSend["nodes"] = nodes;
+	if (getIsExclude() == -1)
+		toSend["nodes"] = nodes;
+	else
+		clearNodes();
 	Json::FastWriter fastWriter;
 	std::string output = fastWriter.write(toSend);
 	std::cout << "sending this: " << output << std::endl;
@@ -41,7 +44,8 @@ void JsonReader::proceedSymbolicExecution()
 	setExecutionVars();
 }
 std::vector<std::pair<ExpressionTree*, std::string> > JsonReader::getModel(
-	std::map<std::string, llvm::Value*> userVarMap)
+	std::map<std::string, llvm::Value*> userVarMap,
+	std::map<llvm::Value*,ExpressionTree*> map)
 {
 	int xyz;
 	modelRequiredForLast();
@@ -58,12 +62,15 @@ std::vector<std::pair<ExpressionTree*, std::string> > JsonReader::getModel(
 	std::string output = fastWriter.write(msg);
 	std::cout << "message received : " << output << std::endl;
 	std::cin >> xyz;
+	// steps = 0;
 	for (const Json::Value& pair : msg["pairs"])
     {
-    	ExpressionTree * tree = new ExpressionTree(pair["expression"].asString(), userVarMap);
-		std::string constraint = pair["constraint"].asString();
+    	steps++;
+    	ExpressionTree * tree = new ExpressionTree(pair["returnValue"].asString(), userVarMap, map);
+		std::string constraint = pair["constraints"].asString();
+		std::cout << "tree : " << tree->toString() << "\n";
 		to_ret.push_back(std::make_pair(tree, constraint));
-		std::cout << "iteration" << std::endl;
+		std::cout << "iteration pushed!" << std::endl;
 		std::cin >> xyz;    
     }
 
@@ -127,4 +134,10 @@ void JsonReader::modelRequiredForLast()
 void JsonReader::initializeJsonArray()
 {
 	nodes = Json::arrayValue;
+}
+
+void JsonReader::clearNodes()
+{
+	nodes.clear();
+	jsonArrSize = 0;
 }

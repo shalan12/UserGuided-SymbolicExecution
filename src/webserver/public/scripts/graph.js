@@ -355,16 +355,13 @@ function excludeStatement(startLine,isPing)
     isPing = isPing || false;
     $.ajax({
         url: "/exclude",
-        data: {"lineno": startLine, "isPing":isPing} 
+        data: {"lineno": startLine, "isPing":isPing, "isNode": false} 
     }).done(function(resp){
         if (resp.minLine !== undefined)
         {
             var start = resp.minLine,
             end = resp.maxLine;
-            for (var line = start; line <= end; line++)
-            {
-                document.getElementById(line).style.backgroundColor = 'red';
-            } 
+            hightlightCode(start,end,'red');
         } 
         else setTimeout(function(){excludeStatement(startLine,true);}, 1000);
     });
@@ -629,7 +626,8 @@ function uploadSample(isPing)
             numOfCodeLines = splitted.length;
             for (var i = 1; i <= splitted.length; i++)
             {
-                $("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
+                //$("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
+                $("#codedata").append('<pre id = "'+i+'" ondblclick="excludeStatement(\''+i+'\')">'+ i + "." + splitted[i-1]+'</pre>');
             }
             // document.getElementById('instructions').style.display = "none";
             // document.getElementById('beginSymbolicExecutiom').style.display = "block";
