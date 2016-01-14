@@ -37,7 +37,8 @@ function setup()
                 d3.event.stopImmediatePropagation();
             };
         })
-        .call(zoom).on("dblclick.zoom", function(){svg.attr("transform", "translate(" + margin.left + "," + margin.top + ")");});
+        .call(zoom).on("dblclick.zoom", function(){svg.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        zoom.scale(1);});
 }
 function zoomIn(){
     //Calculate and set the new zoom level 
@@ -63,11 +64,11 @@ function roundFloat(value){
 /*var rect = svg.append("svg:rect")
     .attr("width", width)
     .attr("height", height);
-
 rect.call(d3.behavior.zoom().y(y).on("zoom", function(){svg.select("g.y.axis").call(yAxis);}))*/
 
 var treeData = [];
 var numSteps, branchSelected, explore;
+var beginSymbolicExecution = false;
 function setDefaults()
 {
     numSteps = 1;
@@ -106,7 +107,7 @@ var contextmenu = [
                                     d3.select("#name"+curr.node).on('contextmenu', function(d, i){
                                         console.log("Don't do anything");
                                     });
-                                    d3.select("#name"+curr.node).on('click', function(d,i){
+                                    d3.select("#name"+curr.node).on('dblclick', function(d,i){
                                         console.log("Dont get next element");
                                     });
                                     if(curr.children)
@@ -418,6 +419,11 @@ function addNodes(data)
 }
 function getNext(nodeID,isPing)
 {
+    if(!beginSymbolicExecution)
+    {
+        document.getElementById("Step").style.display = "none";
+        beginSymbolicExecution = true;
+    }
     isPing = isPing || false;
     $.get('next', {'isBFS': explore, 'branch': branchSelected, 
                  'steps': numSteps, 'prevId': nodeID, 'isPing': isPing}, function(data){
@@ -628,6 +634,7 @@ function uploadSample(isPing)
             {
                 //$("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
                 $("#codedata").append('<pre id = "'+i+'" ondblclick="excludeStatement(\''+i+'\')">'+ i + "." + splitted[i-1]+'</pre>');
+
             }
             // document.getElementById('instructions').style.display = "none";
             // document.getElementById('beginSymbolicExecutiom').style.display = "block";
