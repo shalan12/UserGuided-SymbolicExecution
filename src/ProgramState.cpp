@@ -33,7 +33,9 @@ void ProgramState::Copy(const ProgramState& from, ProgramState* to, bool copyMap
 	}
 	for (auto constraint : from.z3Constraints)
 	{
-		to->z3Constraints.push_back(constraint);
+		z3::expr * copy_constraint = new z3::expr(to->c);
+		*copy_constraint = to_expr(to->c, Z3_translate(from.c, *constraint.first, to->c));
+		to->z3Constraints.push_back(std::make_pair(copy_constraint, constraint.second));
 	}
 	to->pathCondition = from.pathCondition;
 }
@@ -151,28 +153,52 @@ std::map<std::string, llvm::Value*> ProgramState::getUserVarMap()
 
 bool ProgramState::Z3solver()
 { 
+	int xyz;
 	z3::solver s(c);
 	#ifdef DEBUG
 		std::cout << "size of constraints = " << z3Constraints.size() << "\n";
 	#endif
 	for (int i = 0; i < z3Constraints.size(); i++)
 	{
+		#ifdef DEBUG
+			if (z3Constraints[i].first)
+			{
+				std::cout << "z3 expression not NULL!" << *(z3Constraints[i].first) << "\n";
+				std::cin >> xyz; 
+			}
+			else
+			{
+				std::cout << "z3 expression is NULL!\n";
+				std::cin >> xyz;
+			}
+		#endif
 		std::cout << "i = " << i << "\n";
 		if(z3Constraints[i].second == "true")
 		{
-			s.add(*z3Constraints[i].first);
+			#ifdef DEBUG
+				std::cout << "condition true\n";
+				std::cin >> xyz;
+			#endif
+			s.add(*(z3Constraints[i].first));
 		}
 		else if(z3Constraints[i].second == "false")
 		{
-			s.add(!(*z3Constraints[i].first));
+			#ifdef DEBUG
+				std::cout << "condition false\n";
+				std::cin >> xyz;
+			#endif
+			s.add(!(*(z3Constraints[i].first)));
 		} 
 	}
 	bool toRet = (s.check() == z3::sat);
 	#ifdef DEBUG
 		std::cout << this->getPathCondition() << "\n";
 		std::cout << toRet << "\n";
-		z3::model m = s.get_model();
-		std::cout << m << std::endl;
+		if (toRet)
+		{
+			z3::model m = s.get_model();
+			std::cout << m << std::endl;
+		}
 	#endif
 	return toRet;
 }

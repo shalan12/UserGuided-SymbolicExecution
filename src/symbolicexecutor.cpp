@@ -192,6 +192,7 @@ std::vector<SymbolicTreeNode*>
 				if(toAddConstraint) 
 				{
 					//first->constraints.push_back(std::make_pair(cond,"true"));
+					// habibah look into it
 					first->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(first->z3Variables, first->c),"true")); // added for z3
 					first->addCondition(state->get(cond)->toString());
 				}
@@ -201,6 +202,12 @@ std::vector<SymbolicTreeNode*>
 				
 				bool satisfiableFirst = first->Z3solver();
 
+				#ifdef DEBUG
+					if (satisfiableFirst)
+						std::cout << "branch is satisfiable \n ";
+					else
+						std::cout << "branch is not satisfiable \n ";
+				#endif
 				// added for constraint checking
 
 				if (satisfiableFirst)
@@ -216,6 +223,7 @@ std::vector<SymbolicTreeNode*>
 				if (toAddConstraint)
 				{
 					//second->constraints.push_back(std::make_pair(cond,"false"));
+					//habibah look into it
 					second->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(second->z3Variables, second->c),"false")); // added for z3
 					second->addCondition("not " + state->get(cond)->toString());
 				}
@@ -764,9 +772,11 @@ void SymbolicExecutor::exclude(int input, int isNode)
 	{
 		excludedNodes[b] = true;
 		std::cout << "excluded block : \n";
-		printBlock(b);
-		int xyz;
-		std::cin >> xyz;
+			int xyz;
+		#ifdef DEBUG
+			printBlock(b);
+			std::cin >> xyz;
+		#endif
 		for (auto instruction = b->begin(), e = b->end(); instruction != e; instruction++)
 		{
 			if (llvm::MDNode *N = instruction->getMetadata("dbg")) 

@@ -28,7 +28,9 @@ void JsonReader::sendMessageAndSleep()
 	toSend.clear();
 	std::cout << "clear successful!\n";
 	int xyz;
-	std::cin >> xyz;
+	#ifdef DEBUG
+		std::cin >> xyz;
+	#endif
 }
 
 void JsonReader::proceedSymbolicExecution()
@@ -61,7 +63,9 @@ std::vector<std::pair<ExpressionTree*, std::string> > JsonReader::getModel(
 	Json::FastWriter fastWriter;
 	std::string output = fastWriter.write(msg);
 	std::cout << "message received : " << output << std::endl;
-	std::cin >> xyz;
+	#ifdef DEBUG
+		std::cin >> xyz;
+	#endif
 	// steps = 0;
 	for (const Json::Value& pair : msg["pairs"])
     {
@@ -71,7 +75,10 @@ std::vector<std::pair<ExpressionTree*, std::string> > JsonReader::getModel(
 		std::cout << "tree : " << tree->toString() << "\n";
 		to_ret.push_back(std::make_pair(tree, constraint));
 		std::cout << "iteration pushed!" << std::endl;
-		std::cin >> xyz;    
+		
+		#ifdef DEBUG
+			std::cin >> xyz;
+		#endif    
     }
 
     return to_ret;
