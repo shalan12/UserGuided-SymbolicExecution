@@ -69,7 +69,8 @@ std::vector<std::pair<ExpressionTree*, std::string> > JsonReader::getModel(
 	// steps = 0;
 	for (const Json::Value& pair : msg["pairs"])
     {
-    	steps++;
+    	if (steps != -1)
+    		steps++;
     	ExpressionTree * tree = new ExpressionTree(pair["returnValue"].asString(), userVarMap, map);
 		std::string constraint = pair["constraints"].asString();
 		std::cout << "tree : " << tree->toString() << "\n";

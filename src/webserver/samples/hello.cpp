@@ -5,11 +5,13 @@ void notmain(int a, int b)
 	if (a > b)
 	{
 		if(a+1 > b)
-			b = b + 1;
-		else
 		{
 			b = notmain2(a+1,b+2);
 			b = b + abs(a);
+		}
+		else
+		{
+			b = b + 1;
 		}
 	}
 	else

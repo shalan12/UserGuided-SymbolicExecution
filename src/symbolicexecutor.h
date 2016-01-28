@@ -155,6 +155,7 @@ class SymbolicExecutor
       Executes all the possible paths in the given function and returns the programState at the 
       end of every path
   */
+  void printAllFunctions(llvm::Function* function);
   void executeFunction(llvm::Function* function);
   void proceed(bool isbfs, int stps, int d, int prev);
   void exclude(int id, int b);

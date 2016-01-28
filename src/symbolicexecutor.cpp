@@ -241,14 +241,113 @@ std::vector<SymbolicTreeNode*>
 	}
 	else if (llvm::isa<llvm::CallInst>(inst))
 	{
-		llvm::CallInst* callInst = llvm::dyn_cast<llvm::CallInst>(inst);
+	llvm::CallInst* callInst = llvm::dyn_cast<llvm::CallInst>(inst);
 		llvm::Function* calledFunction = callInst->getCalledFunction();
+		auto attrs = calledFunction->getAttributes();
+		unsigned int attrsCount = attrs.getNumSlots();
+		std::cout << "get numSlots : " << attrsCount << "\n";
+		std::cout << "get function name : " << calledFunction->getName().str() << "\n";
+		for (auto i = 0; i < attrsCount; i++)
+		{
+			int xxyyzz;
+			std::cout << "attr : " << attrs.getAsString(i) << "\n";
+			std::cin >> xxyyzz;
+		}
+
+
+		for (auto arg = calledFunction->getArgumentList().begin(); arg != calledFunction->getArgumentList().end(); arg++ )
+		{
+			llvm::DbgValueInst * val = llvm::dyn_cast<llvm::DbgValueInst>(arg);
+			if (val)
+			{
+				int xxyyzz;
+				std::cout << "something happened\n"; 
+ 				std::cin >>  xxyyzz;
+			}
+			else
+			{	
+				int xxyyzz;
+				std::cout << arg->getName().str(); 
+				std::cout << "something bad happened\n"; 
+				std::cin >>  xxyyzz;
+			}
+		}
 		llvm::BasicBlock* funcStart = NULL;
+		int xxyyzz;
 		if(calledFunction->isDeclaration())
 		{
 			#ifdef DEBUG
 				std::cout << "EXTERNAL CALL\n";
 			#endif
+
+			for(auto arg = callInst->op_begin(); arg != callInst->op_end(); arg++)
+			{
+				ExpressionTree* tree = state->get(arg->get());
+
+				std::cout << "llvm Value in external call : " << getString(arg->get()) << "\n";
+				std::vector<llvm::Value*> vals;
+				for (auto& pr : state->getMap())
+				{
+					std::cout << "llvm Value in user var map : " << getString(pr.first) << "\n";
+
+					if (pr.second == tree)
+					{
+						vals.push_back(pr.first);
+						std::cout << "discovered : " << getString(pr.first) << "\n";
+						std::cin >> xxyyzz;
+					}
+				}
+
+				for (auto v : vals)
+				{
+					for (auto& pr : state->getUserVarMap())
+					{
+						std::cout << "llvm Value in user var map : " << getString(pr.second) << "\n";
+
+						if (pr.second == v)
+						{
+
+							std::cout << "discovered : " << pr.first << "\n";
+							std::cin >> xxyyzz;
+						}
+					}	
+				}
+
+				// state->get(arg->get());
+
+				// arguments.push_back(state->get(arg->get()));
+			}
+
+			for (auto arg = calledFunction->getArgumentList().begin(); arg != calledFunction->getArgumentList().end(); arg++ )
+			{
+				llvm::Value * val = llvm::dyn_cast<llvm::Value>(arg);
+				if (val)
+				{
+					std::cout << "llvm Value : " << getString(val) << "\n";
+					std::cin >> xxyyzz;
+					std::cout << "something happened\n"; 
+	 				std::cin >>  xxyyzz;
+	 				for (auto& pr : state->getUserVarMap())
+					{
+						std::cout << "llvm Value in user var map : " << getString(pr.second) << "\n";
+
+						if (pr.second == val)
+						{
+
+							std::cout << "discovered : " << pr.first << "\n";
+							std::cin >> xxyyzz;
+						}
+					}
+				}
+				else
+				{	
+					int xxyyzz;
+					std::cout << arg->getName().str(); 
+					std::cout << "something bad happened\n"; 
+					std::cin >>  xxyyzz;
+				}
+			}
+			
 
 			node->isModel = true;
 			// node->model = LLVM::VALUE;
@@ -673,12 +772,42 @@ void SymbolicExecutor::symbolicExecute()
 	Executes all the possible paths in the given function and returns the programState at the end of every path
 */
 
-void SymbolicExecutor::executeFunction(llvm::Function* function)
+void SymbolicExecutor::printAllFunctions(llvm::Function* function)
 {
-	
+	std::cout << "get function name : " << function->getName().str() << "\n";
+	// if (function->getAllMetadata())
+	// {
+	// 	std::cout << "this func has some thing special!\n";
+	// }
 
 	for (llvm::Function::iterator b = function->begin(), be = function->end(); b != be; ++b)
 	{
+		for (auto instruction = b->begin(), e = b->end(); instruction != e; ++instruction)
+		{
+			if (( llvm::isa<llvm::CallInst>(instruction) 
+				&& !llvm::isa<llvm::DbgDeclareInst>(instruction) ))
+			{
+				llvm::CallInst* callInst = llvm::dyn_cast<llvm::CallInst>(instruction);
+				llvm::Function* calledFunction = callInst->getCalledFunction();
+				llvm::Value* v=callInst->getCalledValue();
+			    llvm::Value* sv = v->stripPointerCasts();
+			    std::cout << "called function name : " << sv->getName().str() << "\n";
+				printAllFunctions(calledFunction);
+			}
+		}
+	}
+}
+
+void SymbolicExecutor::executeFunction(llvm::Function* function)
+{
+	int xyz;
+	std::cout << "start printing all the  functions that could be  called \n";
+	printAllFunctions(function);
+	std::cout << "done printing all the  functions that could be  called \n";
+	std::cin >> xyz;
+	for (llvm::Function::iterator b = function->begin(), be = function->end(); b != be; ++b)
+	{
+
 		unsigned int minLineNumber = std::numeric_limits<unsigned int>::max();
 		unsigned int maxLineNumber = 0;
 		for (auto instruction = b->begin(), e = b->end(); instruction != e; ++instruction)
