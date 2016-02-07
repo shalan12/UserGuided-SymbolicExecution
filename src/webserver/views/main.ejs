@@ -9,13 +9,20 @@
 	            <a class="list-group-item" href="#abstraction">Abstraction</a>
         	</div>
         </div>
+        <div class="panel">
+        	<div class="panel-body" id="functions">
+        		<p class="lead">Functions In The Sample File:</p>
+        		<div id=functionNames>
+        		</div>
+        	</div>
+        </div>
     </div>
     <div class="col-md-7" id="beginSymbolicExecution">
     	<button class="btn btn-default" id="Step" onclick="getNext()">Begin Symbolic Execution</button>
     	<div id="graph"></div>    
     </div>
     
-	<div class="col-md-3 panel" >
+	<div class="col-md-3 panel" id="codePanel">
 		<div class="code" id="filecode" >
 			<div id="codedata">
 				<p class="panel-body lead">Code:</p>
@@ -23,4 +30,3 @@
 		</div>
 	</div>	 
 </div>
-

@@ -147,12 +147,12 @@ var contextmenu = [
                                     "<input type='text' name='steps'>" +
                                     "<br>" +
                                     "<p>Explore by: </p>" + 
-                                    "<input type='radio' name='explore' value='1'> BFS" +
+                                    "<input type='radio' name='explore' value='1' checked=''> BFS" +
                                     "<br>" +
                                     "<input type='radio' name='explore' value='0'> DFS" +
                                     "<br>" + 
                                     "<p>Select Branch</p>" +
-                                    "<input type='radio' name='branch' value='0'> Left" +
+                                    "<input type='radio' name='branch' value='0' checked=''> Left" +
                                     "<br>" +
                                     "<input type='radio' name='branch' value='1'> Right" +
                                     "<br><br>" +
@@ -438,23 +438,44 @@ function getNext(nodeID,isPing)
     });
 }
 
-function addModel(nodeID)
+function addModel(id)
 {
     var _modelOptions = document.getElementById('modelData');
-    var inputConstraints = _modelOptions.elements.namedItem('focusedInput').value;
-    var expectedOutput = _modelOptions.elements.namedItem('focusedOutput').value;
+    var inputs = document.getElementsByName('focusedInput[]');
+/*    inputConstraints  = [].map.call(inputs, function( input ) {
+        return input.value;
+    }).join( ',' );*/
+    var inputConstraints = "";
+    for (var i =0; i < inputs.length-1; i++)
+    {
+        inputConstraints = inputConstraints + inputs[i].value + ",";
+
+    }
+    inputConstraints += inputs[inputs.length-1].value;
+    var outputs = document.getElementsByName('focusedOutput[]');
+    /*expectedOutputs  = [].map.call(outputs, function( output) {
+        return output.value;
+    }).join( ',' );*/
+    var expectedOutputs = "";
+    for (var i =0; i < outputs.length-1; i++)
+    {
+        expectedOutputs = expectedOutputs + outputs[i].value + ",";
+
+    }
+    expectedOutputs += outputs[outputs.length-1].value;
+    
     d3.select("#model-input").remove();
 
     console.log(inputConstraints);
-    console.log(expectedOutput);
-    console.log(nodeID);
+    console.log(expectedOutputs);
+    console.log(id);
     console.log(JSON.stringify({
         url: "/constraints",
-        data: {"nodeid": nodeID, "inputConstraints": inputConstraints, "expectedOutput": expectedOutput}
+        data: {"nodeid": id, "inputConstraints": inputConstraints, "expectedOutput": expectedOutputs}
     }));
     url = "/constraints";
-    query = {"nodeid": nodeID, "inputConstraints": inputConstraints, 
-    "expectedOutput": expectedOutput};
+    query = {"id": id, "inputConstraints": inputConstraints, 
+    "expectedOutput": expectedOutputs};
     var f = function sendReq(isPing)
     {
         query["isPing"] = isPing;
@@ -475,10 +496,25 @@ function addModel(nodeID)
     return false;
 }        
 
-function getModelData(node)
+function addModelInput()
 {
-    console.log(node.x);
-    console.log(node.y);
+    var newInputsDiv = document.createElement('div');
+    newInputsDiv.innerHTML = '<label class="control-label" for="input"> Provide the input constraints: </label>' +
+            '<input class="form-control" id="input" class="focusedInput" name="focusedInput[]" type="text">' +
+            '<label class="control-label" for="output"> Provide the output for the input constraint: </label>' +
+            '<input class="form-control" id="output" class="focusedOutput" name="focusedOutput[]" type="text">'+
+            '<br><br>';
+    document.getElementById("modelFormInputs").appendChild(newInputsDiv);
+}
+
+function getModelData(isNode, node, func)
+{
+    var id;
+    if(isNode.valueOf() == 'true')
+    {
+        id = node.node;
+    }
+    else id = func;
     d3.select("#model-alert").remove();
     var modelForm = d3.select("#graph")
     .append("div")
@@ -489,14 +525,16 @@ function getModelData(node)
     modelForm.html(
         '<legend>Add Model for function:</legend>' +
         'Available variables to choose: x, y, z' +
-        '<form class=\'form-group\' id=\'modelData\' onsubmit="return addModel(\''+node.node+'\')">' +
+        '<form class=\'form-group\' id=\'modelData\' onsubmit="return addModel(\''+id+'\')">' +
         '<br>' +
-        '<label class="control-label" for="focusedInput"> Provide the input constraints: </label>' +
-        '<input class="form-control" id="focusedInput" type="text">' +
-        '<br><br>' +
-        '<label class="control-label" for="focusedOutput"> Provide the output for the input constraint: </label>' +
-        '<input class="form-control" id="focusedOutput" type="text">'+
-        '<br><br>' +
+        '<div id="modelFormInputs">' +
+            '<label class="control-label" for="input"> Provide the input constraints: </label>' +
+            '<input class="form-control" id="input" class="focusedInput" name="focusedInput[]" type="text">' +
+            '<label class="control-label" for="output"> Provide the output for the input constraint: </label>' +
+            '<input class="form-control" id="output" class="focusedOutput" name="focusedOutput[]" type="text">'+
+            '<br><br>' +
+        '</div>' +
+        '<input type="button" value="Add another constraint" onClick="addModelInput()">' +
         '<input type="submit" value="Submit">' +
         '</form>');
 }
@@ -512,23 +550,19 @@ function checkForModel(selection)
 /*            .style("margin-left", selection.x+120 + "px")
             .style("margin-top", selection.y-350 + "px");*/
             var a = selection;
-    /*        modelAlert.append("button")
-            .attr("type", "button")
-            .attr("class","close")
-            .attr("value", "&times;");
-            modelAlert.append("text")
-            .text('An external function call was executed at node \''+selection.node+'\'. Please provide a model for the function.\n');
-            modelAlert.append("button")
-            .attr("type", "button")
-            .attr("class","btn btn-success")
-            .attr("value", "Add Model")
-            .on('click', getModelData(selection));*/
             modelAlert.html(
                 '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
                 'An external function call was executed at node \''+selection.node+'\'. Please provide a model for the function.\n' +
+                '<br></br>' +
                 '<input type="button" class="btn btn-primary" id="addModelBtn" value="Add Model">');
-            $("#addModelBtn").on("click", function(){getModelData(selection)});
+            $("#addModelBtn").on("click", function(){getModelData('true',selection)});
         }    
+}
+
+function addModelForFunction(func)
+{
+    getModelData('false',func.name);
+    hightlightCode(func.startLine, func.endLine, 'gold');
 }
 
 /* ---------------- Nodes Right Click Menu Options ------------------------------ */
@@ -610,7 +644,21 @@ function handleMenuOptions(nodeID)
 // _submit.addEventListener('click', upload);
 
 
-/*----------------------- Upload Sample File and Code ----------------- */
+/*----------------------- Upload Sample File, Code and Functions ----------------- */
+
+
+function displayFunctionNames(functions)
+{
+    var functionNamesDiv = document.getElementById('functionNames');
+    var buttonID = ""
+    for(var i = 1; i <= functions.length; i++)
+    {
+        $('#functionNamesDiv').append('<p id="'+functions[i-1].name+'">'+ i + ". " + functions[i-1].name + '</p>');
+        buttonID = "addModelFor" + functions[i-1].name;
+        $('#functionNamesDiv').append('<input type="button" class="btn btn-default" onclick="addModelForFunction('+funtion[i-1]+')" id="'+buttonID+'" value="Add Model"');
+    }
+
+}
 
 function uploadSample(isPing)
 {    
@@ -628,14 +676,12 @@ function uploadSample(isPing)
             setup();
             var fileString = resp.replace(/\r/g, "\n");
             var splitted = fileString.split("\n");
-            // document.getElementById("filecode").style.display = "block";
             numOfCodeLines = splitted.length;
             for (var i = 1; i <= splitted.length; i++)
             {
-                //$("#codedata").append('<pre contextmenu="exclusionMenu" id = "'+i+'">'+ i + "." + splitted[i-1] + '<menu type="context" id="exclusionMenu"><menuitem label="Exclude" onclick="excludeStatement(\''+i+'\')"></menuitem</menu></pre>');  
                 $("#codedata").append('<pre id = "'+i+'" ondblclick="excludeStatement(\''+i+'\')">'+ i + "." + splitted[i-1]+'</pre>');
-
             }
+
             // document.getElementById('instructions').style.display = "none";
             // document.getElementById('beginSymbolicExecutiom').style.display = "block";
         });

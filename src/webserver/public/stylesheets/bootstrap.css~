@@ -7009,7 +7009,7 @@ a.list-group-item-danger.active:focus {
 }*/
 
 div#graph {
-  height: 700px;
+  height: 600px;
   width: 100%;
   border:2px solid #4E5D6C;
 }
@@ -7018,7 +7018,7 @@ div#features {
   width: 100%;
 }
 div#filecode {
-  height: 750px;
+  height: 1000px;
   width: 100%;
   overflow: scroll;
 }
