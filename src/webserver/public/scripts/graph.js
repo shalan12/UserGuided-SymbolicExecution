@@ -213,7 +213,7 @@ function update(source) {
     .on('contextmenu', d3.contextMenu(contextmenu));
 
     nodeEnter.append("text")
-    .attr("y", function(d) { return d.children ? -18 : 18; })
+    //.attr("y", function(d) { return d.children ? -18 : 18; })
     .attr("dy", ".35em")
     .attr("text-anchor", "middle")
     .text(function(d) { return d.node; })
@@ -653,9 +653,10 @@ function displayFunctionNames(functions)
     var buttonID = ""
     for(var i = 1; i <= functions.length; i++)
     {
-        $('#functionNamesDiv').append('<p id="'+functions[i-1].name+'">'+ i + ". " + functions[i-1].name + '</p>');
+        $('#functionNames').append('<p id="'+functions[i-1].name+'">'+ i + ". " + functions[i-1].name + '</p>');
         buttonID = "addModelFor" + functions[i-1].name;
-        $('#functionNamesDiv').append('<input type="button" class="btn btn-default" onclick="addModelForFunction('+funtion[i-1]+')" id="'+buttonID+'" value="Add Model"');
+        console.log(buttonID);
+        $('#functionNames').append('<input type="button" onClick="addModelForFunction('+functions[i-1]+')" id="'+buttonID+'" value="Add Model">');
     }
 
 }
@@ -665,6 +666,7 @@ function uploadSample(isPing)
     var sampleSubmit = document.getElementById('_submitSample'),
     sampleName = document.getElementById('selectSampleCode').value;
     var sampleFilePath = "file:///home/habiba/Documents/University/Sproj/Sproj/src/SUT/" + sampleName;
+    var functions = [{"name": "notMain"},{"name":"notMain2"}];
     isPing = isPing || false;
     $.ajax({
         url: "/sample",
@@ -674,13 +676,14 @@ function uploadSample(isPing)
             $("#mainContent").html(data);
             document.getElementById('Back').style.display = "block";
             setup();
-            var fileString = resp.replace(/\r/g, "\n");
+            var fileString = resp.file.replace(/\r/g, "\n");
             var splitted = fileString.split("\n");
             numOfCodeLines = splitted.length;
             for (var i = 1; i <= splitted.length; i++)
             {
                 $("#codedata").append('<pre id = "'+i+'" ondblclick="excludeStatement(\''+i+'\')">'+ i + "." + splitted[i-1]+'</pre>');
             }
+            displayFunctionNames(resp.functions);
 
             // document.getElementById('instructions').style.display = "none";
             // document.getElementById('beginSymbolicExecutiom').style.display = "block";
