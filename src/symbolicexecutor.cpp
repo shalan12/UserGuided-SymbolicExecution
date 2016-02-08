@@ -781,18 +781,28 @@ void SymbolicExecutor::symbolicExecute()
 	Executes all the possible paths in the given function and returns the programState at the end of every path
 */
 
-void SymbolicExecutor::printAllFunctions(llvm::Function* function)
+void SymbolicExecutor::printAllFunctions(llvm::Function* function, int index, Json::Value & functions)
 {
 	std::cout << "get function name : " << function->getName().str() << "\n";
 	// if (function->getAllMetadata())
 	// {
 	// 	std::cout << "this func has some thing special!\n";
 	// }
-
+	std::string name = function->getName().str();
+	unsigned int minLineNumber = std::numeric_limits<unsigned int>::max();
+	unsigned int maxLineNumber = 0;
 	for (llvm::Function::iterator b = function->begin(), be = function->end(); b != be; ++b)
 	{
 		for (auto instruction = b->begin(), e = b->end(); instruction != e; ++instruction)
 		{
+			if (llvm::MDNode *N = instruction->getMetadata("dbg")) 
+			{  
+				llvm::DILocation Loc(N);
+				unsigned Line = Loc.getLineNumber();
+				minLineNumber = std::min(minLineNumber,Line);
+				maxLineNumber = std::max(maxLineNumber,Line);
+			}
+
 			if (( llvm::isa<llvm::CallInst>(instruction) 
 				&& !llvm::isa<llvm::DbgDeclareInst>(instruction) ))
 			{
@@ -801,17 +811,24 @@ void SymbolicExecutor::printAllFunctions(llvm::Function* function)
 				llvm::Value* v=callInst->getCalledValue();
 			    llvm::Value* sv = v->stripPointerCasts();
 			    std::cout << "called function name : " << sv->getName().str() << "\n";
-				printAllFunctions(calledFunction);
+				printAllFunctions(calledFunction, index++, functions);
 			}
 		}
 	}
+	Json::Value val;
+	val["name"] = Json::Value(name);
+	val["minLine"] = Json::Value(minLineNumber);
+	val["maxLine"] = Json::Value(maxLineNumber);
+	functions[index] = val;
 }
 
 void SymbolicExecutor::executeFunction(llvm::Function* function)
 {
 	int xyz;
 	std::cout << "start printing all the  functions that could be  called \n";
-	printAllFunctions(function);
+	Json::Value functions = Json::arrayValue;
+	printAllFunctions(function, 0, functions);
+
 	std::cout << "done printing all the  functions that could be  called \n";
 	std::cin >> xyz;
 	for (llvm::Function::iterator b = function->begin(), be = function->end(); b != be; ++b)
@@ -837,6 +854,9 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 		}
 
 	}
+
+	reader->updateToSend(functions);
+	reader->proceedSymbolicExecution();
 
 	auto rootState = new ProgramState(function->args());
 	auto rootBlock = &function->getEntryBlock();
@@ -880,9 +900,6 @@ void SymbolicExecutor::proceed(Json::Value val)
 
 void SymbolicExecutor::execute(Json::Value val)
 {
-    reader->updateMsg(val);
-    reader->setExecutionVars();
-	
 	llvm::Module* module = loadCode(filename.c_str());
 
 	auto function = module->getFunction("_Z7notmainii");
