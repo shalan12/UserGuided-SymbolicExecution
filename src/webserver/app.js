@@ -46,6 +46,7 @@ var map = []; // contains sessionid->filename,lastPinged
 var toSend = [];
 var MSG_TYPE_EXCLUDENODE = 100;
 var MSG_TYPE_EXPANDNODE = 200;
+var MSG_TYPE_FUNCNAMES = 300;
 /////////////////////////////////////
 ////////////UTILS///////////////////
 ///////////////////////////////////
@@ -67,8 +68,8 @@ function getRandomInt()
   {
     if (map.hasOwnProperty(key) &&  randomNumber == key) 
     {
-    found = false
-    break
+      found = false
+      break
     }
   }
 
@@ -142,6 +143,10 @@ client.on('data',function(data)
       else if (data["type"] == MSG_TYPE_EXCLUDENODE)
       {
         toSend[data.fileId] = {"minLine": data.minLine, "maxLine": data.maxLine};
+      }
+      else if (data["type"] == MSG_TYPE_FUNCNAMES)
+      {
+        toSend[data.fileId] = data.functionNames;
       }
     }  
    
@@ -282,8 +287,11 @@ app.get('/constraints',function(req,res){
     
   if(!isPingQuery(query))
   {
-    client.write(JSON.stringify({"id":fileid, "val":{"nodeid": query["nodeid"], "pairs":[{"constraints": query["inputConstraints"], 
-        "returnValue": query["expectedOutput"]}]}}));
+    var zipped = lodash.zip(query["inputConstraints"].split(","), query["expectedOutput"].split(",")); 
+    var pairs = lodash.map(zipped, function(x){
+      return {"constraints":x[0],"returnValue":x[1]};
+    });
+    client.write(JSON.stringify({"id":fileid, "val":{"nodeid": query["nodeid"], "pairs": pairs}}));
   }
   else if (toSend[fileid])
   {
@@ -295,6 +303,25 @@ app.get('/constraints',function(req,res){
   res.send({});
  
 
+});
+app.get('/metadata', function(req,res)
+{
+  fileId = map[req.cookies.sessionid];
+  query = req.query;
+  if (!isPingQuery(query))
+  {
+    toSendToExecutor = {"id":fileId,"msg_type": MSG_TYPE_FUNCNAMES};
+    client.write(JSON.stringify(toSendToExecutor));
+  }
+  if (toSend[fileId])
+  {
+    res.send(toSend[fileId]);
+    toSend[fileId] = null;
+  }
+  else
+  {
+    res.send({});
+  }
 });
 app.get('/exclude', function(req,res){
   query = req.query;
