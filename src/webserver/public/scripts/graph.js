@@ -438,7 +438,7 @@ function getNext(nodeID,isPing)
     });
 }
 
-function addModel(id)
+function addModel(isNode, id)
 {
     var _modelOptions = document.getElementById('modelData');
     var inputs = document.getElementsByName('focusedInput[]');
@@ -474,7 +474,7 @@ function addModel(id)
         data: {"nodeid": id, "inputConstraints": inputConstraints, "expectedOutput": expectedOutputs}
     }));
     url = "/constraints";
-    query = {"id": id, "inputConstraints": inputConstraints, 
+    query = {"isNode":isNode, "id": id, "inputConstraints": inputConstraints, 
     "expectedOutput": expectedOutputs};
     var f = function sendReq(isPing)
     {
@@ -525,7 +525,7 @@ function getModelData(isNode, node, func)
     modelForm.html(
         '<legend>Add Model for function:</legend>' +
         'Available variables to choose: x, y, z' +
-        '<form class=\'form-group\' id=\'modelData\' onsubmit="return addModel(\''+id+'\')">' +
+        '<form class=\'form-group\' id=\'modelData\' onsubmit="return addModel(\''+id+'\',\''+isNode+'\')">' +
         '<br>' +
         '<div id="modelFormInputs">' +
             '<label class="control-label" for="input"> Provide the input constraints: </label>' +
@@ -660,6 +660,17 @@ function displayFunctionNames(functions)
     }
 
 }
+function getFunctionNames(isPing)
+{
+    isPing = isPing || false;
+    $.ajax({
+        url: "/metadata",
+    }).done(function(resp){
+        displayFunctionNames(resp);
+        if (resp == undefined)
+            setTimeout(getFunctionNames(true),1000);
+    })
+}
 
 function uploadSample(isPing)
 {    
@@ -676,14 +687,14 @@ function uploadSample(isPing)
             $("#mainContent").html(data);
             document.getElementById('Back').style.display = "block";
             setup();
-            var fileString = resp.file.replace(/\r/g, "\n");
+            var fileString = resp.replace(/\r/g, "\n");
             var splitted = fileString.split("\n");
             numOfCodeLines = splitted.length;
             for (var i = 1; i <= splitted.length; i++)
             {
                 $("#codedata").append('<pre id = "'+i+'" ondblclick="excludeStatement(\''+i+'\')">'+ i + "." + splitted[i-1]+'</pre>');
             }
-            displayFunctionNames(resp.functions);
+            getFunctionNames();
 
             // document.getElementById('instructions').style.display = "none";
             // document.getElementById('beginSymbolicExecutiom').style.display = "block";
