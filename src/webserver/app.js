@@ -83,6 +83,7 @@ function makeBitCodeFile(oldpath,newpath,id)
 {
   fs.readFile(oldpath, function (err, data) 
   {
+    data = '#include "../../errors.h"\n' + data;
     fs.writeFile(newpath+".cpp", data,function(err)
     {      
       console.log(newpath+".cpp" + " file written")
@@ -151,7 +152,7 @@ client.on('data',function(data)
 // });
 
 app.configure(function(){
-  app.set('port', process.env.PORT || 3000);
+  app.set('port', process.env.PORT || 80);
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
   app.engine('.html', require('ejs').renderFile);

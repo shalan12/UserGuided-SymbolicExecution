@@ -57,7 +57,42 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 		std::cout << " executing :" << instruction->getOpcodeName() << " instruction \n";
 		std::cout << "State at this point == \n------------------" << state->toString() << "\n";
 	#endif
-	if (instruction->getOpcode() == 49)
+
+	if (llvm::isa<llvm::BinaryOperator>(instruction))
+	{
+		std::cout << "Binary Operator";
+		std::string op;
+		switch(instruction->getOpcode())
+		{
+
+			case llvm::Instruction::Add :
+				op = "+";
+				break;
+			case llvm::Instruction::Sub :
+				op = "-";
+				break;
+			case llvm::Instruction::Mul :
+				op = "*";
+				break;
+			case llvm::Instruction::SDiv :
+				op = "/";
+				break;
+			case llvm::Instruction::Shl :
+				op = "<<";
+				break;
+			case llvm::Instruction::AShr :
+				op = ">>";
+				break;
+			default :
+				std::cout << "Not Implemented"; // change std::cout to some log file
+				break;
+		}
+		ExpressionTree* lhs = getExpressionTree(state,instruction->getOperand(0));
+		ExpressionTree* rhs = getExpressionTree(state,instruction->getOperand(1));
+		state->add(instruction, new ExpressionTree(op,lhs,rhs));
+	}
+
+	else if (instruction->getOpcode() == 49)
 	{
 		if (llvm::DbgDeclareInst* DbgDeclare = llvm::dyn_cast<llvm::DbgDeclareInst>(instruction)) {
       		llvm::MDNode* Var = DbgDeclare->getVariable();
@@ -85,44 +120,8 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 	{
 		ExpressionTree* exptree = getExpressionTree(state,instruction->getOperand(0));
 		state->add(instruction,exptree);
-	
-		#ifdef DEBUG	
-		if(!exptree)
-			std::cout << "expression tree not found \n";
-		#endif 
 	}
-	else if(instruction->getOpcode()==llvm::Instruction::Add)
-	{
-		ExpressionTree* lhs = getExpressionTree(state,instruction->getOperand(0));
-		ExpressionTree* rhs = getExpressionTree(state,instruction->getOperand(1));
-	
-		#ifdef DEBUG
-			if (lhs)
-				std::cout << "lhs not NULL\n";
-			if (rhs)
-				std::cout << "rhs not NULL\n";
 
-			std::cout << "lhs: " << lhs->toString() <<"\n";
-			std::cout << "rhs: " << rhs->toString() <<"\n";
-		#endif
-		state->add(instruction,new ExpressionTree("+",lhs,rhs));		
-	}
-	else if(instruction->getOpcode()==llvm::Instruction::Sub)
-	{
-		ExpressionTree* lhs = getExpressionTree(state,instruction->getOperand(0));
-		ExpressionTree* rhs = getExpressionTree(state,instruction->getOperand(1));
-	
-		#ifdef DEBUG
-			if (lhs)
-				std::cout << "lhs not NULL\n";
-			if (rhs)
-				std::cout << "rhs not NULL\n";
-
-			std::cout << "lhs: " << lhs->toString() <<"\n";
-			std::cout << "rhs: " << rhs->toString() <<"\n";
-		#endif
-		state->add(instruction,new ExpressionTree("-",lhs,rhs));		
-	}
 	else if (instruction->getOpcode() == llvm::Instruction::ICmp)
 	{
 		llvm::ICmpInst* cmpInst = llvm::dyn_cast<llvm::ICmpInst>(instruction); 
@@ -490,7 +489,17 @@ std::vector<SymbolicTreeNode*>
 			#ifdef DEBUG
 				std::cout << "Split Point Hit!\n";	
 			#endif
-
+			if (llvm::CallInst* callInst = llvm::dyn_cast<llvm::CallInst>(instruction))
+			{
+				llvm::Function* calledFunction = callInst->getCalledFunction();
+				if(calledFunction->getName().str() == "_ZN2se13unknown_errorEv")
+				{
+					#ifdef DEBUG
+					std::cout << "Error State Reached";
+					#endif
+					continue;
+				}
+			}
 			return getNextBlocks(instruction,symTreeNode);
 		}
 		else 
