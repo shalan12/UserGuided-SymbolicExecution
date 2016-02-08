@@ -656,7 +656,7 @@ function displayFunctionNames(functions)
         $('#functionNames').append('<p id="'+functions[i-1].name+'">'+ i + ". " + functions[i-1].name + '</p>');
         buttonID = "addModelFor" + functions[i-1].name;
         console.log(buttonID);
-        $('#functionNames').append('<input type="button" onclick="addModelForFunction('+functions[i-1]+')" id="'+buttonID+'" value="Add Model">');
+        $('#functionNames').append('<input type="button" onClick="addModelForFunction('+functions[i-1]+')" id="'+buttonID+'" value="Add Model">');
     }
 
 }
@@ -676,14 +676,14 @@ function uploadSample(isPing)
             $("#mainContent").html(data);
             document.getElementById('Back').style.display = "block";
             setup();
-            var fileString = resp.replace(/\r/g, "\n");
+            var fileString = resp.file.replace(/\r/g, "\n");
             var splitted = fileString.split("\n");
             numOfCodeLines = splitted.length;
             for (var i = 1; i <= splitted.length; i++)
             {
                 $("#codedata").append('<pre id = "'+i+'" ondblclick="excludeStatement(\''+i+'\')">'+ i + "." + splitted[i-1]+'</pre>');
             }
-            displayFunctionNames(functions);
+            displayFunctionNames(resp.functions);
 
             // document.getElementById('instructions').style.display = "none";
             // document.getElementById('beginSymbolicExecutiom').style.display = "block";
