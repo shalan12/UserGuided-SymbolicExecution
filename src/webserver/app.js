@@ -7,7 +7,9 @@ var express = require('express'),
   routes = require('./routes'),
   user = require('./routes/user'),
   http = require('http'),
-  path = require('path');
+  path = require('path'),
+  async = require('async'),
+  Q = require("q");
 
 var app = express();
 var net = require('net');
@@ -82,23 +84,44 @@ function isPingQuery(query)
 }
 function makeBitCodeFile(oldpath,newpath,id)
 {
-  fs.readFile(oldpath, function (err, data) 
-  {
-    data = '#include "../../errors.h"\n' + data;
-    fs.writeFile(newpath+".cpp", data,function(err)
-    {      
-      console.log(newpath+".cpp" + " file written")
-      bcFile = newpath+".bc";
-      toExec = "clang-3.5 -emit-llvm " + newpath  + ".cpp -g -c -o " + bcFile;
-      exec(toExec, function (error, stdout, stderr) {
-        if(error) console.log(error)
-        else console.log(newpath+".bc" + " file emitted")
-        map[id] = bcFile; // store mapping between sessionid and filename
-        // things from this map will need to be deleted later .. when client leaves .. or when execution is completed
+  var newFileName = Q.defer();
+  async.waterfall([
+    function(callback){
+      fs.readFile(oldpath, function (err, data)
+      {
+        data = '#include "../../errors.h"\n' + data;
+        callback(err,newpath+".cpp",data)
+      });},
+    function(path,data,callback){
+      fs.writeFile(path, data,function(err)
+      {      
+        console.log(newpath+".cpp" + " file written")
+        bcFile = newpath+".bc";
+        toExec = "clang-3.5 -emit-llvm " + newpath  + ".cpp -g -c -o " + bcFile;
+        callback(err,toExec) 
       });
-    });
-     
-  });
+    },
+    function(toExec,callback)
+    {
+      exec(toExec,function (error, stdout, stderr) {
+        if(error)
+        {
+          console.log(error);
+          newFileName.reject(error);
+        }
+        else
+        {
+          console.log(newpath+".bc" + " file emitted")
+          newFileName.resolve(bcFile); // store mapping between sessionid and filename
+          // things from this map will need to be deleted later .. when client leaves .. or when execution is completed
+        }
+        callback(error);
+      });
+      
+    }
+  ]);
+  
+  return newFileName.promise;
 }
 ////////////////////////////////////
 //////////END-UTILS////////////////
@@ -124,8 +147,8 @@ client.on('data',function(data)
     {
       if(data["type"] == MSG_TYPE_EXPANDNODE)
       {
-        var fileid = data.fileId;
-        toSend[fileid] = {'nodes':Array(),'updated':true, 'completed':true};
+        var fileId = data.fileId;
+        toSend[fileId] = {'nodes':Array(),'updated':true, 'completed':true};
         var toSendToUser = {}
         data = data.nodes;
         for(var i = 0; i < data.length; i++)
@@ -134,19 +157,21 @@ client.on('data',function(data)
           toSendToUser["parent"] = data[i]["parent"];
           toSendToUser["text"] = data[i]["text"];
           toSendToUser["constraints"] = data[i]["constraints"];
-          toSendToUser["startLine"] = data[i]["startLine"];
-          toSendToUser["endLine"] = data[i]["endLine"];
+          toSendToUser["startLine"] = data[i]["startLine"] - 1;
+          toSendToUser["endLine"] = data[i]["endLine"]  - 1;
           toSendToUser["addModel"] = data[i]["addModel"];
-          toSend[fileid]['nodes'].push(lodash.cloneDeep(toSendToUser));
+          toSend[fileId]['nodes'].push(lodash.cloneDeep(toSendToUser));
         }
       }
       else if (data["type"] == MSG_TYPE_EXCLUDENODE)
       {
-        toSend[data.fileId] = {"minLine": data.minLine, "maxLine": data.maxLine};
+        toSend[data.fileId] = {"minLine": data.minLine - 1, "maxLine": data.maxLine - 1};
       }
       else if (data["type"] == MSG_TYPE_FUNCNAMES)
       {
-        toSend[data.fileId] = data.functionNames;
+        toSend[data.fileId] = {};
+        toSend[data.fileId]["functions"] = data["functions"];
+        console.log("toSend = " + JSON.stringify(toSend[data.fileId]));
       }
     }  
    
@@ -238,115 +263,128 @@ app.get('/sample',function(req,res)
   var path = __dirname + "/samples/" + req.query["fileID"];
   var filename = req.cookies.sessionid;
   var newPath = __dirname + "/uploads/" + filename;
-  makeBitCodeFile(path, newPath, req.cookies.sessionid);
+
+  console.log("id = " + req.cookies.sessionid);
+  map[req.cookies.sessionid] = makeBitCodeFile(path, newPath, req.cookies.sessionid);
   res.sendfile(path);
 });
 app.post('/upload',function(req,res){
   var extension = '.cpp'; 
   var filename = req.cookies.sessionid;
   var newPath = __dirname + "/uploads/" + filename; //__dirname is a global, containing the current dir 
-  makeBitCodeFile(req.files.SelectedFile.path, newPath, req.cookies.sessionid);
+  map[req.cookies.sessionid] = makeBitCodeFile(req.files.SelectedFile.path, newPath, req.cookies.sessionid);
   res.redirect('back'); // return to the previous page
 });
 
 app.get('/next',function(req,res){
-  fileId = map[req.cookies.sessionid];
-  query = req.query;
-  if(!isPingQuery(query))
+  map[req.cookies.sessionid].then(function(fileId)
   {
-    toSendToExecutor = {};
-    var fileId = map[req.cookies.sessionid]; 
-    toSendToExecutor["val"] = {}
-    toSendToExecutor["val"]["isBFS"] = (typeof query["isBFS"] === 'undefined' || query["isBFS"] === '') ? 0:query["isBFS"];
-    toSendToExecutor["val"]["branch"] = (typeof query["branch"] === 'undefined' || query["branch"] === '' ) ? 0:query["branch"];
-    toSendToExecutor["val"]["steps"] = (typeof query["steps"] === 'undefined' || query["steps"] === '') ? 1:query["steps"];
-    toSendToExecutor["val"]["prevId"] = (typeof query["prevId"] === 'undefined' || query["prevId"] === '') ? -1:query["prevId"];
-    toSendToExecutor["id"] = fileId;
-    console.log("Sending to Executor : " );
-    console.log(toSendToExecutor);
-    client.write(JSON.stringify(toSendToExecutor));
-  }
-  //console.log("sending to user : " + JSON.stringify(toSend[fileId]));
-  if(toSend[fileId])
-  {
-    //sendCopy = lodash.cloneDeep(toSend[fileId]);
-    console.log("sending to client " + JSON.stringify(toSend[fileId]));
-    res.send(toSend[fileId]);
-    toSend[fileId] = null;
-  }
-  else
-  {
-    res.send({"updated":false,"completed":false});
-  }
+    query = req.query;
+    if(!isPingQuery(query))
+    {
+      toSendToExecutor = {};
+      toSendToExecutor["val"] = {}
+      toSendToExecutor["val"]["isBFS"] = (typeof query["isBFS"] === 'undefined' || query["isBFS"] === '') ? 0:query["isBFS"];
+      toSendToExecutor["val"]["branch"] = (typeof query["branch"] === 'undefined' || query["branch"] === '' ) ? 0:query["branch"];
+      toSendToExecutor["val"]["steps"] = (typeof query["steps"] === 'undefined' || query["steps"] === '') ? 1:query["steps"];
+      toSendToExecutor["val"]["prevId"] = (typeof query["prevId"] === 'undefined' || query["prevId"] === '') ? -1:query["prevId"];
+      toSendToExecutor["id"] = fileId;
+      console.log("Sending to Executor : " );
+      console.log(toSendToExecutor);
+      client.write(JSON.stringify(toSendToExecutor));
+    }
+    //console.log("sending to user : " + JSON.stringify(toSend[fileId]));
+    if(toSend[fileId])
+    {
+      //sendCopy = lodash.cloneDeep(toSend[fileId]);
+      console.log("sending to client " + JSON.stringify(toSend[fileId]));
+      res.send(toSend[fileId]);
+      toSend[fileId] = null;
+    }
+    else
+    {
+      res.send({"updated":false,"completed":false});
+    }
+ });
   
 });
 app.get('/constraints',function(req,res){
-  query = req.query;
-  console.log(query);
-  fileid = map[req.cookies.sessionid];
+  map[req.cookies.sessionid].then(function(fileId){
+    query = req.query;
+    console.log(query);
+    if(!isPingQuery(query))
+    {
+      var zipped = lodash.zip(query["inputConstraints"].split(","), query["expectedOutput"].split(",")); 
+      var pairs = lodash.map(zipped, function(x){
+        return {"constraints":x[0],"returnValue":x[1]};
+      });
+      client.write(JSON.stringify({"id":fileId, "val":{"nodeid": query["nodeid"], "pairs": pairs}}));
+    }
+    else if (toSend[fileId])
+    {
+        res.send(toSend[fileId]);
+        console.log("sending" + JSON.stringify(toSend[fileId]))
+        toSend[fileId] = null;
+        return;
+    }
+    res.send({}); 
+  });
     
-  if(!isPingQuery(query))
-  {
-    var zipped = lodash.zip(query["inputConstraints"].split(","), query["expectedOutput"].split(",")); 
-    var pairs = lodash.map(zipped, function(x){
-      return {"constraints":x[0],"returnValue":x[1]};
-    });
-    client.write(JSON.stringify({"id":fileid, "val":{"nodeid": query["nodeid"], "pairs": pairs}}));
-  }
-  else if (toSend[fileid])
-  {
-      res.send(toSend[fileid]);
-      console.log("sending" + JSON.stringify(toSend[fileid]))
-      toSend[fileid] = null;
-      return;
-  }
-  res.send({});
+  
  
 
 });
 app.get('/metadata', function(req,res)
 {
-  fileId = map[req.cookies.sessionid];
-  query = req.query;
-  if (!isPingQuery(query))
+  map[req.cookies.sessionid].then(function(fileId)
   {
-    toSendToExecutor = {"id":fileId,"msg_type": MSG_TYPE_FUNCNAMES};
-    client.write(JSON.stringify(toSendToExecutor));
-  }
-  if (toSend[fileId])
-  {
-    res.send(toSend[fileId]);
-    toSend[fileId] = null;
-  }
-  else
-  {
-    res.send({});
-  }
-});
-app.get('/exclude', function(req,res){
-  query = req.query;
-  fileId = map[req.cookies.sessionid];
-
-  if(!isPingQuery(query))
-  {
-    if(query["lineno"]) 
-      toSendToExecutor = {"id":fileId, "val": {"exclude":query["lineno"], "isNode":"0"}};
+    console.log(toSend[fileId]);
+    query = req.query;
+    if (!isPingQuery(query))
+    {
+      toSendToExecutor = {"id" : fileId, "type": MSG_TYPE_FUNCNAMES};
+      console.log("sending " + JSON.stringify(toSendToExecutor));
+      client.write(JSON.stringify(toSendToExecutor));
+    }
+    if (toSend[fileId])
+    {
+      res.send(toSend[fileId]);
+      toSend[fileId] = null;
+    }
     else
     {
-      toSendToExecutor = {"id":fileId, "val": {"exclude":query["nodeid"], "isNode":"1"}};
-      //temp - because ubaid not replying in this case
+      res.send({});
     }
-    res.send({});
-    client.write(JSON.stringify(toSendToExecutor));
+  });
 
-  }
-  if(toSend[fileId])
+  
+});
+app.get('/exclude', function(req,res){
+  map[req.cookies.sessionid].then(function(fileId)
   {
-      res.send(toSend[fileId]);
-      console.log("sending" + JSON.stringify(toSend[fileId]))
-      toSend[fileId] = null;
-  }
-  else res.send({});
+    query = req.query;
+    if(!isPingQuery(query))
+    {
+      if(query["lineno"]) 
+        toSendToExecutor = {"id":fileId, "val": {"exclude":query["lineno"], "isNode":"0"}};
+      else
+      {
+        toSendToExecutor = {"id":fileId, "val": {"exclude":query["nodeid"], "isNode":"1"}};
+        //temp - because ubaid not replying in this case
+      }
+      res.send({});
+      client.write(JSON.stringify(toSendToExecutor));
+
+    }
+    if(toSend[fileId])
+    {
+        res.send(toSend[fileId]);
+        console.log("sending" + JSON.stringify(toSend[fileId]))
+        toSend[fileId] = null;
+    }
+    else res.send({});  
+  });
+  
 });
 server = http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on " + server.address().address + ":" + app.get('port'));

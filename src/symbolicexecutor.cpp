@@ -826,8 +826,13 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 {
 	int xyz;
 	std::cout << "start printing all the  functions that could be  called \n";
-	Json::Value functions = Json::arrayValue;
-	printAllFunctions(function, 0, functions);
+	Json::Value functions;
+	functions["type"] = MSG_TYPE_FUNCNAMES;
+	functions["fileId"] = Json::Value(filename.c_str());
+	functions["functions"] =  Json::arrayValue;
+	printAllFunctions(function, 0, functions["functions"]);
+	reader->updateToSend(functions);
+	reader->proceedSymbolicExecution();
 
 	std::cout << "done printing all the  functions that could be  called \n";
 	std::cin >> xyz;
@@ -855,8 +860,6 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 
 	}
 
-	reader->updateToSend(functions);
-	reader->proceedSymbolicExecution();
 
 	auto rootState = new ProgramState(function->args());
 	auto rootBlock = &function->getEntryBlock();

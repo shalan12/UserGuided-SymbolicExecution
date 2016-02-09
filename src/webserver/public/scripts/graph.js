@@ -665,10 +665,14 @@ function getFunctionNames(isPing)
     isPing = isPing || false;
     $.ajax({
         url: "/metadata",
+        data: {"isPing" : isPing}
     }).done(function(resp){
-        displayFunctionNames(resp);
-        if (resp == undefined)
-            setTimeout(getFunctionNames(true),1000);
+        if (resp["functions"] === undefined)
+        {    
+            console.log("setting timeout");
+            setTimeout(function(){getFunctionNames(true)},1000);
+        }
+        else displayFunctionNames(resp["functions"]);
     })
 }
 
