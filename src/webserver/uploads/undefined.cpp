@@ -1,3 +1,4 @@
+#include "../../errors.h"
 #include <stdlib.h>     /* abs */
 int notmain2(int c, int d);
 void notmain(int a, int b)

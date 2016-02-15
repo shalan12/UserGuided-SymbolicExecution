@@ -1,5 +1,6 @@
 /* --------------------- Symbolic Tree --------------------- */
-var margin = { top: 40, right: 120, bottom: 20, left: 80};
+
+var margin = { top: 40, right: 120, bottom: 20, left: 360};
 var width = 960 - margin.right - margin.left;
 var height = 1000 - margin.top - margin.bottom;
 /*var margin = {top: 200.5, right: 120, bottom: 20, left: 275},
@@ -136,13 +137,13 @@ var contextmenu = [
                         datum = d3_target.datum();
                         menu = d3.select("#graph")
                         .append("div")
-                        .attr("class", "well bs-component col-lg-3")
+                        .attr("class", "box box-primary box-solid")
                         .attr("id", "formmenu");
                         // .style("margin-left", d.x-50 +"px")
                         // .style("margin-top", -500 + d.y + 50 +"px");
                         menu.html(
-                                '<legend>Options:</legend>'+
-                                '<form class=\'form-group\' id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
+                                '<div class="box-header with-border"> <h3> Options </h3></legend></div>'+
+                                '<div class="box-body" ><form class=\'form-group\' id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
                                 "Number of steps to explore:<br>" +
                                     "<input type='text' name='steps'>" +
                                     "<br>" +
@@ -156,9 +157,9 @@ var contextmenu = [
                                     "<br>" +
                                     "<input type='radio' name='branch' value='1'> Right" +
                                     "<br><br>" +
-                                    "<input type='submit' value='Submit'>" +
+                                    "<input type='submit' class='btn btn-primary' value='Submit'>" +
 
-                                "</form>");
+                                "</form></div>");
                     }
                 }
             }
@@ -323,7 +324,7 @@ function click(d) {
 function highlightPathToNode(node)
 {
     d3.selectAll("circle").style("stroke", "steelblue");
-    hightlightCode(1, numOfCodeLines, '#ebebeb');
+    hightlightCode(1, numOfCodeLines, 'transparent');
     document.getElementById("name"+node.node).style.stroke = '#FF6347';
     hightlightCode(node.startLine, node.endLine, '#FF6347');
     var curr = node;
@@ -340,6 +341,8 @@ function hightlightCode(startLine, endLine, color)
     for (var line = startLine; line <= endLine; line++)
     {   
         document.getElementById(line).style.backgroundColor = color;
+        if (color != "transparent")
+            document.getElementById(line).style.color = "white";
     }    
 }
 
@@ -392,9 +395,9 @@ function addNode(nodeObj)
     updateGraph();
     console.log(numOfCodeLines);
     d3.selectAll("circle").style("stroke", "steelblue");
-    document.getElementById("name"+node.node).style.stroke = '#FF6347';
+    document.getElementById("name"+node.node).style.stroke = '#00a65a';
     /*hightlightCode(1, numOfCodeLines, '#ebebeb');*/
-    hightlightCode(node.startLine, node.endLine, 'gold');
+    hightlightCode(node.startLine, node.endLine, '#00a65a');
 }
 /* ---------------- Step To Get Next Node --------------------------------------- */
 function addNodes(data)
@@ -519,12 +522,12 @@ function getModelData(isNode, node, func)
     var modelForm = d3.select("#graph")
     .append("div")
     .attr("id", "model-input")
-    .attr("class", "well bs-component col-lg-3");
+    .attr("class", "box box-primary box-solid");
 /*    .style("margin-left", node.x+120+"px")
     .style("margin-top",node.y-350+"px");*/
     modelForm.html(
-        '<legend>Add Model for function:</legend>' +
-        'Available variables to choose: x, y, z' +
+        '<div class="box-header with-border"><h3>Add Model for function:</h3></div>' +
+        '<div class="box-body">Available variables to choose: x, y, z' +
         '<form class=\'form-group\' id=\'modelData\' onsubmit="return addModel(\''+id+'\',\''+isNode+'\')">' +
         '<br>' +
         '<div id="modelFormInputs">' +
@@ -535,8 +538,8 @@ function getModelData(isNode, node, func)
             '<br><br>' +
         '</div>' +
         '<input type="button" value="Add another constraint" onClick="addModelInput()">' +
-        '<input type="submit" value="Submit">' +
-        '</form>');
+        '<input type="submit" class="btn btn-primary pull-right" value="Submit">' +
+        '</form></div>');
 }
 
 function checkForModel(selection)
@@ -545,7 +548,7 @@ function checkForModel(selection)
         {   
             var modelAlert = d3.select("#graph")
             .append("div")
-            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-warning")
+            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-success")
             .attr("id", "model-alert");
 /*            .style("margin-left", selection.x+120 + "px")
             .style("margin-top", selection.y-350 + "px");*/
@@ -554,15 +557,15 @@ function checkForModel(selection)
                 '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
                 'An external function call was executed at node \''+selection.node+'\'. Please provide a model for the function.\n' +
                 '<br></br>' +
-                '<input type="button" class="btn btn-primary" id="addModelBtn" value="Add Model">');
+                '<input type="button" class="btn btn-primary pull-right" id="addModelBtn" value="Add Model">');
             $("#addModelBtn").on("click", function(){getModelData('true',selection)});
         }    
 }
 
-function addModelForFunction(func)
+function addModelForFunction(name, minLine, maxLine)
 {
-    getModelData('false',func.name);
-    hightlightCode(func.startLine, func.endLine, 'gold');
+    getModelData('false',name);
+    hightlightCode(minLine, maxLine, '#F39C12');
 }
 
 /* ---------------- Nodes Right Click Menu Options ------------------------------ */
@@ -653,10 +656,14 @@ function displayFunctionNames(functions)
     var buttonID = ""
     for(var i = 1; i <= functions.length; i++)
     {
-        $('#functionNames').append('<p id="'+functions[i-1].name+'">'+ i + ". " + functions[i-1].name + '</p>');
+        $('#functionNames').append('<a href="#" id="'+functions[i-1].name+'">'+ i + ". " + functions[i-1].name + '</a><br><br>');
         buttonID = "addModelFor" + functions[i-1].name;
         console.log(buttonID);
-        $('#functionNames').append('<input type="button" onClick="addModelForFunction('+functions[i-1]+')" id="'+buttonID+'" value="Add Model">');
+        $('#functionNames').append('<input type="button" class="btn btn-success pull-right"'+
+         'onClick="addModelForFunction('+functions[i-1].name+','+functions[i-1].minLine+','+functions[i-1].maxLine+')" id="'+buttonID+'" value="Add Model"><br><br>');
+        var addButton = document.getElementById(buttonID);
+        console.log(functions[i-1]);
+        //addButton.addEventListener('click', function(){console.log(functions[i-1]);addModelForFunction(functions[i-1]);});
     }
 
 }
@@ -689,14 +696,14 @@ function uploadSample(isPing)
     }).done(function(resp){
         $.get("/main",function (data){
             $("#mainContent").html(data);
-            document.getElementById('Back').style.display = "block";
+            document.getElementById('displayCode').style.display = "block";    
             setup();
             var fileString = resp.replace(/\r/g, "\n");
             var splitted = fileString.split("\n");
             numOfCodeLines = splitted.length;
             for (var i = 1; i <= splitted.length; i++)
             {
-                $("#codedata").append('<pre id = "'+i+'" ondblclick="excludeStatement(\''+i+'\')">'+ i + "." + splitted[i-1]+'</pre>');
+                $("#codedata").append('<p id = "'+i+'" ondblclick="excludeStatement(\''+i+'\')">'+ i + "." + splitted[i-1]+'</p>');
             }
             getFunctionNames();
 
