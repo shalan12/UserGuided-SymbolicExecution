@@ -60,7 +60,9 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 
 	if (llvm::isa<llvm::BinaryOperator>(instruction))
 	{
-		std::cout << "Binary Operator";
+		#ifdef DEBUG	
+			std::cout << "Binary Operator";
+		#endif
 		std::string op;
 		switch(instruction->getOpcode())
 		{
@@ -84,7 +86,9 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 				op = ">>";
 				break;
 			default :
-				std::cout << "Not Implemented"; // change std::cout to some log file
+				#ifdef DEBUG	
+					std::cout << "Not Implemented"; // change std::cout to some log file
+				#endif
 				break;
 		}
 		ExpressionTree* lhs = getExpressionTree(state,instruction->getOperand(0));
@@ -246,31 +250,34 @@ std::vector<SymbolicTreeNode*>
 		unsigned int attrsCount = attrs.getNumSlots();
 		std::cout << "get numSlots : " << attrsCount << "\n";
 		std::cout << "get function name : " << calledFunction->getName().str() << "\n";
-		for (auto i = 0; i < attrsCount; i++)
-		{
-			int xxyyzz;
-			std::cout << "attr : " << attrs.getAsString(i) << "\n";
-			std::cin >> xxyyzz;
-		}
-
-
-		for (auto arg = calledFunction->getArgumentList().begin(); arg != calledFunction->getArgumentList().end(); arg++ )
-		{
-			llvm::DbgValueInst * val = llvm::dyn_cast<llvm::DbgValueInst>(arg);
-			if (val)
+		#ifdef DEBUG
+			for (auto i = 0; i < attrsCount; i++)
 			{
 				int xxyyzz;
-				std::cout << "something happened\n"; 
- 				std::cin >>  xxyyzz;
+				std::cout << "attr : " << attrs.getAsString(i) << "\n";
+				std::cin >> xxyyzz;
 			}
-			else
-			{	
-				int xxyyzz;
-				std::cout << arg->getName().str(); 
-				std::cout << "something bad happened\n"; 
-				std::cin >>  xxyyzz;
+		#endif
+
+		#ifdef DEBUG
+			for (auto arg = calledFunction->getArgumentList().begin(); arg != calledFunction->getArgumentList().end(); arg++ )
+			{
+				llvm::DbgValueInst * val = llvm::dyn_cast<llvm::DbgValueInst>(arg);
+				if (val)
+				{
+					int xxyyzz;
+					std::cout << "something happened\n"; 
+	 				std::cin >>  xxyyzz;
+				}
+				else
+				{	
+					int xxyyzz;
+					std::cout << arg->getName().str(); 
+					std::cout << "something bad happened\n"; 
+					std::cin >>  xxyyzz;
+				}
 			}
-		}
+		#endif
 		llvm::BasicBlock* funcStart = NULL;
 		int xxyyzz;
 		if(calledFunction->isDeclaration())
@@ -292,8 +299,10 @@ std::vector<SymbolicTreeNode*>
 					if (pr.second == tree)
 					{
 						vals.push_back(pr.first);
-						std::cout << "discovered : " << getString(pr.first) << "\n";
-						std::cin >> xxyyzz;
+						#ifdef DEBUG
+							std::cout << "discovered : " << getString(pr.first) << "\n";
+							std::cin >> xxyyzz;
+						#endif
 					}
 				}
 
@@ -305,9 +314,10 @@ std::vector<SymbolicTreeNode*>
 
 						if (pr.second == v)
 						{
-
-							std::cout << "discovered : " << pr.first << "\n";
-							std::cin >> xxyyzz;
+							#ifdef DEBUG
+								std::cout << "discovered : " << pr.first << "\n";
+								std::cin >> xxyyzz;
+							#endif
 						}
 					}	
 				}
@@ -316,36 +326,37 @@ std::vector<SymbolicTreeNode*>
 
 				// arguments.push_back(state->get(arg->get()));
 			}
-
-			for (auto arg = calledFunction->getArgumentList().begin(); arg != calledFunction->getArgumentList().end(); arg++ )
-			{
-				llvm::Value * val = llvm::dyn_cast<llvm::Value>(arg);
-				if (val)
+			#ifdef DEBUG
+				for (auto arg = calledFunction->getArgumentList().begin(); arg != calledFunction->getArgumentList().end(); arg++ )
 				{
-					std::cout << "llvm Value : " << getString(val) << "\n";
-					std::cin >> xxyyzz;
-					std::cout << "something happened\n"; 
-	 				std::cin >>  xxyyzz;
-	 				for (auto& pr : state->getUserVarMap())
+					llvm::Value * val = llvm::dyn_cast<llvm::Value>(arg);
+					if (val)
 					{
-						std::cout << "llvm Value in user var map : " << getString(pr.second) << "\n";
-
-						if (pr.second == val)
+						std::cout << "llvm Value : " << getString(val) << "\n";
+						std::cin >> xxyyzz;
+						std::cout << "something happened\n"; 
+		 				std::cin >>  xxyyzz;
+		 				for (auto& pr : state->getUserVarMap())
 						{
+							std::cout << "llvm Value in user var map : " << getString(pr.second) << "\n";
 
-							std::cout << "discovered : " << pr.first << "\n";
-							std::cin >> xxyyzz;
+							if (pr.second == val)
+							{
+
+								std::cout << "discovered : " << pr.first << "\n";
+								std::cin >> xxyyzz;
+							}
 						}
 					}
+					else
+					{	
+						int xxyyzz;
+						std::cout << arg->getName().str(); 
+						std::cout << "something bad happened\n"; 
+						std::cin >>  xxyyzz;
+					}
 				}
-				else
-				{	
-					int xxyyzz;
-					std::cout << arg->getName().str(); 
-					std::cout << "something bad happened\n"; 
-					std::cin >>  xxyyzz;
-				}
-			}
+			#endif
 			
 
 			node->isModel = true;
@@ -833,9 +844,10 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 	printAllFunctions(function, 0, functions["functions"]);
 	reader->updateToSend(functions);
 	reader->proceedSymbolicExecution();
-
-	std::cout << "done printing all the  functions that could be  called \n";
-	std::cin >> xyz;
+	#ifdef DEBUG
+		std::cout << "done printing all the  functions that could be  called \n";
+		std::cin >> xyz;
+	#endif
 	for (llvm::Function::iterator b = function->begin(), be = function->end(); b != be; ++b)
 	{
 

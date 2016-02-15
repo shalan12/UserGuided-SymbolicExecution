@@ -266,7 +266,10 @@ app.get('/sample',function(req,res)
 
   console.log("id = " + req.cookies.sessionid);
   map[req.cookies.sessionid] = makeBitCodeFile(path, newPath, req.cookies.sessionid);
-  res.sendfile(path);
+  map[req.cookies.sessionid].then(function()
+  {
+    res.sendfile(path);
+  })
 });
 app.post('/upload',function(req,res){
   var extension = '.cpp'; 

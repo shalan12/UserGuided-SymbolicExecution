@@ -198,20 +198,26 @@ void ExpressionTree::addZ3ExpressionToMap(llvm::Value* value, std::map<llvm::Val
         int abc = ::getInteger(value);
         str = std::to_string(abc);
         z3::expr * val = new z3::expr(c);
-        std::cout << "real value : " << str << "\n";
-        std::cin >> xyz;
+        #ifdef DEBUG
+            std::cout << "real value : " << str << "\n";
+            std::cin >> xyz;
+        #endif
 
         *val = c.int_val(abc);
-        std::cout << "adding expression to MAP : " << *val << "\n";
-        std::cin >> xyz;
+        #ifdef DEBUG
+            std::cout << "adding expression to MAP : " << *val << "\n";
+            std::cin >> xyz;
+        #endif
         z3Map.insert(std::make_pair(value, val)); 
     }
     else
     {
         z3::expr * val = new z3::expr(c);
         *val = c.int_const(str.c_str());
-        std::cout << "adding expression to MAP : " << *val << "\n";
-        std::cin >> xyz;
+        #ifdef DEBUG
+            std::cout << "adding expression to MAP : " << *val << "\n";
+            std::cin >> xyz;
+        #endif
         z3Map.insert(std::make_pair(value, val)); 
     }
 }
@@ -238,31 +244,33 @@ z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node, std::map<llv
             z3::expr * left = getZ3Expression(node->left, z3Map, c);
             z3::expr * right = getZ3Expression(node->right, z3Map, c);
             
-            if (!left)
-            {
-              // #ifdef DEBUG
-                std::cout << "left NULL!\n";
-                std::cin >> xyz;
-              // #endif  
-            }
-            else
-            {
-                std::cout << "left not NULL!" << *left << "\n";
-                std::cin >> xyz;
-            }
+            #ifdef DEBUG
+                if (!left)
+                {
+                  // #ifdef DEBUG
+                    std::cout << "left NULL!\n";
+                    std::cin >> xyz;
+                  // #endif  
+                }
+                else
+                {
+                    std::cout << "left not NULL!" << *left << "\n";
+                    std::cin >> xyz;
+                }
 
-            if (!right)
-            {
-              // #ifdef DEBUG
-                std::cout << "right NULL!\n";
-                std::cin >> xyz; 
-              // #endif  
-            }
-            else
-            {
-                std::cout << "right not NULL!" << *right << "\n";
-                std::cin >> xyz;
-            }
+                if (!right)
+                {
+                  // #ifdef DEBUG
+                    std::cout << "right NULL!\n";
+                    std::cin >> xyz; 
+                  // #endif  
+                }
+                else
+                {
+                    std::cout << "right not NULL!" << *right << "\n";
+                    std::cin >> xyz;
+                }
+            #endif
 
             std::string op = node->data;
             if (op == "+")
