@@ -27,9 +27,11 @@ bool ExpressionTree::isConstant(llvm::Value* value)
 }
 
 
-ExpressionTree::ExpressionTree(llvm::Value* value)
+ExpressionTree::ExpressionTree(llvm::Value* value, std::map<std::string, llvm::Value*> userVarMap, std::map<llvm::Value*, std::string> llvmVarMap)
 {
     this->top = new ExpressionTreeNode(ExpressionTreeNode("", value));
+    this->userVarMap = userVarMap;
+    this->llvmVarMap = llvmVarMap;
 }
 
 /*ExpressionTree::ExpressionTree(const ExpressionTree & e)
@@ -117,11 +119,12 @@ void ExpressionTree::constructTree(std::stringstream & iss, ExpressionTreeNode* 
     }
 }
 
-ExpressionTree::ExpressionTree(std::string str, std::map<std::string, llvm::Value*>
-    userVarMap, std::map<llvm::Value*, ExpressionTree*> map)
+ExpressionTree::ExpressionTree(std::string str, std::map<std::string, llvm::Value*> userVarMap, std::map<llvm::Value*, std::string> llvmVarMap,
+    std::map<llvm::Value*, ExpressionTree*> map)
 {
     std::stringstream iss(str);
     this->userVarMap = userVarMap;
+    this->llvmVarMap = llvmVarMap;
     this->map = map;
     top = new ExpressionTreeNode("", NULL);
     constructTree(iss, top);   
@@ -163,8 +166,10 @@ void ExpressionTree::getExpressionString(ExpressionTreeNode* node, std::stringst
 {
     if (node != NULL)
     {
-        if (node->left == NULL && node->right == NULL) 
-            toReturn << getString(node->value);
+        if (node->left == NULL && node->right == NULL)
+        { 
+            toReturn << llvmVarMap[map[node->value]->top];
+        }
         else
         {
             if(node->left != NULL)

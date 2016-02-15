@@ -47,6 +47,7 @@ void JsonReader::proceedSymbolicExecution()
 }
 std::vector<std::pair<ExpressionTree*, std::string> > JsonReader::getModel(
 	std::map<std::string, llvm::Value*> userVarMap,
+	std::map<llvm::Value*, std::string> llvmVarMap,
 	std::map<llvm::Value*,ExpressionTree*> map)
 {
 	int xyz;
@@ -71,7 +72,7 @@ std::vector<std::pair<ExpressionTree*, std::string> > JsonReader::getModel(
     {
     	if (steps != -1)
     		steps++;
-    	ExpressionTree * tree = new ExpressionTree(pair["returnValue"].asString(), userVarMap, map);
+    	ExpressionTree * tree = new ExpressionTree(pair["returnValue"].asString(), userVarMap, llvmVarMap, map);
 		std::string constraint = pair["constraints"].asString();
 		std::cout << "tree : " << tree->toString() << "\n";
 		to_ret.push_back(std::make_pair(tree, constraint));

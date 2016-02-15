@@ -48,7 +48,7 @@ ExpressionTree* SymbolicExecutor::getExpressionTree(ProgramState* state, llvm::V
 	{
 		return exptree;
 	}
-	else return new ExpressionTree(value);
+	else return new ExpressionTree(value, state->getUserVarMap(), state->getLLVMVarMap());
 }	
 void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruction,SymbolicTreeNode* symTreeNode)
 {
@@ -198,6 +198,9 @@ std::vector<SymbolicTreeNode*>
 					// habibah look into it
 					first->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(first->z3Variables, first->c),"true")); // added for z3
 					first->addCondition(state->get(cond)->toString());
+					std::cout << "ADDING CONDITION: " << state->get(cond)->toString() << std::endl;
+					int a;
+					std::cin >> a;
 				}
 				#ifdef DEBUG
 					std::cout << "ADDING CONDITION : " << state->get(cond)->toString() << std::endl;
@@ -754,6 +757,7 @@ void SymbolicExecutor::symbolicExecute()
 				{
 					tempSymTreeNode->modelVals = reader->getModel(
 						symTreeNode->state->getUserVarMap(),
+						symTreeNode->state->getLLVMVarMap(),
 						symTreeNode->state->getMap());
 				 	std::cout << "modelVals size : " << tempSymTreeNode->modelVals.size() << "\n";
 				 	toSend.clear();

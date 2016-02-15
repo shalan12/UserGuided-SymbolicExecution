@@ -21,7 +21,9 @@ class JsonReader
 		JsonReader(ServerSocket * s);
 		void proceedSymbolicExecution();
 		std::vector<std::pair<ExpressionTree*, std::string> > getModel(std::map<std::string,
-		 llvm::Value*> userVarMap,std::map<llvm::Value*,ExpressionTree*> map);
+		 llvm::Value*> userVarMap,
+		 std::map<llvm::Value*, std::string> llvmVarMap,
+		 std::map<llvm::Value*,ExpressionTree*> map);
 		void wakeUp(Json::Value val);
 		void setExecutionVars();
 		void updateMsg(Json::Value val);

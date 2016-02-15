@@ -12,6 +12,7 @@ class ProgramState
   private:
   std::map<llvm::Value*, ExpressionTree*> map;
   std::map<std::string, llvm::Value*> userVarMap;
+  std::map<llvm::Value*, std::string> llvmVarMap;
 
   std::string pathCondition;
   
@@ -40,6 +41,7 @@ class ProgramState
   void printZ3Variables();
   bool Z3solver();
   std::map<std::string, llvm::Value*> getUserVarMap();
+  std::map<llvm::Value*, std::string> getLLVMVarMap();
 
 };
 #endif

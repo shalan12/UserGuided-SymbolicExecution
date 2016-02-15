@@ -11,7 +11,7 @@ ProgramState::ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> in
 	for (auto input = inputs.begin(), last = inputs.end(); input!=last; input++)
 	{	
 		if(i >= arguments.size())
-			add(input,new ExpressionTree(input));
+			add(input,new ExpressionTree(input, getUserVarMap(), getLLVMVarMap()));
 		else 
 			add(input,arguments[i++]);
 		std::cout << "program state constructor, function parameters : " << getString(input) << "\n";
@@ -67,6 +67,7 @@ void ProgramState::addUserVar(std::string varname, llvm::Value* val)
 	// std::cin >> x;
 	// std::cout << "adding this expression tree to user vars:  \n " << varname << "  :  " << exp->toString();
 	userVarMap[varname] = val;
+	llvmVarMap[val] = varname;
 }
 
 
@@ -149,6 +150,10 @@ void ProgramState::printZ3Variables()
 std::map<std::string, llvm::Value*> ProgramState::getUserVarMap()
 {
 	return userVarMap;
+}
+std::map<llvm::Value*, std::string> ProgramState::getLLVMVarMap()
+{
+	return llvmVarMap;
 }
 
 bool ProgramState::Z3solver()
