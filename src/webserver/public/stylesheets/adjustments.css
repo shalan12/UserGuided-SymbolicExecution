@@ -1,0 +1,123 @@
+.sidebar-mini.sidebar-collapse .main-header .logo > .logo-mini {
+    margin-left: -15px;
+    margin-right: -15px;
+    font-size: 13px;
+}
+div#graph {
+  height: 700px;
+  width: 100%;
+  border:2px solid #3c8dbc;
+  background: transparent;
+}
+div#features {
+  height: 300px;
+  width: 100%;
+}
+div#codedata {
+  height: 750px;
+  width: 100%;
+  overflow: scroll;
+}
+div#graph svg {
+  height: 100%;
+  width: 100%;
+  text-align:center;
+}
+#formmenu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 360px;
+  width: 246px;
+  margin-left: -180px;
+  margin-top: -180px;
+}
+#noNode-alert {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -310px;
+  margin-top: -180px;
+}
+#model-input {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 500px;
+  margin-left: -310px;
+  margin-top: -180px;
+}
+#model-alert {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -310px;
+  margin-top: -180px;
+}
+.node {
+  cursor: pointer;
+  margin: auto;
+}
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 3px;
+}
+
+.node text {
+  font: 12px sans-serif;
+  color: #ebebeb;
+}
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+}
+.d3-tooltip{ background-color:rgba(68,136,187,0.5);
+        margin: 10px;
+        height: 200px;
+        width: 550px;
+        padding-left: 10px; 
+        padding-top: 10px;
+      -webkit-border-radius:10px;
+      -moz-border-radius:10px;
+      border-radius:10px;
+}
+.d3-context-menu {
+  position: absolute;
+  display: none;
+  background-color: #f2f2f2;
+  border-radius: 4px;
+
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  min-width: 150px;
+  border: 1px solid #d4d4d4;
+
+  z-index:1200;
+}
+
+.d3-context-menu ul {
+  list-style-type: none;
+  margin: 4px 0px;
+  padding: 0px;
+  cursor: default;
+}
+
+.d3-context-menu ul li {
+  padding: 4px 16px;
+}
+
+.d3-context-menu ul li:hover {
+  background-color: #4677f8;
+  color: #fefefe;
+}
+
+
+.bg-dark {
+  background-color: #2B3E50;
+}
+
+input[type="file"] {
+  color: #fff;
+}
