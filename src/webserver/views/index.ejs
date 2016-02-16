@@ -37,9 +37,9 @@
         <!-- Logo -->
         <a href="#" class="logo">
           <!-- mini logo for sidebar mini 50x50 pixels --> 
-          <span class="logo-mini">U<b>SE</b></span>
+          <span id="mainLogoMini" class="logo-mini"><b>USE</b></span>
           <!-- logo for regular state and mobile devices -->
-          <span class="logo-lg">          
+          <span id="mainLogo" class="logo-lg">          
             <b>Symbolic Execution</b>
           </span>
         </a>
@@ -170,14 +170,19 @@
       <aside class="control-sidebar control-sidebar-light">
         <!-- Create the tabs -->
         <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
-          <li><a href="#control-sidebar-code-tab" data-toggle="tab"><i class="fa fa-home"></i></a></li>
+          <li><a data-toggle="tab" href="#control-sidebar-code-tab" onclick="showCode()"><i class="fa fa-code"></i></a></li>
+          <li><a data-toggle="tab" href="#control-sidebar-functions-tab" onclick="showFunctionNames()">Functions</a></li>
         </ul> 
         <!-- Tab panes -->
         <div class="tab-content">
           <!-- Home tab content -->
           <div class="tap-pane" id="control-sidebar-code-tab">
-            <h3 class="control-sidebar-heading">Code</h3>
             <div class="code" id="codedata">
+            </div>
+          </div>
+          <div class="tap-pane" id="control-sidebar-functions-tab">
+            <div id="functionNames" style="dispaly:none">
+            </div>
           </div>
         </div>
       </aside><!-- /.control-sidebar -->

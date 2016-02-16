@@ -406,12 +406,12 @@ function addNodes(data)
     {
         var noNodeAlert = d3.select("#graph")
             .append("div")
-            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-warning")
+            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-primary")
             .attr("id", "noNode-alert");
         noNodeAlert.html(
         '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
         'This node has no more branches to explore.\n' +
-        '<input type="button" class="btn btn-primary" id="noNodeBtn" value="OK">');
+        '<input type="button" class="btn btn-primary pull-right" id="noNodeBtn" value="OK">');
         $("#noNodeBtn").on("click", function(){d3.select("#noNode-alert").remove();});   
     }
     else
@@ -548,7 +548,7 @@ function checkForModel(selection)
         {   
             var modelAlert = d3.select("#graph")
             .append("div")
-            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-success")
+            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-primary")
             .attr("id", "model-alert");
 /*            .style("margin-left", selection.x+120 + "px")
             .style("margin-top", selection.y-350 + "px");*/
@@ -659,7 +659,7 @@ function displayFunctionNames(functions)
         $('#functionNames').append('<a href="#" id="'+functions[i-1].name+'">'+ i + ". " + functions[i-1].name + '</a><br><br>');
         buttonID = "addModelFor" + functions[i-1].name;
         console.log(buttonID);
-        $('#functionNames').append('<input type="button" class="btn btn-success pull-right"'+
+        $('#functionNames').append('<input type="button" class="btn btn-primary"'+
          'onClick="addModelForFunction('+functions[i-1].name+','+functions[i-1].minLine+','+functions[i-1].maxLine+')" id="'+buttonID+'" value="Add Model"><br><br>');
         var addButton = document.getElementById(buttonID);
         console.log(functions[i-1]);
@@ -683,6 +683,14 @@ function getFunctionNames(isPing)
     })
 }
 
+function goBack()
+{
+    console.log("go back function called");
+    $.ajax({
+        url: "/refresh"
+    });
+}
+
 function uploadSample(isPing)
 {    
     var sampleSubmit = document.getElementById('_submitSample'),
@@ -696,13 +704,16 @@ function uploadSample(isPing)
     }).done(function(resp){
         $.get("/main",function (data){
             $("#mainContent").html(data);
-            document.getElementById('displayCode').style.display = "block";    
+            document.getElementById('displayCode').style.display = "block"; 
+            $('#mainLogoMini').click(function(){goBack();});               
+            document.getElementById('mainLogo').addEventListener('click', function(){goBack(); return false;});   
             setup();
             var fileString = resp.replace(/\r/g, "\n");
             var splitted = fileString.split("\n");
             numOfCodeLines = splitted.length;
             for (var i = 1; i <= splitted.length; i++)
             {
+                console.log("hello");
                 $("#codedata").append('<p id = "'+i+'" ondblclick="excludeStatement(\''+i+'\')">'+ i + "." + splitted[i-1]+'</p>');
             }
             getFunctionNames();
@@ -723,10 +734,13 @@ function uploadSample(isPing)
         }*/
     });
 }
-
-function goBack()
+function showFunctionNames()
 {
-    $.get({
-        url: "/refresh",
-    });
+    document.getElementById("codedata").style.display = "none";
+    document.getElementById("functionNames").style.display = "block";   
+}
+function showCode()
+{
+    document.getElementById("functionNames").style.display = "none";   
+    document.getElementById("codedata").style.display = "block";
 }
