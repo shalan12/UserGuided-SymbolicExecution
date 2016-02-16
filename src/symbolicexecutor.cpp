@@ -118,6 +118,7 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 	{
 		llvm::Value* memLocation = instruction->getOperand(1);
 		llvm::Value* value = instruction->getOperand(0);
+		state->addStore(value, memLocation);
 		state->add(memLocation,getExpressionTree(state,value));
 	}
 	else if(instruction->getOpcode()==llvm::Instruction::Load)
@@ -196,11 +197,16 @@ std::vector<SymbolicTreeNode*>
 				{
 					//first->constraints.push_back(std::make_pair(cond,"true"));
 					// habibah look into it
+					for (auto& pr : state->getLLVMVarMap())
+					{
+						std::cout << getString(pr.first) << "------" << pr.second << "\n";
+						// to->userVarMap[pr.first] = pr.second;
+					}
 					first->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(first->z3Variables, first->c),"true")); // added for z3
-					first->addCondition(state->get(cond)->toString());
-					std::cout << "ADDING CONDITION: " << state->get(cond)->toString() << std::endl;
-					int a;
-					std::cin >> a;
+					first->addCondition(state->get(cond)->toStringHumanReadable(state->getLLVMVarMap(), state->getStoreMap()));
+					// std::cout << "ADDING CONDITION: " << state->get(cond)->toStringHumanReadable(state->getLLVMVarMap()) << std::endl;
+					// int a;
+					// std::cin >> a;
 				}
 				#ifdef DEBUG
 					std::cout << "ADDING CONDITION : " << state->get(cond)->toString() << std::endl;
@@ -231,7 +237,8 @@ std::vector<SymbolicTreeNode*>
 					//second->constraints.push_back(std::make_pair(cond,"false"));
 					//habibah look into it
 					second->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(second->z3Variables, second->c),"false")); // added for z3
-					second->addCondition("not " + state->get(cond)->toString());
+					// second->addCondition("not " + state->get(cond)->toString());
+					second->addCondition("not " + state->get(cond)->toStringHumanReadable(state->getLLVMVarMap(), state->getStoreMap()));
 				}
 				// added for constraint checking
 				bool satisfiableSecond = second->Z3solver();

@@ -13,6 +13,7 @@ class ProgramState
   std::map<llvm::Value*, ExpressionTree*> map;
   std::map<std::string, llvm::Value*> userVarMap;
   std::map<llvm::Value*, std::string> llvmVarMap;
+  std::map<llvm::Value*, llvm::Value*> stores;
 
   std::string pathCondition;
   
@@ -35,6 +36,8 @@ class ProgramState
   
   void add(llvm::Value* value, ExpressionTree* exp);
   void addUserVar(std::string, llvm::Value* val);
+  void addLLVMVar(std::string varname, llvm::Value* val);
+  void addStore(llvm::Value* val2, llvm::Value* val1);
   ExpressionTree* get(llvm::Value * s);
   std::map<llvm::Value*, ExpressionTree*> getMap();
   std::string toString();
@@ -42,6 +45,6 @@ class ProgramState
   bool Z3solver();
   std::map<std::string, llvm::Value*> getUserVarMap();
   std::map<llvm::Value*, std::string> getLLVMVarMap();
-
+  std::map<llvm::Value*, llvm::Value*> getStoreMap();
 };
 #endif

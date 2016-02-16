@@ -161,6 +161,52 @@ std::string ExpressionTree::toString()
     return toReturn.str();
 }
 
+std::string ExpressionTree::toStringHumanReadable(std::map<llvm::Value*, std::string> varMap
+    , std::map<llvm::Value*, llvm::Value*> store)
+{
+    std::stringstream toReturn;
+    getExpressionStringHumanReadable(this->top, toReturn, varMap, store);
+    return toReturn.str();
+}
+
+void ExpressionTree::getExpressionStringHumanReadable(ExpressionTreeNode* node, std::stringstream& toReturn, 
+    std::map<llvm::Value*, std::string> varMap, std::map<llvm::Value*, llvm::Value*> store)
+{
+    if (node != NULL)
+    {
+        if (node->left == NULL && node->right == NULL)
+        {
+
+            if (llvm::isa<llvm::Constant>(node->value))
+            {
+                toReturn << ::getInteger(node->value);   
+            }
+            else
+            {
+                // int abcdef;
+                // std::cout << getString(node->value) << "\n";
+                // std::cout << varMap[node->value] << "\n"; 
+                // std::cin >> abcdef;
+                toReturn << varMap[store[node->value]];
+            }
+        }
+        else
+        {
+            if(node->left != NULL)
+            {
+                toReturn << "(";
+                getExpressionStringHumanReadable(node->left, toReturn, varMap, store);
+                
+            }
+            toReturn << node->data;
+            if(node->right != NULL)
+            {
+                getExpressionStringHumanReadable(node->right, toReturn, varMap, store);
+                toReturn << ")";
+            }
+        }
+    }
+}
 
 void ExpressionTree::getExpressionString(ExpressionTreeNode* node, std::stringstream& toReturn)
 {
@@ -168,7 +214,7 @@ void ExpressionTree::getExpressionString(ExpressionTreeNode* node, std::stringst
     {
         if (node->left == NULL && node->right == NULL)
         { 
-            toReturn << llvmVarMap[map[node->value]->top];
+            toReturn <<  getString(node->value);
         }
         else
         {

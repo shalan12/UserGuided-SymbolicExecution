@@ -33,6 +33,8 @@ private:
     std::map<llvm::Value*, std::string> llvmVarMap;
     bool isConstant(llvm::Value* value);
     void getExpressionString(ExpressionTreeNode* node, std::stringstream& toReturn);
+    void getExpressionStringHumanReadable(ExpressionTreeNode* node, std::stringstream& toReturn, 
+    std::map<llvm::Value*, std::string> varMap, std::map<llvm::Value*, llvm::Value*> store);
     void constructTree(std::stringstream & iss, ExpressionTreeNode* node);
     z3::expr* getZ3Expression(ExpressionTreeNode* node, std::map<llvm::Value*, z3::expr*>& z3Map, z3::context& c);
 public:
@@ -52,6 +54,7 @@ public:
     int getInteger();
     llvm::Value* evaluate(llvm::Value* lhs, llvm::Value* rhs, std::string op);
     std::string toString();
+    std::string toStringHumanReadable(std::map<llvm::Value*, std::string> varMap, std::map<llvm::Value*, llvm::Value*> store);
     z3::expr* toZ3Expression(std::map<llvm::Value*, z3::expr*>& z3Map, z3::context& c);
     void addZ3ExpressionToMap(llvm::Value* value, std::map<llvm::Value*,
         z3::expr*>& z3Map, z3::context& c);

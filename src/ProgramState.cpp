@@ -31,6 +31,16 @@ void ProgramState::Copy(const ProgramState& from, ProgramState* to, bool copyMap
 			to->userVarMap[pr.first] = pr.second;
 		}
 	}
+
+	for (auto& pr : from.llvmVarMap)
+	{
+		to->llvmVarMap[pr.first] = pr.second;
+	}
+	for (auto& pr : from.stores)
+	{
+		to->stores[pr.first] = pr.second;
+	}
+
 	for (auto constraint : from.z3Constraints)
 	{
 		z3::expr * copy_constraint = new z3::expr(to->c);
@@ -62,12 +72,36 @@ void ProgramState::add(llvm::Value* value, ExpressionTree* exp)
 
 void ProgramState::addUserVar(std::string varname, llvm::Value* val)
 {
+	// std::cout << "adding this in both maps \n";
+	// int x;
+	// std::cout << "adding this expression tree to user vars:  \n " << varname << "  :  " << getString(val);
+	// std::cin >> x;
 	// std::cout << "adding this \n";
 	// int x;
 	// std::cin >> x;
 	// std::cout << "adding this expression tree to user vars:  \n " << varname << "  :  " << exp->toString();
+	// llvm::Value * xyz = map[val]->top->value;
 	userVarMap[varname] = val;
 	llvmVarMap[val] = varname;
+}
+
+void ProgramState::addLLVMVar(std::string varname, llvm::Value* val)
+{
+	// std::cout << "adding this \n";
+	// int x;
+	// std::cout << "adding this expression tree to user vars:  \n " << varname << "  :  " << getString(val);
+	// std::cin >> x;
+	llvmVarMap[val] = varname;
+}
+
+void ProgramState::addStore(llvm::Value* val2, llvm::Value* val1)
+{
+	stores[val2] = val1;
+}
+
+std::map<llvm::Value*, llvm::Value*> ProgramState::getStoreMap()
+{
+	return stores;
 }
 
 
@@ -94,7 +128,7 @@ std::string ProgramState::toString()
 	for (auto& pr : userVarMap)
 	{
 		if (get(pr.second))
-			str << pr.first <<	"\t = \t" << map[pr.second]->toString() << '\n';
+			str << pr.first <<	"\t = \t" << map[pr.second]->toStringHumanReadable(this->getLLVMVarMap(), this->getStoreMap()) << '\n';
 		else
 			str << pr.first <<	"\t = \t" << getString(pr.second) << '\n';
 	}
