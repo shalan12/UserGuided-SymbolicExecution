@@ -211,7 +211,8 @@ std::vector<SymbolicTreeNode*>
 				#ifdef DEBUG
 					std::cout << "ADDING CONDITION : " << state->get(cond)->toString() << std::endl;
 				#endif
-				
+
+				// added for constraint checking
 				bool satisfiableFirst = first->Z3solver();
 
 				#ifdef DEBUG
@@ -220,12 +221,22 @@ std::vector<SymbolicTreeNode*>
 					else
 						std::cout << "branch is not satisfiable \n ";
 				#endif
-				// added for constraint checking
-
-				if (satisfiableFirst)
+				bool hasRunMaxExecs = (node->loopInfo.loopStartPoint != NULL
+								&& node->loopInfo.loopStartPoint == node->block
+								&& node->loopInfo.numExecutions >= node->loopInfo.maxExecutions);
+					
+				if (!hasRunMaxExecs)
 				{
-					children.push_back(new SymbolicTreeNode(binst->getSuccessor(0), 
-						first, numNodes++,node->id,NULL,returnNode));
+					// added for limiting loop executions
+					SymbolicTreeNode* toPush = new SymbolicTreeNode(binst->getSuccessor(0), 
+							first, numNodes++,node->id,NULL,returnNode);
+					toPush->setLoopInfo(node->loopInfo.loopStartPoint,
+					node->loopInfo.numExecutions);
+					if(!satisfiableFirst)
+					{
+						node->setSATInfo(false);
+					}			
+					children.push_back(toPush);
 				}
 			}
 			int numSuccesors = binst->getNumSuccessors();
@@ -242,15 +253,37 @@ std::vector<SymbolicTreeNode*>
 				}
 				// added for constraint checking
 				bool satisfiableSecond = second->Z3solver();
-				if (satisfiableSecond)
+				SymbolicTreeNode* toPush = new SymbolicTreeNode(binst->getSuccessor(1), 
+								second, numNodes++,node->id,NULL,returnNode);
+				toPush->setLoopInfo(node->loopInfo.loopStartPoint,
+								node->loopInfo.numExecutions);	
+				if (!satisfiableSecond)
 				{
-					children.push_back(new SymbolicTreeNode(binst->getSuccessor(1), 
-						second, numNodes++,node->id,NULL,returnNode));
+					toPush->setSATInfo(false);
 				}
+				children.push_back(toPush);
+
 			}
 		}
-		else children.push_back(new SymbolicTreeNode(binst->getSuccessor(0),state, 
-			numNodes++,node->id,NULL,returnNode));
+		else 
+		{
+			llvm::BasicBlock * successorZero = binst->getSuccessor(0);
+			std::cout << "startLine of successor = " << getMinLineNumber(successorZero) << "\n";
+			std::cout << "startLine of curr = " << getMinLineNumber(node->block) << "\n";
+			SymbolicTreeNode* toPush = new SymbolicTreeNode(successorZero,state, 
+			numNodes++,node->id,NULL,returnNode);
+			if (getMinLineNumber(successorZero) < getMinLineNumber(node->block))
+			{
+				toPush->setLoopInfo(successorZero, node->loopInfo.numExecutions+1);
+				std::cout << "Back Jump\nNumExecs = " << node->loopInfo.numExecutions+1 << "\n";
+			}
+			else
+			{
+				toPush->setLoopInfo(node->loopInfo.loopStartPoint,
+				node->loopInfo.numExecutions);
+			}
+			children.push_back(toPush);
+		}
 	}
 	else if (llvm::isa<llvm::CallInst>(inst))
 	{
@@ -641,7 +674,7 @@ void SymbolicExecutor::symbolicExecute()
 				i--;
 				continue;
 			}
-			if (symTreeNode->isExecuted)
+			if (symTreeNode->isExecuted && symTreeNode->satInfo.isSatisfiable)
 			{
 				#ifdef DEBUG
 					std::cout << "Already executed" << "\n";
@@ -697,7 +730,10 @@ void SymbolicExecutor::symbolicExecute()
 				}
 				continue;	
 			}
-			std::vector<SymbolicTreeNode*> new_blocks = executeBasicBlock(symTreeNode);
+			std::vector<SymbolicTreeNode*> new_blocks;
+			if(symTreeNode->satInfo.isSatisfiable)
+				new_blocks = executeBasicBlock(symTreeNode);
+			
 			symTreeNode->isExecuted = true;
 			#ifdef DEBUG
 				// printBlock(symTreeNode->block);
@@ -712,9 +748,15 @@ void SymbolicExecutor::symbolicExecute()
 			msg["text"] = Json::Value(symTreeNode->state->toString());
 			msg["fin"] = Json::Value("0");
 			msg["constraints"] = Json::Value(symTreeNode->state->getPathCondition());
-			msg["startLine"] = Json::Value(symTreeNode->minLineNumber);
-			msg["endLine"] = Json::Value(symTreeNode->maxLineNumber);
+			msg["startLine"] = Json::Value(getMinLineNumber(symTreeNode->block));
+			msg["endLine"] = Json::Value(getMaxLineNumber(symTreeNode->block));
 			msg["addModel"] = Json::Value("false");
+			if(! symTreeNode->satInfo.isSatisfiable)
+			{
+				Json::Value extra;
+				extra["isSatisfiable"] = Json::Value(false);
+				msg["extra"] = extra;
+			}
 			reader->addObject(msg);
 			
 			
