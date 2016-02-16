@@ -6010,7 +6010,7 @@ button.close {
   word-break: normal;
   word-spacing: normal;
   word-wrap: normal;
-  font-size: 13px;
+  font-size: 30px;
   opacity: 0;
   filter: alpha(opacity=0);
 }

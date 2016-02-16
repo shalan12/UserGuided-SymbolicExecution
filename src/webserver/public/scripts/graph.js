@@ -145,7 +145,7 @@ var contextmenu = [
                                 '<div class="box-header with-border"> <h3> Options </h3></legend></div>'+
                                 '<div class="box-body" ><form class=\'form-group\' id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
                                 "Number of steps to explore:<br>" +
-                                    "<input type='text' name='steps'>" +
+                                    "<input type='text' name='steps' value='-1'>" +
                                     "<br>" +
                                     "<p>Explore by: </p>" + 
                                     "<input type='radio' name='explore' value='1' checked=''> BFS" +
@@ -217,7 +217,7 @@ function update(source) {
     //.attr("y", function(d) { return d.children ? -18 : 18; })
     .attr("dy", ".35em")
     .attr("text-anchor", "middle")
-    .text(function(d) { return d.node; })
+    .text(function(d) { return d.nodeText; })
     .style("fill-opacity", 1e-6)
     .style("color", "#ebebeb");
 
@@ -229,7 +229,7 @@ function update(source) {
     .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
     nodeUpdate.select("circle")
-    .attr("r", 10)
+    .attr("r", 30)
     .style("fill", function(d) { 
         if(d.excluded === true)
         {
@@ -292,8 +292,32 @@ function update(source) {
         d.y0 = d.y;
     });
 }
-
-
+/*
+function wrap(text, width) {
+  text.each(function() {
+    var text = d3.select(this),
+      words = text.text().split(/\s+/).reverse(),
+      word,
+      line = [],
+      lineNumber = 0,
+      lineHeight = 1.1, // ems
+      y = text.attr("y"),
+      dy = parseFloat(text.attr("dy")),
+      tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+    while (word = words.pop()) {
+      line.push(word);
+      tspan.text(line.join(" "));
+      if (tspan.node().getComputedTextLength() > width) {
+        line.pop();
+        tspan.text(line.join(" "));
+        line = [word];
+        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+      }
+    }
+    d3.select(this.parentNode.children[0]).attr('r', 19 * (lineNumber+1));
+    
+  });
+*/
 
 function updateGraph()
 {
@@ -325,24 +349,32 @@ function highlightPathToNode(node)
 {
     d3.selectAll("circle").style("stroke", "steelblue");
     hightlightCode(1, numOfCodeLines, 'transparent');
-    document.getElementById("name"+node.node).style.stroke = '#FF6347';
-    hightlightCode(node.startLine, node.endLine, '#FF6347');
+    document.getElementById("name"+node.node).style.stroke = '#F39C12';
+    hightlightCode(node.startLine, node.endLine, '#F39C12');
     var curr = node;
     while (curr.parent)
     {
-        document.getElementById("name"+curr.parent.node).style.stroke = '#FFB2A4';
-        hightlightCode(curr.parent.startLine, curr.parent.endLine, '#FFB2A4');
+        document.getElementById("name"+curr.parent.node).style.stroke = '#F6B959';
+        hightlightCode(curr.parent.startLine, curr.parent.endLine, '#F6B959');
         curr = curr.parent;
     }
 }
 
 function hightlightCode(startLine, endLine, color)
 {
+    /*if (undoPrevious == true)
+    {
+        for (var line = 1; line <= numOfCodeLines; line++)
+        {
+            document.getElementById(line).style.backgroundColor = "transparent";
+        }
+    }*/
     for (var line = startLine; line <= endLine; line++)
     {   
         document.getElementById(line).style.backgroundColor = color;
         if (color != "transparent")
             document.getElementById(line).style.color = "white";
+        else document.getElementById(line).style.color = "#5e5e5e";
     }    
 }
 
@@ -376,7 +408,12 @@ function excludeStatement(startLine,isPing)
 }*/
 function addNode(nodeObj)
 {
-    var node = {"node": nodeObj.node, "text": nodeObj["text"], "parent": nodeObj["parent"], "children": [], "constraints": nodeObj["constraints"], 
+    var constraints = nodeObj["constraints"].split("\n");
+    var text;
+    if (constraints.length == 0)
+        text = "";
+    else text = constraints[constraints.length-1];
+    var node = {"node": nodeObj.node, "nodeText": text, "text": nodeObj["text"], "parent": nodeObj["parent"], "children": [], "constraints": nodeObj["constraints"], 
             "startLine": nodeObj["startLine"], "endLine": nodeObj["endLine"], "excluded":false, "addModel": nodeObj["addModel"]};
     treeData.push(node);
     for (var j = 0; j < treeData.length; j++)
@@ -406,11 +443,11 @@ function addNodes(data)
     {
         var noNodeAlert = d3.select("#graph")
             .append("div")
-            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-primary")
+            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-warning")
             .attr("id", "noNode-alert");
         noNodeAlert.html(
         '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
-        'This node has no more branches to explore.\n' +
+        'This node has no more branches to explore.\n<br><br>' +
         '<input type="button" class="btn btn-primary pull-right" id="noNodeBtn" value="OK">');
         $("#noNodeBtn").on("click", function(){d3.select("#noNode-alert").remove();});   
     }
@@ -548,7 +585,7 @@ function checkForModel(selection)
         {   
             var modelAlert = d3.select("#graph")
             .append("div")
-            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-primary")
+            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-success")
             .attr("id", "model-alert");
 /*            .style("margin-left", selection.x+120 + "px")
             .style("margin-top", selection.y-350 + "px");*/

@@ -29,14 +29,14 @@ div#graph svg {
   left: 50%;
   height: 360px;
   width: 246px;
-  margin-left: -180px;
+  margin-left: -160px;
   margin-top: -180px;
 }
 #noNode-alert {
   position: absolute;
   top: 50%;
   left: 50%;
-  margin-left: -310px;
+  margin-left: -370px;
   margin-top: -180px;
 }
 #model-input {
@@ -51,7 +51,7 @@ div#graph svg {
   position: absolute;
   top: 50%;
   left: 50%;
-  margin-left: -310px;
+  margin-left: -380px;
   margin-top: -180px;
 }
 .node {
@@ -121,3 +121,13 @@ div#graph svg {
 input[type="file"] {
   color: #fff;
 }
+
+[data-toggle~="tooltip"] pre {
+	font-size: 24px !important;
+}
+.control-sidebar-bg, .control-sidebar
+{width: -230px;}
+.control-sidebar-bg, .control-sidebar-open
+{width: 300px;}
+#tabContent
+{font-size: 22px;}

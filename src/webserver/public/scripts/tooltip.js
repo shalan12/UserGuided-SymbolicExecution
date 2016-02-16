@@ -13,7 +13,8 @@ d3.helper.tooltip = function(accessor){
             tooltipDiv.style('left', (absoluteMousePos[0] + 10)+'px')
                 .style('top', (absoluteMousePos[1] - 15)+'px')
                 .style('position', 'absolute') 
-                .style('z-index', 1001);
+                .style('z-index', 1001)
+                .style('font-size', "30px");
             // Add text using the accessor function
             var tooltipText = accessor(d, i) || '';
             // Crop text arbitrarily
