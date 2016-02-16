@@ -24,6 +24,20 @@
 #include <mutex>              // std::mutex, std::unique_lock
 #include <limits>
 typedef llvm::BasicBlock::iterator InstructionPtr;
+
+struct loopInfoStruct$
+{
+  llvm::BasicBlock * loopStartPoint;
+  int numExecutions;
+  int maxExecutions;
+}typedef LoopInfo;
+
+struct satInfoStruct$
+{
+  bool isSatisfiable;
+
+}typedef SATInfo;
+
 class SymbolicTreeNode 
 {
   private:
@@ -41,9 +55,20 @@ class SymbolicTreeNode
     unsigned int minLineNumber,maxLineNumber;
     SymbolicTreeNode* returnNode;
     std::vector<std::pair<ExpressionTree*, std::string> > modelVals;
-    
-    SymbolicTreeNode(llvm::BasicBlock * b,
-                     ProgramState * ps, int id, int pid)
+    LoopInfo loopInfo;
+    SATInfo satInfo;
+    void setLoopInfo(llvm::BasicBlock * startPoint, int numExecutions)
+    {
+      this->loopInfo.loopStartPoint = startPoint;
+      this->loopInfo.numExecutions = numExecutions; 
+    }
+
+    void setSATInfo(bool isSatisfiable)
+    {
+      this->satInfo.isSatisfiable = isSatisfiable;
+    }
+
+    SymbolicTreeNode(llvm::BasicBlock * b, ProgramState * ps, int id, int pid)
     {
       block = b;
       this->id = id;
@@ -63,6 +88,10 @@ class SymbolicTreeNode
       minLineNumber = std::numeric_limits<unsigned int>::max();
       isExecuted = false;
       isModel = false;
+      this->loopInfo.loopStartPoint = NULL;
+      this->loopInfo.numExecutions = 0;
+      this->loopInfo.maxExecutions = 1;
+      this->satInfo.isSatisfiable = true;
     }
     SymbolicTreeNode(llvm::BasicBlock * b,ProgramState * ps, int id, int pid,
                      InstructionPtr* itr,SymbolicTreeNode * returnNode) 

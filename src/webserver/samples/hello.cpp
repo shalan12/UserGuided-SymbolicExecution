@@ -16,7 +16,7 @@ void notmain(int a, int b)
 	}
 	else
 	{
-		int x = 1;
+		int x = 3;
 		while(x > 0)
 		{
 			a++;

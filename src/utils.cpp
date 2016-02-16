@@ -2,6 +2,10 @@
 #include <sstream>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/IR/Constants.h>
+#include <llvm/IR/DebugLoc.h>
+#include <llvm/IR/DebugInfo.h>
+#include <llvm/IR/BasicBlock.h>
+#include <exception>
 std::string getString(llvm::Value* val)
 {
 	if(val == NULL)
@@ -41,4 +45,29 @@ Json::Value getMessage()
         value[key] = Json::Value(val);
     }
     return value;
+}
+unsigned int getMinLineNumber (llvm::BasicBlock* block)
+{
+    for (auto i = block->begin(); i != block->end(); i++)
+    {
+        if (llvm::MDNode *N = i->getMetadata("dbg")) 
+        {  
+            llvm::DILocation Loc(N);
+            return Loc.getLineNumber();
+        }
+    }
+    throw "no line number found";
+}
+unsigned int getMaxLineNumber (llvm::BasicBlock* block)
+{
+    unsigned int maxLineNumber = 0;
+    for (auto i = block->begin(); i != block->end(); i++)
+    {
+        if (llvm::MDNode *N = i->getMetadata("dbg")) 
+        {  
+            llvm::DILocation Loc(N);
+            maxLineNumber = std::max(maxLineNumber, Loc.getLineNumber());
+        }
+    }
+    return maxLineNumber;
 }
