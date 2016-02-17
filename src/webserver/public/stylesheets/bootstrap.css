@@ -1562,7 +1562,7 @@ kbd kbd {
           box-shadow: none;
 }
 pre {
-  display: block;
+  /*display: block;*/
   padding: 10px;
   margin: 0 0 0px;
   font-size: 14px;

@@ -191,7 +191,11 @@ function update(source) {
     nodeEnter.append("circle")
     .attr("r", 1e-6)
     .attr("id", function(d){ return 'name' + d.node; })
-    .style("fill", function(d) {         
+    .style("fill", function(d) { 
+        if(d.satisfiable === false)
+        {
+            return "#FF3232"; 
+        }        
         if(d.excluded === true)
         {
             return "grey";
@@ -231,6 +235,10 @@ function update(source) {
     nodeUpdate.select("circle")
     .attr("r", 30)
     .style("fill", function(d) { 
+        if(d.satisfiable === false)
+        {
+            return "#FF3232"; 
+        }
         if(d.excluded === true)
         {
             return "grey";
@@ -291,6 +299,8 @@ function update(source) {
         d.x0 = d.x;
         d.y0 = d.y;
     });
+    //svg.selectAll("text").each(function(d){console.log(d.getComputedTextLength())});
+//    d3.select("#graph svg").selectAll("g.node").select("circle").attr('r',function(d){return svg.selectAll("g.node").select("text").getComputedTextLength();});
 }
 /*
 function wrap(text, width) {
@@ -410,11 +420,14 @@ function addNode(nodeObj)
 {
     var constraints = nodeObj["constraints"].split("\n");
     var text;
+    var isSatisfiable = false;
     if (constraints.length == 0)
         text = "";
     else text = constraints[constraints.length-1];
-    var node = {"node": nodeObj.node, "nodeText": text, "text": nodeObj["text"], "parent": nodeObj["parent"], "children": [], "constraints": nodeObj["constraints"], 
-            "startLine": nodeObj["startLine"], "endLine": nodeObj["endLine"], "excluded":false, "addModel": nodeObj["addModel"]};
+    if (nodeObj["extra"] === undefined)
+        isSatisfiable = true;    
+    var node = {"node": nodeObj.node, "nodeText": text, "satisfiable": isSatisfiable, "text": nodeObj["text"], "parent": nodeObj["parent"], "children": [],
+        "constraints": nodeObj["constraints"],"startLine": nodeObj["startLine"], "endLine": nodeObj["endLine"], "excluded":false, "addModel": nodeObj["addModel"]};
     treeData.push(node);
     for (var j = 0; j < treeData.length; j++)
     {
@@ -750,8 +763,9 @@ function uploadSample(isPing)
             numOfCodeLines = splitted.length;
             for (var i = 1; i <= splitted.length; i++)
             {
+                var escapedString = splitted[i-1].replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 console.log("hello");
-                $("#codedata").append('<p id = "'+i+'" ondblclick="excludeStatement(\''+i+'\')">'+ i + "." + splitted[i-1]+'</p>');
+                $("#codedata").append('<pre  id = "'+i+'" ondblclick="excludeStatement(\''+i+'\')">'+ i + "." + escapedString+' </pre>');
             }
             getFunctionNames();
 

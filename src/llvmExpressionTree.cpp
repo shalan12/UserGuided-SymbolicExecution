@@ -214,11 +214,7 @@ void ExpressionTree::getExpressionString(ExpressionTreeNode* node, std::stringst
     {
         if (node->left == NULL && node->right == NULL)
         { 
-<<<<<<< HEAD
             toReturn << getString(node->value);
-=======
-            toReturn <<  getString(node->value);
->>>>>>> aa644b79253dd2e85139a10f1ec42923be72fc9e
         }
         else
         {

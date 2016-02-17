@@ -14,7 +14,7 @@ div#features {
   width: 100%;
 }
 div#codedata {
-  height: 750px;
+  height: 850px;
   width: 100%;
   overflow: scroll;
 }
@@ -125,7 +125,7 @@ input[type="file"] {
 [data-toggle~="tooltip"] pre {
 	font-size: 24px !important;
 }
-.control-sidebar-bg, .control-sidebar
+.control-sidebar-light, .control-sidebar
 {width: -230px;}
 .control-sidebar-bg, .control-sidebar-open
 {width: 300px;}

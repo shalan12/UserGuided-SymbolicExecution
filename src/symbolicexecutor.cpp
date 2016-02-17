@@ -249,7 +249,7 @@ std::vector<SymbolicTreeNode*>
 					//habibah look into it
 					second->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(second->z3Variables, second->c),"false")); // added for z3
 					// second->addCondition("not " + state->get(cond)->toString());
-					second->addCondition("not " + state->get(cond)->toStringHumanReadable(state->getLLVMVarMap(), state->getStoreMap()));
+					second->addCondition("!" + state->get(cond)->toStringHumanReadable(state->getLLVMVarMap(), state->getStoreMap()));
 				}
 				// added for constraint checking
 				bool satisfiableSecond = second->Z3solver();
@@ -674,58 +674,61 @@ void SymbolicExecutor::symbolicExecute()
 				i--;
 				continue;
 			}
-			if (symTreeNode->isExecuted && symTreeNode->satInfo.isSatisfiable)
+			if (symTreeNode->isExecuted)
 			{
 				#ifdef DEBUG
 					std::cout << "Already executed" << "\n";
 					std::cin >> xyz;
 				#endif
 				i--;
-				for (int j = 0; j < 2; j++)
-				{
-					int k = j;
-					if (reader->getDir()) k = 1 - j;
+				if (symTreeNode->satInfo.isSatisfiable)
+				{ 
+					for (int j = 0; j < 2; j++)
+					{
+						int k = j;
+						if (reader->getDir()) k = 1 - j;
 
-					SymbolicTreeNode * tempSymTreeNode = NULL;
-					if (k == 0)
-					{
-						tempSymTreeNode = symTreeNode->left;
-						std::cout << "left\n";
-						// printBlock(tempSymTreeNode->block);
-					}
-					else
-					{
-						tempSymTreeNode = symTreeNode->right;
-						std::cout << "right\n";
-						// printBlock(tempSymTreeNode->block);
-
-					}
-					if (reader->getIsBFS())
-					{
-						if (tempSymTreeNode)
+						SymbolicTreeNode * tempSymTreeNode = NULL;
+						if (k == 0)
 						{
-							deque.push_back(tempSymTreeNode);	
-							std::cout << "child added!\n";
+							tempSymTreeNode = symTreeNode->left;
+							std::cout << "left\n";
+							// printBlock(tempSymTreeNode->block);
 						}
 						else
-						{	
-							std::cout << "shit happenS!\n";
-						}  
-						
-					}
+						{
+							tempSymTreeNode = symTreeNode->right;
+							std::cout << "right\n";
+							// printBlock(tempSymTreeNode->block);
+
+						}
+						if (reader->getIsBFS())
+						{
+							if (tempSymTreeNode)
+							{
+								deque.push_back(tempSymTreeNode);	
+								std::cout << "child added!\n";
+							}
+							else
+							{	
+								std::cout << "shit happenS!\n";
+							}  
 							
-					else
-					{
-						if (tempSymTreeNode)
-						{
-							deque.push_front(tempSymTreeNode);
-							std::cout << "child added!\n";
 						}
+								
 						else
-						{	
-							std::cout << "shit happenS!\n";
-						} 
-						
+						{
+							if (tempSymTreeNode)
+							{
+								deque.push_front(tempSymTreeNode);
+								std::cout << "child added!\n";
+							}
+							else
+							{	
+								std::cout << "shit happenS!\n";
+							} 
+							
+						}
 					}
 				}
 				continue;	
@@ -768,10 +771,17 @@ void SymbolicExecutor::symbolicExecute()
 				std::cin >> xyz;
 			#endif
 
+			std::cout << "iterating blocks!\n";
 			for (int j = 0; j < new_blocks.size(); j++)
 			{
 				int k = j;
 				if (reader->getDir()) k = new_blocks.size() - 1 - j;
+
+				SymbolicTreeNode * x = new_blocks[j];
+				if (x->satInfo.isSatisfiable == false)
+				{
+					std:: cout << "no statisfiable";
+				}
 
 				SymbolicTreeNode * tempSymTreeNode;
 				if (k == 0)
@@ -899,7 +909,7 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 	reader->proceedSymbolicExecution();
 	#ifdef DEBUG
 		std::cout << "done printing all the  functions that could be  called \n";
-		std::cin >> xyz;
+		std::cin >> xyz;Execute(
 	#endif
 	for (llvm::Function::iterator b = function->begin(), be = function->end(); b != be; ++b)
 	{
