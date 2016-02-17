@@ -127,7 +127,7 @@ input[type="file"] {
 }
 
 [data-toggle~="tooltip"] pre {
-	font-size: 20px !important;
+	font-size: 18px !important;
 }
 .control-sidebar-bg, .control-sidebar
 {right: -350px;}

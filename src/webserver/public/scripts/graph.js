@@ -1,6 +1,6 @@
 /* --------------------- Symbolic Tree --------------------- */
 
-var margin = { top: 40, right: 120, bottom: 20, left: 360};
+var margin = { top: 40, right: 120, bottom: 20, left: 340};
 var width = 960 - margin.right - margin.left;
 var height = 1000 - margin.top - margin.bottom;
 /*var margin = {top: 200.5, right: 120, bottom: 20, left: 275},
@@ -299,7 +299,7 @@ function update(source) {
         d.x0 = d.x;
         d.y0 = d.y;
     });
-    //svg.selectAll("text").each(function(d){console.log(d.getComputedTextLength())});
+/*    svg.selectAll("g").each(function(d){console.log("display text");console.log(d.text.node().getBBox().width);});*/
 //    d3.select("#graph svg").selectAll("g.node").select("circle").attr('r',function(d){return svg.selectAll("g.node").select("text").getComputedTextLength();});
 }
 /*
