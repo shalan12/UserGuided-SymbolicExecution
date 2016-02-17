@@ -8,7 +8,7 @@ d3.helper.tooltip = function(accessor){
             // Clean up lost tooltips
             d3.select('body').selectAll('div.tooltip').remove();
             // Append tooltip
-            tooltipDiv = d3.select('body').append('div').attr('data-toggle', 'tooltip tooltip-top-right tooltip-arrow');
+            tooltipDiv = d3.select('body').append('div').attr('data-toggle', 'tooltip tooltip-top-left tooltip-arrow');
             var absoluteMousePos = d3.mouse(bodyNode);
             tooltipDiv.style('left', (absoluteMousePos[0] + 10)+'px')
                 .style('top', (absoluteMousePos[1] - 15)+'px')
@@ -27,7 +27,7 @@ d3.helper.tooltip = function(accessor){
             tooltipDiv.style('left', (absoluteMousePos[0] + 10)+'px')
                 .style('top', (absoluteMousePos[1] - 15)+'px');
             var tooltipText = accessor(d, i) || '';
-            tooltipDiv.html('<pre>' + tooltipText + '</pre>');
+            tooltipDiv.html('<pre class=temp>' + tooltipText + '</pre>');
         })
         .on("mouseout", function(d, i){
             // Remove tooltip

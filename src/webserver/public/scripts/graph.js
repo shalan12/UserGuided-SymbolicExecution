@@ -379,12 +379,16 @@ function hightlightCode(startLine, endLine, color)
             document.getElementById(line).style.backgroundColor = "transparent";
         }
     }*/
+
     for (var line = startLine; line <= endLine; line++)
     {   
-        document.getElementById(line).style.backgroundColor = color;
-        if (color != "transparent")
-            document.getElementById(line).style.color = "white";
-        else document.getElementById(line).style.color = "#5e5e5e";
+        if (line != 0)
+        {
+            document.getElementById(line).style.backgroundColor = color;
+            if (color != "transparent")
+                document.getElementById(line).style.color = "white";
+            else document.getElementById(line).style.color = "#5e5e5e";
+        }
     }    
 }
 
@@ -454,6 +458,7 @@ function addNodes(data)
 {
     if (data.nodes === undefined || data.nodes.length == 0)
     {
+        console.log("nonodes");
         var noNodeAlert = d3.select("#graph")
             .append("div")
             .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-warning")
@@ -461,11 +466,12 @@ function addNodes(data)
         noNodeAlert.html(
         '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
         'This node has no more branches to explore.\n<br><br>' +
-        '<input type="button" class="btn btn-primary pull-right" id="noNodeBtn" value="OK">');
+        '<input type="button" class="btn btn-primary pull-right" id="noNodeBtn" style="font-size:20px" value="OK">');
         $("#noNodeBtn").on("click", function(){d3.select("#noNode-alert").remove();});   
     }
     else
     {
+        console.log(data.nodes);
         for (var i =0; i < data.nodes.length; i++)
             addNode(data.nodes[i]);
     }
@@ -577,7 +583,7 @@ function getModelData(isNode, node, func)
     .style("margin-top",node.y-350+"px");*/
     modelForm.html(
         '<div class="box-header with-border"><h3>Add Model for function:</h3></div>' +
-        '<div class="box-body">Available variables to choose: x, y, z' +
+        '<div class="box-body">' +
         '<form class=\'form-group\' id=\'modelData\' onsubmit="return addModel(\''+id+'\',\''+isNode+'\')">' +
         '<br>' +
         '<div id="modelFormInputs">' +
@@ -607,7 +613,7 @@ function checkForModel(selection)
                 '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
                 'An external function call was executed at node \''+selection.node+'\'. Please provide a model for the function.\n' +
                 '<br></br>' +
-                '<input type="button" class="btn btn-primary pull-right" id="addModelBtn" value="Add Model">');
+                '<input type="button" class="btn btn-primary pull-right" id="addModelBtn" style="font-size:20px" value="Add Model">');
             $("#addModelBtn").on("click", function(){getModelData('true',selection)});
         }    
 }
@@ -765,7 +771,7 @@ function uploadSample(isPing)
             {
                 var escapedString = splitted[i-1].replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 console.log("hello");
-                $("#codedata").append('<pre  id = "'+i+'" ondblclick="excludeStatement(\''+i+'\')">'+ i + "." + escapedString+' </pre>');
+                $("#codedata").append('<pre style="font-size:17px" id = "'+i+'" ondblclick="excludeStatement(\''+i+'\')">'+ i + "." + escapedString+' </pre>');
             }
             getFunctionNames();
 

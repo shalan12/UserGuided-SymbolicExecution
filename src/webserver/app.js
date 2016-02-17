@@ -89,7 +89,9 @@ function makeBitCodeFile(oldpath,newpath,id)
     function(callback){
       fs.readFile(oldpath, function (err, data)
       {
-        data = '#include "../../errors.h"\n' + data;
+        var prefix = '#include "../../errors.h"';
+        prefix = "";
+        data =  prefix + data;
         callback(err,newpath+".cpp",data)
       });},
     function(path,data,callback){
@@ -157,8 +159,8 @@ client.on('data',function(data)
           toSendToUser["parent"] = data[i]["parent"];
           toSendToUser["text"] = data[i]["text"];
           toSendToUser["constraints"] = data[i]["constraints"];
-          toSendToUser["startLine"] = data[i]["startLine"] - 1;
-          toSendToUser["endLine"] = data[i]["endLine"]  - 1;
+          toSendToUser["startLine"] = data[i]["startLine"];// - 1;
+          toSendToUser["endLine"] = data[i]["endLine"];//  - 1;
           toSendToUser["addModel"] = data[i]["addModel"];
           toSendToUser["extra"] = data[i]["extra"];
           toSend[fileId]['nodes'].push(lodash.cloneDeep(toSendToUser));
@@ -166,7 +168,7 @@ client.on('data',function(data)
       }
       else if (data["type"] == MSG_TYPE_EXCLUDENODE)
       {
-        toSend[data.fileId] = {"minLine": data.minLine - 1, "maxLine": data.maxLine - 1};
+        toSend[data.fileId] = {"minLine": data.minLine , "maxLine": data.maxLine};
       }
       else if (data["type"] == MSG_TYPE_FUNCNAMES)
       {
@@ -326,8 +328,8 @@ app.get('/constraints',function(req,res){
     }
     else if (toSend[fileId])
     {
-        res.send(toSend[fileId]);
         console.log("sending" + JSON.stringify(toSend[fileId]))
+        res.send(toSend[fileId]);
         toSend[fileId] = null;
         return;
     }

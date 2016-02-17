@@ -751,8 +751,17 @@ void SymbolicExecutor::symbolicExecute()
 			msg["text"] = Json::Value(symTreeNode->state->toString());
 			msg["fin"] = Json::Value("0");
 			msg["constraints"] = Json::Value(symTreeNode->state->getPathCondition());
-			msg["startLine"] = Json::Value(getMinLineNumber(symTreeNode->block));
-			msg["endLine"] = Json::Value(getMaxLineNumber(symTreeNode->block));
+			if (symTreeNode->block)
+			{
+				msg["startLine"] = Json::Value(getMinLineNumber(symTreeNode->block));
+				msg["endLine"] = Json::Value(getMaxLineNumber(symTreeNode->block));
+			}
+			else
+			{
+				msg["startLine"] = Json::Value(0);
+				msg["endLine"] = Json::Value(0);
+			}
+			
 			msg["addModel"] = Json::Value("false");
 			if(! symTreeNode->satInfo.isSatisfiable)
 			{
@@ -909,7 +918,7 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 	reader->proceedSymbolicExecution();
 	#ifdef DEBUG
 		std::cout << "done printing all the  functions that could be  called \n";
-		std::cin >> xyz;Execute(
+		std::cin >> xyz;
 	#endif
 	for (llvm::Function::iterator b = function->begin(), be = function->end(); b != be; ++b)
 	{

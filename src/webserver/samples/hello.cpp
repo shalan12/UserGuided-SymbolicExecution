@@ -1,12 +1,12 @@
 #include <stdlib.h>
-int notmain2(int c, int d);
+int bar(int c, int d);
 void notmain(int a, int b)
 {
   if (a > b)
   {
     if(a+1 > b)
     {
-      b = notmain2(a+1,b+2);
+      b = bar(a+1,b+2);
       b = b + abs(a);
     }
     else
@@ -25,7 +25,7 @@ void notmain(int a, int b)
     b = b + 2;
   }
 }
-int notmain2(int c, int d)
+int bar(int c, int d)
 {
   if(c > d)
     return c+d;
