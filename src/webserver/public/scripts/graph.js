@@ -1,6 +1,6 @@
 /* --------------------- Symbolic Tree --------------------- */
 
-var margin = { top: 40, right: 120, bottom: 20, left: 340};
+var margin = { top: 40, right: 120, bottom: 20, left: 320};
 var width = 960 - margin.right - margin.left;
 var height = 1000 - margin.top - margin.bottom;
 /*var margin = {top: 200.5, right: 120, bottom: 20, left: 275},
@@ -143,7 +143,7 @@ var contextmenu = [
                         // .style("margin-top", -500 + d.y + 50 +"px");
                         menu.html(
                                 '<div class="box-header with-border"> <h3> Options </h3></legend></div>'+
-                                '<div class="box-body" ><form class=\'form-group\' id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
+                                '<div class="box-body" style="font-size:20px"><form class=\'form-group\' id=\'menuoptions\' onsubmit="return handleMenuOptions(\''+d.node+'\')">' + 
                                 "Number of steps to explore:<br>" +
                                     "<input type='text' name='steps' value='-1'>" +
                                     "<br>" +
@@ -157,7 +157,7 @@ var contextmenu = [
                                     "<br>" +
                                     "<input type='radio' name='branch' value='1'> Right" +
                                     "<br><br>" +
-                                    "<input type='submit' class='btn btn-primary' value='Submit'>" +
+                                    "<input type='submit' class='btn btn-primary pull-right' value='Submit'>" +
 
                                 "</form></div>");
                     }
@@ -218,9 +218,10 @@ function update(source) {
     .on('contextmenu', d3.contextMenu(contextmenu));
 
     nodeEnter.append("text")
-    //.attr("y", function(d) { return d.children ? -18 : 18; })
+    .attr("y", function(d) { return d.children ? -30 : 30; })
     .attr("dy", ".35em")
     .attr("text-anchor", "middle")
+    .attr("font-size", "20px")
     .text(function(d) { return d.nodeText; })
     .style("fill-opacity", 1e-6)
     .style("color", "#ebebeb");
@@ -233,7 +234,7 @@ function update(source) {
     .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
     nodeUpdate.select("circle")
-    .attr("r", 30)
+    .attr("r", 20)
     .style("fill", function(d) { 
         if(d.satisfiable === false)
         {
@@ -352,7 +353,8 @@ function click(d) {
       //update(d);
       //----------------//
     setDefaults();
-    getNext(d.node);
+    if (d.excluded === false)
+        getNext(d.node);
 }
 
 function highlightPathToNode(node)
