@@ -2,13 +2,12 @@
 int bar(int c, int d);
 void notmain(int a, int b)
 {
-  int c = 10;
-  if (a > c)
+  if (a > b)
   {
-    if(a+1 > c)
+    if(a+1 > b)
     {
       b = bar(a+1,b+2);
-      b = b + abs(a-b);
+      b = b + abs(a);
     }
     else
     {

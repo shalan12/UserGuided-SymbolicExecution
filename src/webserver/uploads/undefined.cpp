@@ -6,8 +6,8 @@ void notmain(int a, int b)
   {
     if(a+1 > b)
     {
-      b = bar(a+1,b+2);
       b = b + abs(a);
+      b = bar(a+1,b+2);
     }
     else
     {
