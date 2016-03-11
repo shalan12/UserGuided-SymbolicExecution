@@ -29,8 +29,20 @@ int communicate(ServerSocket* new_sock)
         {
           std::cout << "successfully parsed\n";
           std::string id = val["id"].asString();
+          Json::Value val1 = val;
           val = val["val"];
-          if (threads_sym.find(id) != threads_sym.end())
+          
+          if (threads_sym.find(id) != threads_sym.end() && val1["type"].asString() == "300")
+          {
+            std::cout << "aleady present\n erasing it \n"; 
+            SymbolicExecutor * sym = new SymbolicExecutor(id, new_sock);
+            std::thread t1 = std::thread(runOnThread,sym,val);
+            std::swap(threads_sym[id].first, t1);
+            threads_sym[id].second = sym;
+            std::cout << "done \n";
+            t1.detach();
+          }
+          else if (threads_sym.find(id) != threads_sym.end())
           {
             threads_sym[id].second->proceed(val);
           }
