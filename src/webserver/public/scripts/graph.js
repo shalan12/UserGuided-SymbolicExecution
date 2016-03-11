@@ -1,6 +1,6 @@
 /* --------------------- Symbolic Tree --------------------- */
 
-var margin = { top: 40, right: 120, bottom: 20, left: 320};
+var margin = { top: 40, right: 120, bottom: 20, left: 230};
 var width = 960 - margin.right - margin.left;
 var height = 1000 - margin.top - margin.bottom;
 /*var margin = {top: 200.5, right: 120, bottom: 20, left: 275},
@@ -14,8 +14,9 @@ root;
 var tree,diagonal,svg;
 var zoom = d3.behavior.zoom()
             .on("zoom", function(){
+                console.log(d3.event.translate);
                 if (contextMenuShowing == false)
-                    svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+                    svg.attr("transform", "translate(" + [(d3.event.translate[0] + margin.left),(d3.event.translate[1] + margin.top)] + ")scale(" + d3.event.scale + ")");
             });
 var container;
 function setup()
@@ -34,12 +35,17 @@ function setup()
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     container = svg;
     temp.on("mousedown", function(){
-            if(d3.event.button === 2){
-                d3.event.stopImmediatePropagation();
-            };
+/*            if(d3.event.button === 2){
+                d3.event.sourceEvent.stopPropagation();
+            };*/
         })
-        .call(zoom).on("dblclick.zoom", function(){svg.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-        zoom.scale(1);});
+        .call(zoom).on("dblclick.zoom", function()
+        {
+            console.log("here");
+            zoom.translate([0,0]);
+            zoom.scale(1);
+            svg.transition().duration(500).attr('transform', 'translate(' + [margin.left,margin.top] + ') scale(' + zoom.scale() + ')')
+        });
 }
 function zoomIn(){
     //Calculate and set the new zoom level 
@@ -483,6 +489,7 @@ function getNext(nodeID,isPing)
     if(!beginSymbolicExecution)
     {
         document.getElementById("Step").style.display = "none";
+        document.getElementById("treeInstructions").style.display = "block";
         beginSymbolicExecution = true;
     }
     isPing = isPing || false;
@@ -762,7 +769,8 @@ function uploadSample(isPing)
     }).done(function(resp){
         $.get("/main",function (data){
             $("#mainContent").html(data);
-            document.getElementById('displayCode').style.display = "block"; 
+/*            document.getElementById('displayCode').style.display = "block"; 
+*/          document.getElementById('body').className = "hold-transition skin-blue sidebar-mini sidebar-collapse";
             $('#mainLogoMini').click(function(){goBack();});               
             document.getElementById('mainLogo').addEventListener('click', function(){goBack(); return false;});   
             setup();

@@ -29,7 +29,7 @@
         <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body class="hold-transition skin-blue sidebar-mini">
+  <body class="hold-transition skin-blue sidebar-mini" id="body">
     <!-- Site wrapper -->
     <div class="wrapper">
     
@@ -37,7 +37,7 @@
         <!-- Logo -->
         <a href="#" class="logo">
           <!-- mini logo for sidebar mini 50x50 pixels --> 
-          <span id="mainLogoMini" class="logo-mini"><b>USE</b></span>
+          <span id="mainLogoMini" class="logo-mini" onclick="goBack()"><b>USE</b></span>
           <!-- logo for regular state and mobile devices -->
           <span id="mainLogo" class="logo-lg">          
             <b>Symbolic Execution</b>
@@ -92,10 +92,10 @@
                   <i class="fa fa-angle-left pull-right"></i>
                 </a>
                 <ul class="treeview-menu">
-                  <li><a href="../UI/general.html"><i class="fa fa-circle-o text-red"></i> hello.cpp</a></li>
-                  <li><a href="../UI/icons.html"><i class="fa fa-circle-o text-yellow"></i> isPrime.cpp</a></li>
-                  <li><a href="../UI/buttons.html"><i class="fa fa-circle-o text-aqua"></i> gradeCalc.cpp</a></li>
-                  <li><a href="../UI/sliders.html"><i class="fa fa-circle-o text-blue"></i> quadratic.cpp</a></li>
+                  <li><a href="#"><i class="fa fa-circle-o text-red"></i> hello.cpp</a></li>
+                  <li><a href="#"><i class="fa fa-circle-o text-yellow"></i> isPrime.cpp</a></li>
+                  <li><a href="#"><i class="fa fa-circle-o text-aqua"></i> gradeCalc.cpp</a></li>
+                  <li><a href="#"><i class="fa fa-circle-o text-blue"></i> quadratic.cpp</a></li>
                 </ul>
               </li>
 
@@ -148,6 +148,8 @@
                   <div class="panel-body">
                     <input class="btn btn-primary" type='button' id='_submitSample' value='Upload Sample!' onclick="uploadSample()">
                   </div>
+                  <h4 class="panel-body">Here's a demo of our project:</h4>
+                  <iframe class="panel-body" width="600" height="270" src="https://www.youtube.com/embed/0VNe4BjjF90" frameborder="0" allowfullscreen></iframe>
                 </div>
             
               </div><!-- /.box-body -->
@@ -162,7 +164,7 @@
           <div class="pull-right hidden-xs">
             <b>Version</b> 2.0
           </div>
-          <strong>Copyright &copy; 2015-2016 <a href="#">Habiba Farrukh</a>.</strong> All rights reserved.
+          <strong>Copyright &copy; 2015-2016 <a href="#">Habiba Farrukh, Shalan Naqvi, Ubaid Ullah Hafeez</a>.</strong> All rights reserved.
         </footer>
       </div> <!-- Main Content -->
 

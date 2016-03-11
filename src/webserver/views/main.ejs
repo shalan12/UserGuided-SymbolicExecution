@@ -25,10 +25,10 @@
                 <i class="fa fa-angle-left pull-right"></i>
               </a>
               <ul class="treeview-menu">
-                <li><a href="../UI/general.html"><i class="fa fa-circle-o text-red"></i> hello.cpp</a></li>
-                <li><a href="../UI/icons.html"><i class="fa fa-circle-o text-yellow"></i> isPrime.cpp</a></li>
-                <li><a href="../UI/buttons.html"><i class="fa fa-circle-o text-aqua"></i> gradeCalc.cpp</a></li>
-                <li><a href="../UI/sliders.html"><i class="fa fa-circle-o text-blue"></i> quadratic.cpp</a></li>
+                <li><a href="#"><i class="fa fa-circle-o text-red"></i> hello.cpp</a></li>
+                <li><a href="#"><i class="fa fa-circle-o text-yellow"></i> isPrime.cpp</a></li>
+                <li><a href="#"><i class="fa fa-circle-o text-aqua"></i> gradeCalc.cpp</a></li>
+                <li><a href="#"><i class="fa fa-circle-o text-blue"></i> quadratic.cpp</a></li>
               </ul>
             </li>
 <!--             <li class="treeview">
@@ -74,26 +74,49 @@
 
         <!-- Main content -->
         <section class="content">
-
-          <!-- Default box -->
-          <div class="box">
-            <div class="box-header with-border">
-              <h3 class="box-title"></h3>
-              <button class="btn btn-primary" id="Step" onclick="getNext()">Begin Symbolic Execution</button>
-              <!-- <div class="box-tools pull-right">
-                <button class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse"><i class="fa fa-minus"></i></button>
-                <button class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove"><i class="fa fa-times"></i></button>
-              </div> -->
+          <div class="row">
+            <div class="col-md-9">
+              <!-- Default box -->
+              <div class="box">
+                <div class="box-header with-border">
+                  <h3 class="box-title"></h3>
+                  <button class="btn btn-primary" id="Step" onclick="getNext()">Begin Symbolic Execution</button>
+                  <div id="treeInstructions" style="display:none">
+                  <ul>
+                    <li> Double click a node to get the next node in the tree.</li>
+                    <li> Single click will highlight a node's path.</li>
+                    <li> Right-click a node to select exclude or focus options.</li>
+                  </ul>
+                   
+                  </div>
+                  <!-- <div class="box-tools pull-right">
+                    <button class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse"><i class="fa fa-minus"></i></button>
+                    <button class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove"><i class="fa fa-times"></i></button>
+                  </div> -->
+                </div>
+                <div class="box-body">
+                  <div id="graph">
+                  </div>
+              
+                </div><!-- /.box-body -->
+                <div class="box-footer">
+                </div><!-- /.box-footer-->
+              </div><!-- /.box -->
             </div>
-            <div class="box-body">
-              <div id="graph">
+            <div class="col-md-3">
+              <!-- Code box -->
+              <div class="box">
+                <div class="box-header with-border">
+                  <h3 class="box-title">Code:</h3>
+                </div>
+                <div class="box-body">
+                  <div class="code" id="codedata">
+                </div>
+                <div class="box-footer">
+                </div>
               </div>
-          
-            </div><!-- /.box-body -->
-            <div class="box-footer">
-            </div><!-- /.box-footer-->
-          </div><!-- /.box -->
-
+            </div>   
+          </div>  
         </section><!-- /.content -->
       </div><!-- /.content-wrapper -->
     

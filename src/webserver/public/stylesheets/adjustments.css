@@ -14,7 +14,7 @@ div#features {
   width: 100%;
 }
 div#codedata {
-  height: 880px;
+  height: 710px;
   width: 100%;
   overflow: scroll;
 
@@ -29,7 +29,7 @@ div#graph svg {
   top: 50%;
   left: 50%;
   width: 400px;
-  margin-left: -270px;
+  margin-left: -120px;
   margin-top: -180px;
   height: 430px;
 }
@@ -37,7 +37,7 @@ div#graph svg {
   position: absolute;
   top: 50%;
   left: 50%;
-  margin-left: -370px;
+  margin-left: -210px;
   margin-top: -180px;
   font-size: 20px;
 }
@@ -46,14 +46,14 @@ div#graph svg {
   top: 50%;
   left: 50%;
   width: 500px;
-  margin-left: -310px;
+  margin-left: -210px;
   margin-top: -180px;
 }
 #model-alert {
   position: absolute;
   top: 50%;
   left: 50%;
-  margin-left: -380px;
+  margin-left: -200px;
   margin-top: -180px;
   font-size: 20px;
 
