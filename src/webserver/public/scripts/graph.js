@@ -392,10 +392,18 @@ function hightlightCode(startLine, endLine, color)
     {   
         if (line != 0)
         {
-            document.getElementById(line).style.backgroundColor = color;
-            if (color != "transparent")
+          /*  document.getElementById(line).style.backgroundColor = color;*/
+            if (document.getElementById(line).style.backgroundColor == "red")
+            {
+
+            }
+            else
+            {
+                document.getElementById(line).style.backgroundColor = color;
+                if (color != "transparent")
                 document.getElementById(line).style.color = "white";
-            else document.getElementById(line).style.color = "#5e5e5e";
+                else document.getElementById(line).style.color = "#5e5e5e";
+            }
         }
     }    
 }
