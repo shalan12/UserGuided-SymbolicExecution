@@ -1,11 +1,20 @@
 /* --------------------- Symbolic Tree --------------------- */
 
-var margin = { top: 40, right: 120, bottom: 20, left: 230};
+var margin = { top: 40, right: 120, bottom: 20, left: 220};
+
+//var margin = { top: 0, right: 0, bottom: 0, left: 0};
 var width = 960 - margin.right - margin.left;
 var height = 1000 - margin.top - margin.bottom;
 /*var margin = {top: 200.5, right: 120, bottom: 20, left: 275},
 width = 1040,//960 - margin.right - margin.left,
 height = 1040;//margin.top - margin.bottom;*/
+/*window.addEventListener('resize', resize); 
+
+function resize() {
+    width = window.innerWidth, height = window.innerHeight;
+    svg.attr("width", width).attr("height", height);
+    tree.size([width, height]).resume();
+}*/
 var zoomStep = 0.2;
 var actualZoomLevel = 1.0;
 var i = 0,
@@ -14,6 +23,8 @@ root;
 var tree,diagonal,svg;
 var zoom = d3.behavior.zoom()
             .on("zoom", function(){
+                var box = d3.select("#tree").node().getBBox();
+                console.log(box);
                 console.log(d3.event.translate);
                 if (contextMenuShowing == false)
                     svg.attr("transform", "translate(" + [(d3.event.translate[0] + margin.left),(d3.event.translate[1] + margin.top)] + ")scale(" + d3.event.scale + ")");
@@ -21,17 +32,23 @@ var zoom = d3.behavior.zoom()
 var container;
 function setup()
 {
+    var graph = document.getElementById("graph").clientWidth;
+    var graphLeft = document.getElementById("graph").clientLeft;
+
+    console.log("graph width: " + graph + " graph left: " + graphLeft);
     tree = d3.layout.tree()
     .size([height, width]);
     diagonal = d3.svg.diagonal()
     .projection(function(d) { return [d.x, d.y]; });
     var temp = d3.select("#graph")
         .append("svg")
-        .attr("viewbox", "0,0,960,500");
+        .attr("viewbox", "0 0 960 500")
+        .attr("preserveAspectRatio", "xMidYMid meet");
     svg = temp
         // .attr("width", width+ margin.right + margin.left)
         // .attr("height", height+ margin.top + margin.bottom)
         .append("g")
+        .attr("id", "tree")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     container = svg;
     temp.on("mousedown", function(){
@@ -477,7 +494,7 @@ function addNodes(data)
         console.log("nonodes");
         var noNodeAlert = d3.select("#graph")
             .append("div")
-            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-warning")
+            .attr("class", "col-md-4 bs-component alert alert-dismissible alert-warning")
             .attr("id", "noNode-alert");
         noNodeAlert.html(
         '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
@@ -595,7 +612,7 @@ function getModelData(isNode, node, func)
     var modelForm = d3.select("#graph")
     .append("div")
     .attr("id", "model-input")
-    .attr("class", "box box-primary box-solid");
+    .attr("class", "col-md-4 box box-primary box-solid");
 /*    .style("margin-left", node.x+120+"px")
     .style("margin-top",node.y-350+"px");*/
     modelForm.html(
@@ -621,7 +638,7 @@ function checkForModel(selection)
         {   
             var modelAlert = d3.select("#graph")
             .append("div")
-            .attr("class", "col-lg-4 bs-component alert alert-dismissible alert-success")
+            .attr("class", "col-md-4 bs-component alert alert-dismissible alert-success")
             .attr("id", "model-alert");
 /*            .style("margin-left", selection.x+120 + "px")
             .style("margin-top", selection.y-350 + "px");*/

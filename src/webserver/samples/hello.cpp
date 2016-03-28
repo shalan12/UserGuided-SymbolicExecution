@@ -12,7 +12,7 @@ void notmain(int a, int b)
     }
     else
     {
-      b = b + 1;
+      b = b;
     }
   }
   else
@@ -28,5 +28,7 @@ void notmain(int a, int b)
 }
 int bar(int c, int d)
 {
+  if (c > d)
   return c*d;
+  else return c+d;
 }
