@@ -1,0 +1,5 @@
+*.o
+*.bc
+sfse
+src/webserver/uploads/*.cpp
+.fuse_hidden*

@@ -85,6 +85,9 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 			case llvm::Instruction::AShr :
 				op = ">>";
 				break;
+			case llvm::Instruction::SRem :
+				op = "%";
+				break;
 			default :
 				#ifdef DEBUG	
 					std::cout << "Not Implemented"; // change std::cout to some log file
@@ -182,73 +185,54 @@ std::vector<SymbolicTreeNode*>
 		{
 			ProgramState* first = new ProgramState(*state);
 			llvm::Value* cond = binst->getCondition();
-			int toAddTrue = 1;
-			int toAddFalse = 1;
 			bool toAddConstraint = true;
 			if(state->getMap()[cond]->isConstant())
 			{
-				toAddTrue = state->getMap()[cond]->getInteger();
-				toAddFalse = !toAddTrue;
 				toAddConstraint = false;
 			}
-			if(toAddTrue)
+			if(toAddConstraint) 
 			{
-				if(toAddConstraint) 
-				{
-					//first->constraints.push_back(std::make_pair(cond,"true"));
-					// habibah look into it
-					for (auto& pr : state->getLLVMVarMap())
-					{
-						std::cout << getString(pr.first) << "------" << pr.second << "\n";
-						// to->userVarMap[pr.first] = pr.second;
-					}
-					first->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(first->z3Variables, first->c),"true")); // added for z3
-					first->addCondition(state->get(cond)->toStringHumanReadable(state->getLLVMVarMap(), state->getStoreMap()));
-					// std::cout << "ADDING CONDITION: " << state->get(cond)->toStringHumanReadable(state->getLLVMVarMap()) << std::endl;
-					// int a;
-					// std::cin >> a;
-				}
-				#ifdef DEBUG
-					std::cout << "ADDING CONDITION : " << state->get(cond)->toString() << std::endl;
-				#endif
-
-				// added for constraint checking
-				bool satisfiableFirst = first->Z3solver();
-
-				#ifdef DEBUG
-					if (satisfiableFirst)
-						std::cout << "branch is satisfiable \n ";
-					else
-						std::cout << "branch is not satisfiable \n ";
-				#endif
-				bool hasRunMaxExecs = (node->loopInfo.loopStartPoint != NULL
-								&& node->loopInfo.loopStartPoint == node->block
-								&& node->loopInfo.numExecutions >= node->loopInfo.maxExecutions);
-					
-				if (!hasRunMaxExecs)
-				{
-					// added for limiting loop executions
-					SymbolicTreeNode* toPush = new SymbolicTreeNode(binst->getSuccessor(0), 
-							first, numNodes++,node->id,NULL,returnNode);
-					toPush->setLoopInfo(node->loopInfo.loopStartPoint,
-					node->loopInfo.numExecutions);
-					if(!satisfiableFirst)
-					{
-						node->setSATInfo(false);
-					}			
-					children.push_back(toPush);
-				}
+				first->addCondition(state->get(cond)->toStringHumanReadable(state->getLLVMVarMap(), state->getStoreMap()));
 			}
+				first->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(first->z3Variables, first->c),"true")); // added for z3
+			#ifdef DEBUG
+				std::cout << "ADDING CONDITION : " << state->get(cond)->toString() << std::endl;
+			#endif
+
+			// added for constraint checking
+			bool satisfiableFirst = first->Z3solver();
+
+			#ifdef DEBUG
+				if (satisfiableFirst)
+					std::cout << "branch is satisfiable \n ";
+				else
+					std::cout << "branch is not satisfiable \n ";
+			#endif
+			bool hasRunMaxExecs = (node->loopInfo.loopStartPoint != NULL
+							&& node->loopInfo.loopStartPoint == node->block
+							&& node->loopInfo.numExecutions >= node->loopInfo.maxExecutions);
+				
+			if (!hasRunMaxExecs)
+			{
+				// added for limiting loop executions
+				SymbolicTreeNode* toPush = new SymbolicTreeNode(binst->getSuccessor(0), 
+						first, numNodes++,node->id,NULL,returnNode);
+				toPush->setLoopInfo(node->loopInfo.loopStartPoint,
+				node->loopInfo.numExecutions);
+				if(!satisfiableFirst)
+				{
+					node->setSATInfo(false);
+				}			
+				children.push_back(toPush);
+			}
+
 			int numSuccesors = binst->getNumSuccessors();
-			if(numSuccesors == 2 && toAddFalse)
+			if(numSuccesors == 2)
 			{
 				ProgramState* second = new ProgramState(*state);
+				second->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(second->z3Variables, second->c),"false")); // added for z3
 				if (toAddConstraint)
 				{
-					//second->constraints.push_back(std::make_pair(cond,"false"));
-					//habibah look into it
-					second->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(second->z3Variables, second->c),"false")); // added for z3
-					// second->addCondition("not " + state->get(cond)->toString());
 					second->addCondition("!" + state->get(cond)->toStringHumanReadable(state->getLLVMVarMap(), state->getStoreMap()));
 				}
 				// added for constraint checking
@@ -988,9 +972,19 @@ void SymbolicExecutor::proceed(Json::Value val)
 void SymbolicExecutor::execute(Json::Value val)
 {
 	llvm::Module* module = loadCode(filename.c_str());
+	std::string name = "";
 
-	auto function = module->getFunction("_Z7notmainii");
-	executeFunction(function);
+	for (auto f = module->begin(); f!= module->end(); f++)
+	{
+		name = f->getName().str();
+		if (name.find("notmain")!=std::string::npos) break;
+	}
+	if (name != "") 
+	{
+		auto function = module->getFunction(name);
+		executeFunction(function);
+	}
+	else std::cout << "[DEBUG] function not found";
 }
 
 void SymbolicExecutor::exclude(int input, int isNode)

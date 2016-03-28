@@ -1,23 +1,25 @@
 int notmain(int percentage)
 {
+	int grade;
 	if (percentage > 80)
 	{
-		return 'A';
+		grade = 'A';
 	}
 	else if (percentage > 70)
 	{
-		return 'B';
+		grade = 'B';
 	}
 	else if (percentage > 60)
 	{
-		return 'C';
+		grade = 'C';
 	}
 	else if (percentage > 50)
 	{
-		return 'D';
+		grade = 'D';
 	}
-	else if (percentage > 40)
+	else
 	{
-		return 'F';
+		grade = 'F';
 	}
+	return grade;
 }
