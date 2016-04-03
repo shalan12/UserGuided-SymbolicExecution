@@ -1,0 +1,100 @@
+\hypertarget{classSymbolicExecutor}{}\section{Symbolic\+Executor Class Reference}
+\label{classSymbolicExecutor}\index{Symbolic\+Executor@{Symbolic\+Executor}}
+
+
+{\ttfamily \#include $<$symbolicexecutor.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries Symbolic\+Executor} (std\+::string f, Server\+Socket $\ast$s)\hypertarget{classSymbolicExecutor_a8c0bcb3e67fc547f3efdbb522fc4dfb6}{}\label{classSymbolicExecutor_a8c0bcb3e67fc547f3efdbb522fc4dfb6}
+
+\item 
+std\+::vector$<$ \hyperlink{classSymbolicTreeNode}{Symbolic\+Tree\+Node} $\ast$ $>$ \hyperlink{classSymbolicExecutor_a8638f95d2e833b456bfa8c7b8eb62d74}{execute\+Basic\+Block} (\hyperlink{classSymbolicTreeNode}{Symbolic\+Tree\+Node} $\ast$)
+\item 
+std\+::vector$<$ \hyperlink{classSymbolicTreeNode}{Symbolic\+Tree\+Node} $\ast$ $>$ \hyperlink{classSymbolicExecutor_a26e6644c25e0a732e2550287626a0f8f}{execute\+Model} (\hyperlink{classSymbolicTreeNode}{Symbolic\+Tree\+Node} $\ast$)
+\item 
+void \hyperlink{classSymbolicExecutor_a004c981bad23ebd7492f30140c9df37c}{symbolic\+Execute} ()
+\item 
+void \hyperlink{classSymbolicExecutor_ad62f357c9bd1c315264fe607721d6355}{print\+All\+Functions} (llvm\+::\+Function $\ast$function, int index, Json\+::\+Value \&functions)
+\item 
+void \hyperlink{classSymbolicExecutor_a313557a080e87cd2a9db2ef3c889e8de}{execute\+Function} (llvm\+::\+Function $\ast$function)
+\item 
+void {\bfseries proceed} (bool isbfs, int stps, int d, int prev)\hypertarget{classSymbolicExecutor_a8cc66a79dd50429531dda1f0c06faa0f}{}\label{classSymbolicExecutor_a8cc66a79dd50429531dda1f0c06faa0f}
+
+\item 
+void \hyperlink{classSymbolicExecutor_a43133fd58f4f28ea791cab3d1b09bb3f}{exclude} (int id, int b)
+\item 
+void {\bfseries proceed} (Json\+::\+Value val)\hypertarget{classSymbolicExecutor_ad76931ff50100eb3ec6f3f53f81155fe}{}\label{classSymbolicExecutor_ad76931ff50100eb3ec6f3f53f81155fe}
+
+\item 
+void \hyperlink{classSymbolicExecutor_a730b136a1b89fe9ec688f72e40b52a7a}{execute} (Json\+::\+Value val)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+A symbolic executor to execute an input program symbolically. 
+
+\subsection{Member Function Documentation}
+\index{Symbolic\+Executor@{Symbolic\+Executor}!exclude@{exclude}}
+\index{exclude@{exclude}!Symbolic\+Executor@{Symbolic\+Executor}}
+\subsubsection[{\texorpdfstring{exclude(int id, int b)}{exclude(int id, int b)}}]{\setlength{\rightskip}{0pt plus 5cm}void Symbolic\+Executor\+::exclude (
+\begin{DoxyParamCaption}
+\item[{int}]{input, }
+\item[{int}]{is\+Node}
+\end{DoxyParamCaption}
+)}\hypertarget{classSymbolicExecutor_a43133fd58f4f28ea791cab3d1b09bb3f}{}\label{classSymbolicExecutor_a43133fd58f4f28ea791cab3d1b09bb3f}
+Marks lines or blocks of code excluded for the Symbolic executor, which user dont want to explore \index{Symbolic\+Executor@{Symbolic\+Executor}!execute@{execute}}
+\index{execute@{execute}!Symbolic\+Executor@{Symbolic\+Executor}}
+\subsubsection[{\texorpdfstring{execute(\+Json\+::\+Value val)}{execute(Json::Value val)}}]{\setlength{\rightskip}{0pt plus 5cm}void Symbolic\+Executor\+::execute (
+\begin{DoxyParamCaption}
+\item[{Json\+::\+Value}]{val}
+\end{DoxyParamCaption}
+)}\hypertarget{classSymbolicExecutor_a730b136a1b89fe9ec688f72e40b52a7a}{}\label{classSymbolicExecutor_a730b136a1b89fe9ec688f72e40b52a7a}
+Excutes the function containing \textquotesingle{}notamin\textquotesingle{} in its name in the input program -- just for testing purposes \index{Symbolic\+Executor@{Symbolic\+Executor}!execute\+Basic\+Block@{execute\+Basic\+Block}}
+\index{execute\+Basic\+Block@{execute\+Basic\+Block}!Symbolic\+Executor@{Symbolic\+Executor}}
+\subsubsection[{\texorpdfstring{execute\+Basic\+Block(\+Symbolic\+Tree\+Node $\ast$)}{executeBasicBlock(SymbolicTreeNode *)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::vector$<$ {\bf Symbolic\+Tree\+Node} $\ast$ $>$ Symbolic\+Executor\+::execute\+Basic\+Block (
+\begin{DoxyParamCaption}
+\item[{{\bf Symbolic\+Tree\+Node} $\ast$}]{sym\+Tree\+Node}
+\end{DoxyParamCaption}
+)}\hypertarget{classSymbolicExecutor_a8638f95d2e833b456bfa8c7b8eb62d74}{}\label{classSymbolicExecutor_a8638f95d2e833b456bfa8c7b8eb62d74}
+executes the basic\+Block, updates programstate and returns the next Block(s) to execute if it can be determined that only the \char`\"{}\+Then\char`\"{} block should be executed then only the \char`\"{}\+Then\char`\"{} block is returned. Similarly for the else block. Otherwise both are are retuarned. N\+U\+LL is returned if there\textquotesingle{}s nothing left to execute
+
+executes the basic\+Block, updates programstate and returns the next Block(s) to execute if it can be determined that only the \char`\"{}\+Then\char`\"{} block should be executed then only the \char`\"{}\+Then\char`\"{} block is returned. Similarly for the else block. Otherwise both are are returned. N\+U\+LL is returned if there\textquotesingle{}s nothing left to execute \index{Symbolic\+Executor@{Symbolic\+Executor}!execute\+Function@{execute\+Function}}
+\index{execute\+Function@{execute\+Function}!Symbolic\+Executor@{Symbolic\+Executor}}
+\subsubsection[{\texorpdfstring{execute\+Function(llvm\+::\+Function $\ast$function)}{executeFunction(llvm::Function *function)}}]{\setlength{\rightskip}{0pt plus 5cm}void Symbolic\+Executor\+::execute\+Function (
+\begin{DoxyParamCaption}
+\item[{llvm\+::\+Function $\ast$}]{function}
+\end{DoxyParamCaption}
+)}\hypertarget{classSymbolicExecutor_a313557a080e87cd2a9db2ef3c889e8de}{}\label{classSymbolicExecutor_a313557a080e87cd2a9db2ef3c889e8de}
+Start symbolic execution of given function in the input program \index{Symbolic\+Executor@{Symbolic\+Executor}!execute\+Model@{execute\+Model}}
+\index{execute\+Model@{execute\+Model}!Symbolic\+Executor@{Symbolic\+Executor}}
+\subsubsection[{\texorpdfstring{execute\+Model(\+Symbolic\+Tree\+Node $\ast$)}{executeModel(SymbolicTreeNode *)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::vector$<$ {\bf Symbolic\+Tree\+Node} $\ast$ $>$ Symbolic\+Executor\+::execute\+Model (
+\begin{DoxyParamCaption}
+\item[{{\bf Symbolic\+Tree\+Node} $\ast$}]{sym\+Tree\+Node}
+\end{DoxyParamCaption}
+)}\hypertarget{classSymbolicExecutor_a26e6644c25e0a732e2550287626a0f8f}{}\label{classSymbolicExecutor_a26e6644c25e0a732e2550287626a0f8f}
+executes the model for a function provided by the user, updates programstate and returns the next Block(s) to execute if it can be determined that only the \char`\"{}\+Then\char`\"{} block should be executed then only the \char`\"{}\+Then\char`\"{} block is returned. Similarly for the else block. \index{Symbolic\+Executor@{Symbolic\+Executor}!print\+All\+Functions@{print\+All\+Functions}}
+\index{print\+All\+Functions@{print\+All\+Functions}!Symbolic\+Executor@{Symbolic\+Executor}}
+\subsubsection[{\texorpdfstring{print\+All\+Functions(llvm\+::\+Function $\ast$function, int index, Json\+::\+Value \&functions)}{printAllFunctions(llvm::Function *function, int index, Json::Value \&functions)}}]{\setlength{\rightskip}{0pt plus 5cm}void Symbolic\+Executor\+::print\+All\+Functions (
+\begin{DoxyParamCaption}
+\item[{llvm\+::\+Function $\ast$}]{function, }
+\item[{int}]{index, }
+\item[{Json\+::\+Value \&}]{functions}
+\end{DoxyParamCaption}
+)}\hypertarget{classSymbolicExecutor_ad62f357c9bd1c315264fe607721d6355}{}\label{classSymbolicExecutor_ad62f357c9bd1c315264fe607721d6355}
+Executes all the possible paths in the given function and returns the program\+State at the end of every path
+
+Extracts the names of all the functions that are being called in the given program \index{Symbolic\+Executor@{Symbolic\+Executor}!symbolic\+Execute@{symbolic\+Execute}}
+\index{symbolic\+Execute@{symbolic\+Execute}!Symbolic\+Executor@{Symbolic\+Executor}}
+\subsubsection[{\texorpdfstring{symbolic\+Execute()}{symbolicExecute()}}]{\setlength{\rightskip}{0pt plus 5cm}void Symbolic\+Executor\+::symbolic\+Execute (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{classSymbolicExecutor_a004c981bad23ebd7492f30140c9df37c}{}\label{classSymbolicExecutor_a004c981bad23ebd7492f30140c9df37c}
+Symbolically execute blocks till its out of instructions on how to proceed and then waits for the webserver to communicate further instructions 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/symbolicexecutor.\+h\item 
+src/symbolicexecutor.\+cpp\end{DoxyCompactItemize}

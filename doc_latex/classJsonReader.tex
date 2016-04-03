@@ -1,0 +1,90 @@
+\hypertarget{classJsonReader}{}\section{Json\+Reader Class Reference}
+\label{classJsonReader}\index{Json\+Reader@{Json\+Reader}}
+
+
+{\ttfamily \#include $<$jsonreader.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries Json\+Reader} (Server\+Socket $\ast$s)\hypertarget{classJsonReader_a8d208d52cd16840c1e3afa8a0fe4cff7}{}\label{classJsonReader_a8d208d52cd16840c1e3afa8a0fe4cff7}
+
+\item 
+void \hyperlink{classJsonReader_a7c50a43477f48349037ac20e273f7ff6}{proceed\+Symbolic\+Execution} ()
+\item 
+std\+::vector$<$ std\+::pair$<$ \hyperlink{classExpressionTree}{Expression\+Tree} $\ast$, std\+::string $>$ $>$ {\bfseries get\+Model} (std\+::map$<$ std\+::string, llvm\+::\+Value $\ast$$>$ user\+Var\+Map, std\+::map$<$ llvm\+::\+Value $\ast$, std\+::string $>$ llvm\+Var\+Map, std\+::map$<$ llvm\+::\+Value $\ast$, \hyperlink{classExpressionTree}{Expression\+Tree} $\ast$$>$ map)\hypertarget{classJsonReader_a39a4f69716af933b7cbbe03ba9272fc5}{}\label{classJsonReader_a39a4f69716af933b7cbbe03ba9272fc5}
+
+\item 
+void \hyperlink{classJsonReader_a8f1dd65b1cf1610f5ad18868f06af6f7}{wake\+Up} (Json\+::\+Value val)
+\item 
+void \hyperlink{classJsonReader_ad066f6b78eaec37b435b037905221723}{set\+Execution\+Vars} ()
+\item 
+void {\bfseries update\+Msg} (Json\+::\+Value val)\hypertarget{classJsonReader_ae35e70b8940df77393c895f592a24740}{}\label{classJsonReader_ae35e70b8940df77393c895f592a24740}
+
+\item 
+void {\bfseries update\+To\+Send} (Json\+::\+Value val)\hypertarget{classJsonReader_a941e49c66f126b489de8526e26154384}{}\label{classJsonReader_a941e49c66f126b489de8526e26154384}
+
+\item 
+bool {\bfseries get\+Is\+B\+FS} ()\hypertarget{classJsonReader_a0972908b79e404604ec653dd82a7fff4}{}\label{classJsonReader_a0972908b79e404604ec653dd82a7fff4}
+
+\item 
+bool {\bfseries get\+Dir} ()\hypertarget{classJsonReader_a7417faff78f5a9279f702016e72a3b9c}{}\label{classJsonReader_a7417faff78f5a9279f702016e72a3b9c}
+
+\item 
+int {\bfseries get\+Steps} ()\hypertarget{classJsonReader_a105605032ad0769dd5cdcd12378c89b6}{}\label{classJsonReader_a105605032ad0769dd5cdcd12378c89b6}
+
+\item 
+int {\bfseries get\+Prev\+Id} ()\hypertarget{classJsonReader_a7910fcb78eb75d309fb3a9169827add8}{}\label{classJsonReader_a7910fcb78eb75d309fb3a9169827add8}
+
+\item 
+int {\bfseries get\+Is\+Exclude} ()\hypertarget{classJsonReader_a26ab851262b91c5d643872e1343008a3}{}\label{classJsonReader_a26ab851262b91c5d643872e1343008a3}
+
+\item 
+int {\bfseries get\+Excluded\+Id} ()\hypertarget{classJsonReader_aa8033e7569e6998135786544dd1c6665}{}\label{classJsonReader_aa8033e7569e6998135786544dd1c6665}
+
+\item 
+void {\bfseries add\+Object} (Json\+::\+Value obj)\hypertarget{classJsonReader_afaf253f5ec9a2f9670472da97a4727cd}{}\label{classJsonReader_afaf253f5ec9a2f9670472da97a4727cd}
+
+\item 
+void {\bfseries model\+Required\+For\+Last} ()\hypertarget{classJsonReader_a6eb40f86b814e6c7692e4b7b0df668a7}{}\label{classJsonReader_a6eb40f86b814e6c7692e4b7b0df668a7}
+
+\item 
+void {\bfseries initialize\+Json\+Array} ()\hypertarget{classJsonReader_a312cbf2b02fcc3d2745e8a7c43666fb4}{}\label{classJsonReader_a312cbf2b02fcc3d2745e8a7c43666fb4}
+
+\item 
+void {\bfseries clear\+Nodes} ()\hypertarget{classJsonReader_a37ca3aaff71189796aee8f33a7899b9b}{}\label{classJsonReader_a37ca3aaff71189796aee8f33a7899b9b}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+A helper class for Symbolic Executor to handle all the J\+S\+ON objects that contain information about how to proceed on symbolic execution and also to communicate with the webserver 
+
+\subsection{Member Function Documentation}
+\index{Json\+Reader@{Json\+Reader}!proceed\+Symbolic\+Execution@{proceed\+Symbolic\+Execution}}
+\index{proceed\+Symbolic\+Execution@{proceed\+Symbolic\+Execution}!Json\+Reader@{Json\+Reader}}
+\subsubsection[{\texorpdfstring{proceed\+Symbolic\+Execution()}{proceedSymbolicExecution()}}]{\setlength{\rightskip}{0pt plus 5cm}void Json\+Reader\+::proceed\+Symbolic\+Execution (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{classJsonReader_a7c50a43477f48349037ac20e273f7ff6}{}\label{classJsonReader_a7c50a43477f48349037ac20e273f7ff6}
+Conveys instruction received from the webserver to the Symbolic executor on how to proceed \index{Json\+Reader@{Json\+Reader}!set\+Execution\+Vars@{set\+Execution\+Vars}}
+\index{set\+Execution\+Vars@{set\+Execution\+Vars}!Json\+Reader@{Json\+Reader}}
+\subsubsection[{\texorpdfstring{set\+Execution\+Vars()}{setExecutionVars()}}]{\setlength{\rightskip}{0pt plus 5cm}void Json\+Reader\+::set\+Execution\+Vars (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{classJsonReader_ad066f6b78eaec37b435b037905221723}{}\label{classJsonReader_ad066f6b78eaec37b435b037905221723}
+Updates the variables which holds instructions for \hyperlink{classSymbolicExecutor}{Symbolic\+Executor} \index{Json\+Reader@{Json\+Reader}!wake\+Up@{wake\+Up}}
+\index{wake\+Up@{wake\+Up}!Json\+Reader@{Json\+Reader}}
+\subsubsection[{\texorpdfstring{wake\+Up(\+Json\+::\+Value val)}{wakeUp(Json::Value val)}}]{\setlength{\rightskip}{0pt plus 5cm}void Json\+Reader\+::wake\+Up (
+\begin{DoxyParamCaption}
+\item[{Json\+::\+Value}]{val}
+\end{DoxyParamCaption}
+)}\hypertarget{classJsonReader_a8f1dd65b1cf1610f5ad18868f06af6f7}{}\label{classJsonReader_a8f1dd65b1cf1610f5ad18868f06af6f7}
+Notifies whenever new instructions are received from the Webserver 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/jsonreader.\+h\item 
+src/jsonreader.\+cpp\end{DoxyCompactItemize}

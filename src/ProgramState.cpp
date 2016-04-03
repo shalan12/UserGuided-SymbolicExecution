@@ -3,10 +3,11 @@
 #include <sstream>
 #include <vector>
 #include <llvm/ADT/iterator_range.h>
+
+
 ProgramState::ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> inputs, 
 	std::vector<ExpressionTree*> arguments)
 {		 
-	//s = new z3::solver(c);
 	int i = 0;
 	for (auto input = inputs.begin(), last = inputs.end(); input!=last; input++)
 	{	
@@ -18,6 +19,7 @@ ProgramState::ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> in
 	}
 	pathCondition = "";
 }
+
 void ProgramState::Copy(const ProgramState& from, ProgramState* to, bool copyMap = true)
 {
 	if(copyMap)
@@ -59,17 +61,27 @@ std::string ProgramState::getPathCondition()
 {
 	return pathCondition;
 }
+
+/**
+* Appends a condition to the constraint of the current path
+*/
 void ProgramState::addCondition(std::string cond)
 {
 	if(pathCondition == "") pathCondition = cond;
 	else pathCondition += " &&\n" + cond;
 }
 
+/**
+* Adds a llvm IR variable and its expression tree to the program state
+*/
 void ProgramState::add(llvm::Value* value, ExpressionTree* exp)
 {
 	map[value] = exp;
 }
 
+/**
+* Adds a user variable and its expression tree to the program state
+*/
 void ProgramState::addUserVar(std::string varname, llvm::Value* val)
 {
 	// std::cout << "adding this in both maps \n";
@@ -85,6 +97,9 @@ void ProgramState::addUserVar(std::string varname, llvm::Value* val)
 	llvmVarMap[val] = varname;
 }
 
+/**
+* Adds a llvm IR variable and its expression tree to the program state
+*/
 void ProgramState::addLLVMVar(std::string varname, llvm::Value* val)
 {
 	// std::cout << "adding this \n";
@@ -94,10 +109,14 @@ void ProgramState::addLLVMVar(std::string varname, llvm::Value* val)
 	llvmVarMap[val] = varname;
 }
 
+/**
+* Adds a llvm IR store instruction variable to the stores map in program state
+*/
 void ProgramState::addStore(llvm::Value* val2, llvm::Value* val1)
 {
 	stores[val2] = val1;
 }
+
 
 std::map<llvm::Value*, llvm::Value*> ProgramState::getStoreMap()
 {
@@ -181,10 +200,12 @@ void ProgramState::printZ3Variables()
 	}
 }
 
+
 std::map<std::string, llvm::Value*> ProgramState::getUserVarMap()
 {
 	return userVarMap;
 }
+
 std::map<llvm::Value*, std::string> ProgramState::getLLVMVarMap()
 {
 	return llvmVarMap;

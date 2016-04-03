@@ -1,0 +1,107 @@
+\hypertarget{classSymbolicTreeNode}{}\section{Symbolic\+Tree\+Node Class Reference}
+\label{classSymbolicTreeNode}\index{Symbolic\+Tree\+Node@{Symbolic\+Tree\+Node}}
+
+
+{\ttfamily \#include $<$symbolicexecutor.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void {\bfseries set\+Loop\+Info} (llvm\+::\+Basic\+Block $\ast$start\+Point, int num\+Executions)\hypertarget{classSymbolicTreeNode_aa9fa7897b90dcd9952f073c74bee0dcd}{}\label{classSymbolicTreeNode_aa9fa7897b90dcd9952f073c74bee0dcd}
+
+\item 
+void {\bfseries set\+S\+A\+T\+Info} (bool is\+Satisfiable)\hypertarget{classSymbolicTreeNode_aa65962edc535d1b708d1a58a3d92e0f2}{}\label{classSymbolicTreeNode_aa65962edc535d1b708d1a58a3d92e0f2}
+
+\item 
+{\bfseries Symbolic\+Tree\+Node} (llvm\+::\+Basic\+Block $\ast$b, \hyperlink{classProgramState}{Program\+State} $\ast$ps, int id, int pid)\hypertarget{classSymbolicTreeNode_afe9df25cbc52a55e7831966ddbd0fada}{}\label{classSymbolicTreeNode_afe9df25cbc52a55e7831966ddbd0fada}
+
+\item 
+{\bfseries Symbolic\+Tree\+Node} (llvm\+::\+Basic\+Block $\ast$b, \hyperlink{classProgramState}{Program\+State} $\ast$ps, int id, int pid, Instruction\+Ptr $\ast$itr, \hyperlink{classSymbolicTreeNode}{Symbolic\+Tree\+Node} $\ast$return\+Node)\hypertarget{classSymbolicTreeNode_a7978a78716a205260862307289243228}{}\label{classSymbolicTreeNode_a7978a78716a205260862307289243228}
+
+\item 
+int \hyperlink{classSymbolicTreeNode_a0e2230ae842dd4fa496ef43bfe41fbe6}{get\+Prev\+Id} ()
+\item 
+bool {\bfseries has\+Next\+Instruction} ()\hypertarget{classSymbolicTreeNode_a366cbce6fb36aa4e8f196a82e2122c53}{}\label{classSymbolicTreeNode_a366cbce6fb36aa4e8f196a82e2122c53}
+
+\item 
+bool {\bfseries has\+Prev\+Instruction} ()\hypertarget{classSymbolicTreeNode_a7d66a26cd3233b8a1deee0c54817191b}{}\label{classSymbolicTreeNode_a7d66a26cd3233b8a1deee0c54817191b}
+
+\item 
+Instruction\+Ptr \hyperlink{classSymbolicTreeNode_a7186f53898aa5617d2ebd2490357954b}{get\+Previous\+Instruction} ()
+\item 
+Instruction\+Ptr \hyperlink{classSymbolicTreeNode_a500cfa6b978cc71bcfdee22aec244941}{get\+Next\+Instruction} ()
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+llvm\+::\+Basic\+Block $\ast$ {\bfseries block}\hypertarget{classSymbolicTreeNode_aae23351d11e29644f604cae515358a1e}{}\label{classSymbolicTreeNode_aae23351d11e29644f604cae515358a1e}
+
+\item 
+\hyperlink{classProgramState}{Program\+State} $\ast$ {\bfseries state}\hypertarget{classSymbolicTreeNode_a1a00e65fdb9b29164fc5ed7174d019b3}{}\label{classSymbolicTreeNode_a1a00e65fdb9b29164fc5ed7174d019b3}
+
+\item 
+\hyperlink{classSymbolicTreeNode}{Symbolic\+Tree\+Node} $\ast$ {\bfseries left}\hypertarget{classSymbolicTreeNode_a153e5e5fb06759be9881662ac92384ea}{}\label{classSymbolicTreeNode_a153e5e5fb06759be9881662ac92384ea}
+
+\item 
+\hyperlink{classSymbolicTreeNode}{Symbolic\+Tree\+Node} $\ast$ {\bfseries right}\hypertarget{classSymbolicTreeNode_a304a0107e333964f6d3d41d8f48c3125}{}\label{classSymbolicTreeNode_a304a0107e333964f6d3d41d8f48c3125}
+
+\item 
+bool {\bfseries is\+Executed}\hypertarget{classSymbolicTreeNode_ac7382d21f7b619cfc9f156db1c93b2cf}{}\label{classSymbolicTreeNode_ac7382d21f7b619cfc9f156db1c93b2cf}
+
+\item 
+bool {\bfseries is\+Model}\hypertarget{classSymbolicTreeNode_a8d1f9c7ff28929a7592174a5de6c04c8}{}\label{classSymbolicTreeNode_a8d1f9c7ff28929a7592174a5de6c04c8}
+
+\item 
+int {\bfseries id}\hypertarget{classSymbolicTreeNode_af6cb97bf7b54b4594f52b8a715c23c1b}{}\label{classSymbolicTreeNode_af6cb97bf7b54b4594f52b8a715c23c1b}
+
+\item 
+unsigned int {\bfseries min\+Line\+Number}\hypertarget{classSymbolicTreeNode_a692e383267611dad24d060728699d36c}{}\label{classSymbolicTreeNode_a692e383267611dad24d060728699d36c}
+
+\item 
+unsigned int {\bfseries max\+Line\+Number}\hypertarget{classSymbolicTreeNode_a42cd07a4e954a8f7183db6a87052f9ff}{}\label{classSymbolicTreeNode_a42cd07a4e954a8f7183db6a87052f9ff}
+
+\item 
+\hyperlink{classSymbolicTreeNode}{Symbolic\+Tree\+Node} $\ast$ {\bfseries return\+Node}\hypertarget{classSymbolicTreeNode_abf89056eed1c5a53278fc82328672641}{}\label{classSymbolicTreeNode_abf89056eed1c5a53278fc82328672641}
+
+\item 
+std\+::vector$<$ std\+::pair$<$ \hyperlink{classExpressionTree}{Expression\+Tree} $\ast$, std\+::string $>$ $>$ {\bfseries model\+Vals}\hypertarget{classSymbolicTreeNode_a0cb851db2b1fa944e72e5ce1bbcc11ec}{}\label{classSymbolicTreeNode_a0cb851db2b1fa944e72e5ce1bbcc11ec}
+
+\item 
+Loop\+Info {\bfseries loop\+Info}\hypertarget{classSymbolicTreeNode_ad1b739e6f07bca72efa4a9aa311fd81f}{}\label{classSymbolicTreeNode_ad1b739e6f07bca72efa4a9aa311fd81f}
+
+\item 
+S\+A\+T\+Info {\bfseries sat\+Info}\hypertarget{classSymbolicTreeNode_a74ed44dbeacaba64c0b8db8c8580b8f3}{}\label{classSymbolicTreeNode_a74ed44dbeacaba64c0b8db8c8580b8f3}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+A class to represnet node in the Symbolic Execution Tree to store intermediate and final program states of different paths 
+
+\subsection{Member Function Documentation}
+\index{Symbolic\+Tree\+Node@{Symbolic\+Tree\+Node}!get\+Next\+Instruction@{get\+Next\+Instruction}}
+\index{get\+Next\+Instruction@{get\+Next\+Instruction}!Symbolic\+Tree\+Node@{Symbolic\+Tree\+Node}}
+\subsubsection[{\texorpdfstring{get\+Next\+Instruction()}{getNextInstruction()}}]{\setlength{\rightskip}{0pt plus 5cm}Instruction\+Ptr Symbolic\+Tree\+Node\+::get\+Next\+Instruction (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classSymbolicTreeNode_a500cfa6b978cc71bcfdee22aec244941}{}\label{classSymbolicTreeNode_a500cfa6b978cc71bcfdee22aec244941}
+Moves program counter one step ahead \index{Symbolic\+Tree\+Node@{Symbolic\+Tree\+Node}!get\+Prev\+Id@{get\+Prev\+Id}}
+\index{get\+Prev\+Id@{get\+Prev\+Id}!Symbolic\+Tree\+Node@{Symbolic\+Tree\+Node}}
+\subsubsection[{\texorpdfstring{get\+Prev\+Id()}{getPrevId()}}]{\setlength{\rightskip}{0pt plus 5cm}int Symbolic\+Tree\+Node\+::get\+Prev\+Id (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classSymbolicTreeNode_a0e2230ae842dd4fa496ef43bfe41fbe6}{}\label{classSymbolicTreeNode_a0e2230ae842dd4fa496ef43bfe41fbe6}
+Returns the ID of the Parent node of the node \index{Symbolic\+Tree\+Node@{Symbolic\+Tree\+Node}!get\+Previous\+Instruction@{get\+Previous\+Instruction}}
+\index{get\+Previous\+Instruction@{get\+Previous\+Instruction}!Symbolic\+Tree\+Node@{Symbolic\+Tree\+Node}}
+\subsubsection[{\texorpdfstring{get\+Previous\+Instruction()}{getPreviousInstruction()}}]{\setlength{\rightskip}{0pt plus 5cm}Instruction\+Ptr Symbolic\+Tree\+Node\+::get\+Previous\+Instruction (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classSymbolicTreeNode_a7186f53898aa5617d2ebd2490357954b}{}\label{classSymbolicTreeNode_a7186f53898aa5617d2ebd2490357954b}
+Moves program counter one step back 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/symbolicexecutor.\+h\end{DoxyCompactItemize}

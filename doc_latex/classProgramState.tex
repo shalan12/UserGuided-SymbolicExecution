@@ -1,0 +1,124 @@
+\hypertarget{classProgramState}{}\section{Program\+State Class Reference}
+\label{classProgramState}\index{Program\+State@{Program\+State}}
+
+
+{\ttfamily \#include $<$Program\+State.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries Program\+State} (llvm\+::iterator\+\_\+range$<$ llvm\+::\+Function\+::arg\+\_\+iterator $>$ inputs, std\+::vector$<$ \hyperlink{classExpressionTree}{Expression\+Tree} $\ast$$>$ arguments=std\+::vector$<$ \hyperlink{classExpressionTree}{Expression\+Tree} $\ast$$>$(0))\hypertarget{classProgramState_af5a4a34abfea9c877a3b579a0738a92f}{}\label{classProgramState_af5a4a34abfea9c877a3b579a0738a92f}
+
+\item 
+{\bfseries Program\+State} (const \hyperlink{classProgramState}{Program\+State} \&p)\hypertarget{classProgramState_a4e8d27974f8d4094751f3f9f17860cd7}{}\label{classProgramState_a4e8d27974f8d4094751f3f9f17860cd7}
+
+\item 
+std\+::string {\bfseries get\+Path\+Condition} ()\hypertarget{classProgramState_a8884dd13979ab4ea6cc2f244d3027b1d}{}\label{classProgramState_a8884dd13979ab4ea6cc2f244d3027b1d}
+
+\item 
+void \hyperlink{classProgramState_a7918e477f448c4401ed69df5cee92eab}{add\+Condition} (std\+::string cond)
+\item 
+void \hyperlink{classProgramState_a7d5bd2ba59b9a8b55e0edfdbb4f1761a}{add} (llvm\+::\+Value $\ast$value, \hyperlink{classExpressionTree}{Expression\+Tree} $\ast$exp)
+\item 
+void \hyperlink{classProgramState_a316f476c1fd7735f4519ab5f468facf1}{add\+User\+Var} (std\+::string, llvm\+::\+Value $\ast$val)
+\item 
+void \hyperlink{classProgramState_a36ff0ef68b34393bf757fc666fcbdb0b}{add\+L\+L\+V\+M\+Var} (std\+::string varname, llvm\+::\+Value $\ast$val)
+\item 
+void \hyperlink{classProgramState_a4332267b0a34ffc0a22de872e93246b0}{add\+Store} (llvm\+::\+Value $\ast$val2, llvm\+::\+Value $\ast$val1)
+\item 
+\hyperlink{classExpressionTree}{Expression\+Tree} $\ast$ {\bfseries get} (llvm\+::\+Value $\ast$s)\hypertarget{classProgramState_ada4631cb21aa6d357c514b9aab370941}{}\label{classProgramState_ada4631cb21aa6d357c514b9aab370941}
+
+\item 
+std\+::map$<$ llvm\+::\+Value $\ast$, \hyperlink{classExpressionTree}{Expression\+Tree} $\ast$ $>$ {\bfseries get\+Map} ()\hypertarget{classProgramState_aad5597fd5847df79b58fa6d4bce305f4}{}\label{classProgramState_aad5597fd5847df79b58fa6d4bce305f4}
+
+\item 
+std\+::string {\bfseries to\+String} ()\hypertarget{classProgramState_a04a1d0d7f9cbaaae2d787a70e0baad9c}{}\label{classProgramState_a04a1d0d7f9cbaaae2d787a70e0baad9c}
+
+\item 
+void {\bfseries print\+Z3\+Variables} ()\hypertarget{classProgramState_ab99d94369e600e084d023bf488867fdd}{}\label{classProgramState_ab99d94369e600e084d023bf488867fdd}
+
+\item 
+bool {\bfseries Z3solver} ()\hypertarget{classProgramState_a36fc05c14c15fb95998bec15e7d3c68e}{}\label{classProgramState_a36fc05c14c15fb95998bec15e7d3c68e}
+
+\item 
+std\+::map$<$ std\+::string, llvm\+::\+Value $\ast$ $>$ {\bfseries get\+User\+Var\+Map} ()\hypertarget{classProgramState_afe98b01794d73a613e5f717caf59ab47}{}\label{classProgramState_afe98b01794d73a613e5f717caf59ab47}
+
+\item 
+std\+::map$<$ llvm\+::\+Value $\ast$, std\+::string $>$ {\bfseries get\+L\+L\+V\+M\+Var\+Map} ()\hypertarget{classProgramState_a96109551bf370d6f44534e2bc8c1bdad}{}\label{classProgramState_a96109551bf370d6f44534e2bc8c1bdad}
+
+\item 
+std\+::map$<$ llvm\+::\+Value $\ast$, llvm\+::\+Value $\ast$ $>$ {\bfseries get\+Store\+Map} ()\hypertarget{classProgramState_a571441fe6ca4cbf4345f49b3b5b31b54}{}\label{classProgramState_a571441fe6ca4cbf4345f49b3b5b31b54}
+
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void {\bfseries Copy} (const \hyperlink{classProgramState}{Program\+State} \&other, \hyperlink{classProgramState}{Program\+State} $\ast$to, bool copy\+Map)\hypertarget{classProgramState_a6db06239222f48916a1fa46c6ae8f169}{}\label{classProgramState_a6db06239222f48916a1fa46c6ae8f169}
+
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+z3\+::context {\bfseries c}\hypertarget{classProgramState_a0b053e482703d9636b7a8e5a8a4c5326}{}\label{classProgramState_a0b053e482703d9636b7a8e5a8a4c5326}
+
+\item 
+std\+::map$<$ std\+::string, z3\+::expr $>$ {\bfseries variables}\hypertarget{classProgramState_af1d4de53d7ba900433ea948ea462ca99}{}\label{classProgramState_af1d4de53d7ba900433ea948ea462ca99}
+
+\item 
+std\+::map$<$ llvm\+::\+Value $\ast$, z3\+::expr $\ast$ $>$ {\bfseries z3\+Variables}\hypertarget{classProgramState_a3905fc99b45ecaf1eda5568e8faf2d21}{}\label{classProgramState_a3905fc99b45ecaf1eda5568e8faf2d21}
+
+\item 
+std\+::vector$<$ std\+::pair$<$ z3\+::expr $\ast$, std\+::string $>$ $>$ {\bfseries z3\+Constraints}\hypertarget{classProgramState_a83269361365971ce4bc5605b548af520}{}\label{classProgramState_a83269361365971ce4bc5605b548af520}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+A class to hold state of all the variables during Symbolic Execution and position of Program Counter 
+
+\subsection{Member Function Documentation}
+\index{Program\+State@{Program\+State}!add@{add}}
+\index{add@{add}!Program\+State@{Program\+State}}
+\subsubsection[{\texorpdfstring{add(llvm\+::\+Value $\ast$value, Expression\+Tree $\ast$exp)}{add(llvm::Value *value, ExpressionTree *exp)}}]{\setlength{\rightskip}{0pt plus 5cm}void Program\+State\+::add (
+\begin{DoxyParamCaption}
+\item[{llvm\+::\+Value $\ast$}]{value, }
+\item[{{\bf Expression\+Tree} $\ast$}]{exp}
+\end{DoxyParamCaption}
+)}\hypertarget{classProgramState_a7d5bd2ba59b9a8b55e0edfdbb4f1761a}{}\label{classProgramState_a7d5bd2ba59b9a8b55e0edfdbb4f1761a}
+Adds a llvm IR variable and its expression tree to the program state \index{Program\+State@{Program\+State}!add\+Condition@{add\+Condition}}
+\index{add\+Condition@{add\+Condition}!Program\+State@{Program\+State}}
+\subsubsection[{\texorpdfstring{add\+Condition(std\+::string cond)}{addCondition(std::string cond)}}]{\setlength{\rightskip}{0pt plus 5cm}void Program\+State\+::add\+Condition (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{cond}
+\end{DoxyParamCaption}
+)}\hypertarget{classProgramState_a7918e477f448c4401ed69df5cee92eab}{}\label{classProgramState_a7918e477f448c4401ed69df5cee92eab}
+Appends a condition to the constraint of the current path \index{Program\+State@{Program\+State}!add\+L\+L\+V\+M\+Var@{add\+L\+L\+V\+M\+Var}}
+\index{add\+L\+L\+V\+M\+Var@{add\+L\+L\+V\+M\+Var}!Program\+State@{Program\+State}}
+\subsubsection[{\texorpdfstring{add\+L\+L\+V\+M\+Var(std\+::string varname, llvm\+::\+Value $\ast$val)}{addLLVMVar(std::string varname, llvm::Value *val)}}]{\setlength{\rightskip}{0pt plus 5cm}void Program\+State\+::add\+L\+L\+V\+M\+Var (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{varname, }
+\item[{llvm\+::\+Value $\ast$}]{val}
+\end{DoxyParamCaption}
+)}\hypertarget{classProgramState_a36ff0ef68b34393bf757fc666fcbdb0b}{}\label{classProgramState_a36ff0ef68b34393bf757fc666fcbdb0b}
+Adds a llvm IR variable and its expression tree to the program state \index{Program\+State@{Program\+State}!add\+Store@{add\+Store}}
+\index{add\+Store@{add\+Store}!Program\+State@{Program\+State}}
+\subsubsection[{\texorpdfstring{add\+Store(llvm\+::\+Value $\ast$val2, llvm\+::\+Value $\ast$val1)}{addStore(llvm::Value *val2, llvm::Value *val1)}}]{\setlength{\rightskip}{0pt plus 5cm}void Program\+State\+::add\+Store (
+\begin{DoxyParamCaption}
+\item[{llvm\+::\+Value $\ast$}]{val2, }
+\item[{llvm\+::\+Value $\ast$}]{val1}
+\end{DoxyParamCaption}
+)}\hypertarget{classProgramState_a4332267b0a34ffc0a22de872e93246b0}{}\label{classProgramState_a4332267b0a34ffc0a22de872e93246b0}
+Adds a llvm IR store instruction variable to the stores map in program state \index{Program\+State@{Program\+State}!add\+User\+Var@{add\+User\+Var}}
+\index{add\+User\+Var@{add\+User\+Var}!Program\+State@{Program\+State}}
+\subsubsection[{\texorpdfstring{add\+User\+Var(std\+::string, llvm\+::\+Value $\ast$val)}{addUserVar(std::string, llvm::Value *val)}}]{\setlength{\rightskip}{0pt plus 5cm}void Program\+State\+::add\+User\+Var (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{varname, }
+\item[{llvm\+::\+Value $\ast$}]{val}
+\end{DoxyParamCaption}
+)}\hypertarget{classProgramState_a316f476c1fd7735f4519ab5f468facf1}{}\label{classProgramState_a316f476c1fd7735f4519ab5f468facf1}
+Adds a user variable and its expression tree to the program state 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/Program\+State.\+h\item 
+src/Program\+State.\+cpp\end{DoxyCompactItemize}

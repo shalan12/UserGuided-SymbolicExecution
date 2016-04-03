@@ -49,7 +49,11 @@ ExpressionTree* SymbolicExecutor::getExpressionTree(ProgramState* state, llvm::V
 		return exptree;
 	}
 	else return new ExpressionTree(value, state->getUserVarMap(), state->getLLVMVarMap());
-}	
+}
+
+/**
+* Updates the program state according to the instruction executed
+*/
 void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruction,SymbolicTreeNode* symTreeNode)
 {
 	ProgramState* state = symTreeNode->state;
@@ -169,7 +173,8 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 
 
 /**
- Executes a branching instruction and determines which block(s) need to be explored depending on the program state
+* Executes a branching instruction and determines which block(s) need to be explored 
+* depending on the program state
 */
 std::vector<SymbolicTreeNode*> 
 	SymbolicExecutor::getNextBlocks(llvm::Instruction* inst, SymbolicTreeNode* node)
@@ -426,6 +431,7 @@ std::vector<SymbolicTreeNode*>
 
 	return children;
 }
+
 std::pair<ProgramState*,InstructionPtr*> getReturnState(SymbolicTreeNode* node, ExpressionTree* returnValue)
 {
 	SymbolicTreeNode* returnNode = node->returnNode;
@@ -442,6 +448,11 @@ std::pair<ProgramState*,InstructionPtr*> getReturnState(SymbolicTreeNode* node, 
 	returnNode->getNextInstruction(); // DONT REMOVE
 	return std::make_pair(newState,returnptr);
 }
+
+/**
+* Detect whether a branch is conditional branch instruction of an unconditional branch
+*/
+
 bool isSplitPoint(llvm::Instruction* instruction)
 {
 	return instruction->getOpcode() == llvm::Instruction::Br 
@@ -449,6 +460,14 @@ bool isSplitPoint(llvm::Instruction* instruction)
 		   || ( llvm::isa<llvm::CallInst>(instruction) 
 				&& !llvm::isa<llvm::DbgDeclareInst>(instruction) );
 }
+
+/**
+* executes the model for a function provided by the user, updates programstate 
+* and returns the next Block(s) to execute
+* if it can be determined that only the "Then" block should be executed then only the 
+* "Then" block is returned. Similarly for the else block. 
+ */
+
 std::vector<SymbolicTreeNode*>
 	SymbolicExecutor::executeModel(SymbolicTreeNode* symTreeNode)
 {
@@ -476,9 +495,13 @@ std::vector<SymbolicTreeNode*>
 	#endif
 	return to_ret;
 }
+
 /**
- executes the basicBlock, updates programstate and returns the next Block(s) to execute if it can be determined that only the "Then" block should be executed then only the "Then" block is returned. Similarly for the else block. Otherwise both are are retuarned. NULL is returned if there's nothing left to execute
- */
+* executes the basicBlock, updates programstate and returns the next Block(s) to execute
+* if it can be determined that only the "Then" block should be executed then only the 
+* "Then" block is returned. Similarly for the else block. 
+* Otherwise both are are returned. NULL is returned if there's nothing left to execute
+*/
 std::vector<SymbolicTreeNode*>
 	SymbolicExecutor::executeBasicBlock(SymbolicTreeNode* symTreeNode)
 {
@@ -565,8 +588,10 @@ std::vector<SymbolicTreeNode*>
 	return to_ret;
 }
 
-
-
+/**
+* Symbolically execute blocks till its out of instructions on how to proceed and then
+* waits for the webserver to communicate further instructions
+*/
 void SymbolicExecutor::symbolicExecute()
 {
 	
@@ -844,10 +869,10 @@ void SymbolicExecutor::symbolicExecute()
 }
 
 
-/**
-	Executes all the possible paths in the given function and returns the programState at the end of every path
-*/
 
+/**
+* Extracts the names of all the functions that are being called in the given program
+*/
 void SymbolicExecutor::printAllFunctions(llvm::Function* function, int index, Json::Value & functions)
 {
 	std::cout << "get function name : " << function->getName().str() << "\n";
@@ -889,6 +914,9 @@ void SymbolicExecutor::printAllFunctions(llvm::Function* function, int index, Js
 	functions[index] = val;
 }
 
+/**
+* Start symbolic execution of given function in the input program
+*/
 void SymbolicExecutor::executeFunction(llvm::Function* function)
 {
 	int xyz;
@@ -944,7 +972,6 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 	// std::cout << "Function executed" << std::endl;
 }
 
-
 llvm::Module* SymbolicExecutor::loadCode(std::string filename) 
 {
 	auto Buffer = llvm::MemoryBuffer::getFileOrSTDIN(filename.c_str());
@@ -969,6 +996,11 @@ void SymbolicExecutor::proceed(Json::Value val)
 	reader->wakeUp(val);
 }
 
+
+/**
+* Excutes the function containing 'notamin' in its name in the input program -- 
+* just for testing purposes
+*/
 void SymbolicExecutor::execute(Json::Value val)
 {
 	llvm::Module* module = loadCode(filename.c_str());
@@ -987,6 +1019,10 @@ void SymbolicExecutor::execute(Json::Value val)
 	else std::cout << "[DEBUG] function not found";
 }
 
+/**
+* Marks lines or blocks of code excluded for the Symbolic executor, which user 
+* dont want to explore 
+*/
 void SymbolicExecutor::exclude(int input, int isNode)
 { 
 	std::cout << "input : " << input << "\n";

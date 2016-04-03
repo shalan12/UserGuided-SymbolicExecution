@@ -4,6 +4,9 @@
 #include <iostream>
 #include "jsoncpp/dist/json/json.h"
 
+/**
+ Some helper functions
+*/
 
 std::string getString(llvm::Value* val);
 int getInteger(llvm::Value* value);

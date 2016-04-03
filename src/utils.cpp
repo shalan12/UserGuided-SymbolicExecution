@@ -6,6 +6,10 @@
 #include <llvm/IR/DebugInfo.h>
 #include <llvm/IR/BasicBlock.h>
 #include <exception>
+
+/**
+ Returns the string representation for a llvm::Value
+*/
 std::string getString(llvm::Value* val)
 {
 	if(val == NULL)
@@ -15,6 +19,9 @@ std::string getString(llvm::Value* val)
     val->print(TmpStr);
     return TmpStr.str();
 }
+/**
+ Returns integer value of an llvm::Value if it exists
+*/
 int getInteger(llvm::Value* value)
 {	
     if (llvm::ConstantInt* cl = llvm::dyn_cast<llvm::ConstantInt>(value))
@@ -24,7 +31,10 @@ int getInteger(llvm::Value* value)
 
     else throw std::invalid_argument("not a constant");
 }
-
+/**
+ A function to manually provide instructions to symbolic executor instead of webserver,
+ for testing
+*/
 Json::Value getMessage()
 {
     Json::Value value;
@@ -46,6 +56,7 @@ Json::Value getMessage()
     }
     return value;
 }
+
 unsigned int getMinLineNumber (llvm::BasicBlock* block)
 {
     for (auto i = block->begin(); i != block->end(); i++)

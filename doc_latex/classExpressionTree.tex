@@ -1,0 +1,56 @@
+\hypertarget{classExpressionTree}{}\section{Expression\+Tree Class Reference}
+\label{classExpressionTree}\index{Expression\+Tree@{Expression\+Tree}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries Expression\+Tree} (llvm\+::\+Value $\ast$value, std\+::map$<$ std\+::string, llvm\+::\+Value $\ast$$>$ user\+Var\+Map, std\+::map$<$ llvm\+::\+Value $\ast$, std\+::string $>$ llvm\+Var\+Map)\hypertarget{classExpressionTree_ab550dbe48d21130d4812bd313921fc13}{}\label{classExpressionTree_ab550dbe48d21130d4812bd313921fc13}
+
+\item 
+{\bfseries Expression\+Tree} (std\+::string str, std\+::map$<$ std\+::string, llvm\+::\+Value $\ast$$>$ user\+Var\+Map, std\+::map$<$ llvm\+::\+Value $\ast$, std\+::string $>$ llvm\+Var\+Map, std\+::map$<$ llvm\+::\+Value $\ast$, \hyperlink{classExpressionTree}{Expression\+Tree} $\ast$$>$ map)\hypertarget{classExpressionTree_af2f9f6519128e34af038cac8117babc7}{}\label{classExpressionTree_af2f9f6519128e34af038cac8117babc7}
+
+\item 
+{\bfseries Expression\+Tree} (std\+::string op, \hyperlink{classExpressionTree}{Expression\+Tree} $\ast$lhs, \hyperlink{classExpressionTree}{Expression\+Tree} $\ast$rhs)\hypertarget{classExpressionTree_a246d3b7f66aac88c17754a592395fe69}{}\label{classExpressionTree_a246d3b7f66aac88c17754a592395fe69}
+
+\item 
+{\bfseries Expression\+Tree} (std\+::string op, llvm\+::\+Value $\ast$lhs, llvm\+::\+Value $\ast$rhs)\hypertarget{classExpressionTree_a6538e20d3f5e0e063142d2569b2e0510}{}\label{classExpressionTree_a6538e20d3f5e0e063142d2569b2e0510}
+
+\item 
+bool {\bfseries is\+Constant} ()\hypertarget{classExpressionTree_a4350a6fec4fc4cb8f98379723bc3b1d8}{}\label{classExpressionTree_a4350a6fec4fc4cb8f98379723bc3b1d8}
+
+\item 
+int {\bfseries get\+Integer} ()\hypertarget{classExpressionTree_affdc9f9bd4d32e99829cc457bca5afb2}{}\label{classExpressionTree_affdc9f9bd4d32e99829cc457bca5afb2}
+
+\item 
+llvm\+::\+Value $\ast$ {\bfseries evaluate} (llvm\+::\+Value $\ast$lhs, llvm\+::\+Value $\ast$rhs, std\+::string op)\hypertarget{classExpressionTree_a4577f2f167e215df94b5699b57d4870c}{}\label{classExpressionTree_a4577f2f167e215df94b5699b57d4870c}
+
+\item 
+std\+::string {\bfseries to\+String} ()\hypertarget{classExpressionTree_a2202fb4dd25e887acce644e67c303655}{}\label{classExpressionTree_a2202fb4dd25e887acce644e67c303655}
+
+\item 
+std\+::string {\bfseries to\+String\+Human\+Readable} (std\+::map$<$ llvm\+::\+Value $\ast$, std\+::string $>$ var\+Map, std\+::map$<$ llvm\+::\+Value $\ast$, llvm\+::\+Value $\ast$$>$ store)\hypertarget{classExpressionTree_a0655333db6a501ae55739f8cdd82b0d6}{}\label{classExpressionTree_a0655333db6a501ae55739f8cdd82b0d6}
+
+\item 
+z3\+::expr $\ast$ {\bfseries to\+Z3\+Expression} (std\+::map$<$ llvm\+::\+Value $\ast$, z3\+::expr $\ast$$>$ \&z3\+Map, z3\+::context \&c)\hypertarget{classExpressionTree_a9867ae44162ab0febc92b8e8358250c9}{}\label{classExpressionTree_a9867ae44162ab0febc92b8e8358250c9}
+
+\item 
+void {\bfseries add\+Z3\+Expression\+To\+Map} (llvm\+::\+Value $\ast$value, std\+::map$<$ llvm\+::\+Value $\ast$, z3\+::expr $\ast$$>$ \&z3\+Map, z3\+::context \&c)\hypertarget{classExpressionTree_abd345e84552bebd749522bf7aa2ce683}{}\label{classExpressionTree_abd345e84552bebd749522bf7aa2ce683}
+
+\item 
+int {\bfseries compare} (int value)\hypertarget{classExpressionTree_aeaf19bc7f4140d8e200609031f036221}{}\label{classExpressionTree_aeaf19bc7f4140d8e200609031f036221}
+
+\item 
+int {\bfseries compare} (\hyperlink{classExpressionTree}{Expression\+Tree} $\ast$exp1)\hypertarget{classExpressionTree_a1ab60a303befc341d730d239c7932621}{}\label{classExpressionTree_a1ab60a303befc341d730d239c7932621}
+
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classExpressionTreeNode}{Expression\+Tree\+Node} $\ast$ {\bfseries top}\hypertarget{classExpressionTree_a4abcd7eb41cc2bc0a23d92c8d1e2f60f}{}\label{classExpressionTree_a4abcd7eb41cc2bc0a23d92c8d1e2f60f}
+
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/llvm\+Expression\+Tree.\+h\item 
+src/llvm\+Expression\+Tree.\+cpp\end{DoxyCompactItemize}

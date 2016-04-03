@@ -7,6 +7,11 @@
 #include "z3++.h"
 #include "llvmExpressionTree.h"
 
+/**
+* A class to hold state of all the variables during Symbolic Execution and 
+* position of Program Counter
+*/
+
 class ProgramState
 {
   private:

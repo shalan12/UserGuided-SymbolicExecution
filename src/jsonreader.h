@@ -5,6 +5,11 @@
 #include <utility>      
 #include <mutex>              // std::mutex, std::unique_lock
 
+/**
+* A helper class for Symbolic Executor to handle all the JSON objects that contain information about how to proceed on
+* symbolic execution and also to communicate with the webserver 
+*/
+
 class JsonReader
 {
 	private:

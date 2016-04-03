@@ -25,6 +25,10 @@
 #include <limits>
 typedef llvm::BasicBlock::iterator InstructionPtr;
 
+
+/**
+* A struct to hold information about loops while symbolically executing them
+*/
 struct loopInfoStruct$
 {
   llvm::BasicBlock * loopStartPoint;
@@ -32,12 +36,19 @@ struct loopInfoStruct$
   int maxExecutions;
 }typedef LoopInfo;
 
+/**
+* A struct to hold infromation about satisfiability of a certain path in Symbolic Execution
+*/
 struct satInfoStruct$
 {
   bool isSatisfiable;
 
 }typedef SATInfo;
 
+/**
+* A class to represnet node in the Symbolic Execution Tree to 
+* store intermediate and final program states of different paths
+*/
 class SymbolicTreeNode 
 {
   private:
@@ -57,6 +68,7 @@ class SymbolicTreeNode
     std::vector<std::pair<ExpressionTree*, std::string> > modelVals;
     LoopInfo loopInfo;
     SATInfo satInfo;
+
     void setLoopInfo(llvm::BasicBlock * startPoint, int numExecutions)
     {
       this->loopInfo.loopStartPoint = startPoint;
@@ -100,6 +112,9 @@ class SymbolicTreeNode
       if(itr != NULL) this->instructionPtr = itr;
       this->returnNode = returnNode;
     }
+    /**
+    * Returns the ID of the Parent node of the node
+    */
     int getPrevId()
     {
         return prevId;
@@ -112,6 +127,9 @@ class SymbolicTreeNode
     {
       return hasPrev;
     }
+    /**
+    * Moves program counter one step back
+    */
     InstructionPtr getPreviousInstruction()
     {
         hasNext = true;
@@ -127,6 +145,9 @@ class SymbolicTreeNode
         }
     }
 
+    /**
+    * Moves program counter one step ahead
+    */
     InstructionPtr getNextInstruction()
     {
         InstructionPtr toRet = *instructionPtr;
@@ -145,6 +166,9 @@ class SymbolicTreeNode
     }
 };
 
+/**
+* A symbolic executor to execute an input program symbolically.
+*/
 class SymbolicExecutor
 {
   private:
