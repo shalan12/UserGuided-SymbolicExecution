@@ -144,6 +144,8 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 			op = "<";
 		else if(cmpInst->getSignedPredicate() == llvm::ICmpInst::ICMP_SLE)
 			op = "<=";
+		else if(cmpInst->getSignedPredicate() == llvm::ICmpInst::ICMP_EQ)
+			op = "==";
 		#ifdef DEBUG
 			std::cout << "operand0 == " << getString(instruction->getOperand(0)) << "\n";
 			std::cout << "operand1 == " << getString(instruction->getOperand(1)) << "\n";
@@ -199,7 +201,9 @@ std::vector<SymbolicTreeNode*>
 			{
 				first->addCondition(state->get(cond)->toStringHumanReadable(state->getLLVMVarMap(), state->getStoreMap()));
 			}
-				first->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(first->z3Variables, first->c),"true")); // added for z3
+			
+			first->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(first->z3Variables, first->context),"true")); // added for z3
+			
 			#ifdef DEBUG
 				std::cout << "ADDING CONDITION : " << state->get(cond)->toString() << std::endl;
 			#endif
@@ -223,7 +227,7 @@ std::vector<SymbolicTreeNode*>
 				SymbolicTreeNode* toPush = new SymbolicTreeNode(binst->getSuccessor(0), 
 						first, numNodes++,node->id,NULL,returnNode);
 				toPush->setLoopInfo(node->loopInfo.loopStartPoint,
-				node->loopInfo.numExecutions);
+									node->loopInfo.numExecutions);
 				if(!satisfiableFirst)
 				{
 					node->setSATInfo(false);
@@ -235,7 +239,9 @@ std::vector<SymbolicTreeNode*>
 			if(numSuccesors == 2)
 			{
 				ProgramState* second = new ProgramState(*state);
-				second->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(second->z3Variables, second->c),"false")); // added for z3
+				
+				second->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(second->z3Variables, second->context),"false")); // added for z3
+				
 				if (toAddConstraint)
 				{
 					second->addCondition("!" + state->get(cond)->toStringHumanReadable(state->getLLVMVarMap(), state->getStoreMap()));

@@ -67,7 +67,8 @@ unsigned int getMinLineNumber (llvm::BasicBlock* block)
             return Loc.getLineNumber();
         }
     }
-    throw "no line number found";
+    return std::numeric_limits<unsigned int>::max();
+    // throw "no line number found";
 }
 unsigned int getMaxLineNumber (llvm::BasicBlock* block)
 {

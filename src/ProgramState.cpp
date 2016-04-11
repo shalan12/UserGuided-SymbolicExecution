@@ -45,8 +45,8 @@ void ProgramState::Copy(const ProgramState& from, ProgramState* to, bool copyMap
 
 	for (auto constraint : from.z3Constraints)
 	{
-		z3::expr * copy_constraint = new z3::expr(to->c);
-		*copy_constraint = to_expr(to->c, Z3_translate(from.c, *constraint.first, to->c));
+		z3::expr * copy_constraint = new z3::expr(to->context);
+		*copy_constraint = to_expr(to->context, Z3_translate(from.context, *constraint.first, to->context));
 		to->z3Constraints.push_back(std::make_pair(copy_constraint, constraint.second));
 	}
 	to->pathCondition = from.pathCondition;
@@ -165,8 +165,8 @@ void ProgramState::printZ3Variables()
 			{
 				std::string left = getString(pr.second->top->left->value);
 				std::string right = getString(pr.second->top->right->value);
-				variables.insert(std::make_pair(left, c.int_const(left.c_str())));
-				variables.insert(std::make_pair(right, c.int_const(right.c_str())));
+				variables.insert(std::make_pair(left, context.int_const(left.c_str())));
+				variables.insert(std::make_pair(right, context.int_const(right.c_str())));
 
 				if (pr.second->top->data == "+")
 				{
@@ -192,7 +192,7 @@ void ProgramState::printZ3Variables()
 			else if (pr.second->top->left == NULL && pr.second->top->right == NULL)
 			{
 				variables.insert(std::make_pair(getString(pr.second->top->value),
-								c.int_const(getString(pr.second->top->value).c_str())));
+								context.int_const(getString(pr.second->top->value).c_str())));
 
 				std::cout << variables.at(getString(pr.second->top->value)) << '\n';
 			}
@@ -214,7 +214,7 @@ std::map<llvm::Value*, std::string> ProgramState::getLLVMVarMap()
 bool ProgramState::Z3solver()
 { 
 	int xyz;
-	z3::solver s(c);
+	z3::solver s(context);
 	#ifdef DEBUG
 		std::cout << "size of constraints = " << z3Constraints.size() << "\n";
 	#endif
