@@ -15,7 +15,10 @@ ProgramState::ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> in
 			add(input,new ExpressionTree(input, getUserVarMap(), getLLVMVarMap()));
 		else 
 			add(input,arguments[i++]);
-		std::cout << "program state constructor, function parameters : " << getString(input) << "\n";
+		
+		#ifdef DEBUG
+			std::cout << "program state constructor, function parameters : " << getString(input) << "\n";
+		#endif
 	}
 	pathCondition = "";
 }
@@ -84,15 +87,6 @@ void ProgramState::add(llvm::Value* value, ExpressionTree* exp)
 */
 void ProgramState::addUserVar(std::string varname, llvm::Value* val)
 {
-	// std::cout << "adding this in both maps \n";
-	// int x;
-	// std::cout << "adding this expression tree to user vars:  \n " << varname << "  :  " << getString(val);
-	// std::cin >> x;
-	// std::cout << "adding this \n";
-	// int x;
-	// std::cin >> x;
-	// std::cout << "adding this expression tree to user vars:  \n " << varname << "  :  " << exp->toString();
-	// llvm::Value * xyz = map[val]->top->value;
 	userVarMap[varname] = val;
 	llvmVarMap[val] = varname;
 }
@@ -102,10 +96,6 @@ void ProgramState::addUserVar(std::string varname, llvm::Value* val)
 */
 void ProgramState::addLLVMVar(std::string varname, llvm::Value* val)
 {
-	// std::cout << "adding this \n";
-	// int x;
-	// std::cout << "adding this expression tree to user vars:  \n " << varname << "  :  " << getString(val);
-	// std::cin >> x;
 	llvmVarMap[val] = varname;
 }
 
@@ -138,12 +128,7 @@ std::map<llvm::Value*, ExpressionTree*> ProgramState::getMap()
 std::string ProgramState::toString()
 {
 	std::stringstream str;
-	/*for (auto& pr : map)
-	{
-		str <<	getString(pr.first) << "\t == \t" << pr.second->toString() << '\n';
-	}*/
-	/*str << "\n user variables: \n";*/
-
+	
 	for (auto& pr : userVarMap)
 	{
 		if (get(pr.second))
@@ -158,7 +143,9 @@ void ProgramState::printZ3Variables()
 {
 	for (auto& pr : map)
 	{
-		std::cout << getString(pr.first) << " === ";
+		#ifdef DEBUG
+			std::cout << getString(pr.first) << " === ";
+		#endif
 		if (pr.second->top != NULL)
 		{
 			if (pr.second->top->left != NULL && pr.second->top->right != NULL)
@@ -231,8 +218,8 @@ bool ProgramState::Z3solver()
 				std::cout << "z3 expression is NULL!\n";
 				std::cin >> xyz;
 			}
+			std::cout << "i = " << i << "\n";
 		#endif
-		std::cout << "i = " << i << "\n";
 		if(z3Constraints[i].second == "true")
 		{
 			#ifdef DEBUG

@@ -20,17 +20,29 @@ void JsonReader::sendMessageAndSleep()
 		clearNodes();
 	Json::FastWriter fastWriter;
 	std::string output = fastWriter.write(toSend);
-	std::cout << "sending this: " << output << std::endl;
+	
+	#ifdef DEBUG
+		std::cout << "sending this: " << output << std::endl;
+	#endif 
+
 	if (socket)
 		(*socket) << output;
-	std::cout << "going to sleep" << std::endl;
+	
+	#ifdef DEBUG
+		std::cout << "going to sleep" << std::endl;
+	#endif
+
 	std::unique_lock<std::mutex> lck(mtx);
 	cv.wait(lck);
 	lck.unlock();
-	std::cout << "I am UP! " << std::endl;
+	
+	#ifdef DEBUG
+		std::cout << "I am UP! " << std::endl;
+	#endif
+	
 	jsonArrSize = 0;
 	toSend.clear();
-	std::cout << "clear successful!\n";
+	
 	int xyz;
 	#ifdef DEBUG
 		std::cin >> xyz;
@@ -104,10 +116,17 @@ std::vector<std::pair<ExpressionTree*, std::string> > JsonReader::getModel(
 void JsonReader::wakeUp(Json::Value val)
 {	
 	updateMsg(val);
-	std::cout << "WAKE UP!!!!!" << std::endl;
+	
+	#ifdef DEBUG
+		std::cout << "WAKE UP!!!!!" << std::endl;
+	#endif
+	
 	std::unique_lock<std::mutex> lck(mtx);
 	cv.notify_all();
-	std::cout << "DONE!!!!!" << std::endl;
+	
+	#ifdef DEBUG
+		std::cout << "DONE!!!!!" << std::endl;
+	#endif
 }
 
 void JsonReader::updateMsg(Json::Value val)
@@ -130,7 +149,9 @@ void JsonReader::setExecutionVars()
     {
     	excludedId =  stoi(msg["exclude"].asString());
     	isExclude = stoi(msg["isNode"].asString());
-    	std::cout << "excluding! \n";
+	    #ifdef DEBUG
+    		std::cout << "excluding! \n";
+		#endif	
       	return;
     }
     isExclude = -1;
