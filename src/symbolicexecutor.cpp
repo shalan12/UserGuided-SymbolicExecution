@@ -2,6 +2,7 @@
 #include "jsoncpp/dist/json/json.h"
 #include "utils.h"
 #include <fstream>
+#include <sstream>
 #include "messagetypes.h"
 
 
@@ -148,6 +149,8 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 			op = "<=";
 		else if(cmpInst->getSignedPredicate() == llvm::ICmpInst::ICMP_EQ)
 			op = "==";
+		else if (cmpInst->getSignedPredicate() == llvm::ICmpInst::ICMP_NE)
+			op = "!=";
 		#ifdef DEBUG
 			std::cout << "operand0 == " << getString(instruction->getOperand(0)) << "\n";
 			std::cout << "operand1 == " << getString(instruction->getOperand(1)) << "\n";
@@ -233,7 +236,20 @@ std::vector<SymbolicTreeNode*>
 			#endif
 
 			// added for constraint checking
-			toAddFirst = toAddFirst && first->Z3solver();
+			std::string firstModel = first->Z3solver();
+			toAddFirst = toAddFirst && (firstModel != "");
+			
+			if (toAddFirst)
+			{
+				std::cout << "not NULL!!!!";
+				// std::stringstream ss;
+				// ss << *firstModel;
+				// std::string mm = ss.str();
+				std::cout << firstModel << "\n";
+			}
+			
+			int qwerty;
+			std::cin >> qwerty;
 
 			#ifdef DEBUG
 				if (toAddFirst)
@@ -267,6 +283,7 @@ std::vector<SymbolicTreeNode*>
 						first, numNodes++,node->id,NULL,returnNode);
 				toPush->setLoopInfo(node->loopInfo.loopStartPoint,
 									node->loopInfo.numExecutions);
+				toPush->input = firstModel;
 				if(!toAddFirst)
 				{
 					node->setSATInfo(false);
@@ -285,16 +302,17 @@ std::vector<SymbolicTreeNode*>
 					second->addCondition("!" + state->get(cond)->toStringHumanReadable(state->getLLVMVarMap(), state->getStoreMap()));
 				}
 				// added for constraint checking
-				toAddSecond = toAddSecond && second->Z3solver();
+				std::string secondModel = second->Z3solver();
+				toAddSecond = toAddSecond && (secondModel != "");
 				SymbolicTreeNode* toPush = new SymbolicTreeNode(binst->getSuccessor(1), 
 								second, numNodes++,node->id,NULL,returnNode);
 				toPush->setLoopInfo(node->loopInfo.loopStartPoint,
 								node->loopInfo.numExecutions);	
+				toPush->input = secondModel;				
 				if (!toAddSecond)
 				{
 					toPush->setSATInfo(false);
 				}
-
 				children.push_back(toPush);
 			}
 		}
@@ -307,6 +325,7 @@ std::vector<SymbolicTreeNode*>
 			#endif
 			SymbolicTreeNode* toPush = new SymbolicTreeNode(successorZero,state, 
 			numNodes++,node->id,NULL,returnNode);
+			toPush->input = node->input;
 			if (getMinLineNumber(successorZero) < getMinLineNumber(node->block))
 			{
 				toPush->setLoopInfo(successorZero, node->loopInfo.numExecutions+1);
@@ -796,6 +815,11 @@ void SymbolicExecutor::symbolicExecute()
 			std::vector<SymbolicTreeNode*> new_blocks;
 			if(symTreeNode->satInfo.isSatisfiable)
 				new_blocks = executeBasicBlock(symTreeNode);
+
+			if (new_blocks.size() > 0)
+			{
+				symTreeNode->input = "";
+			}
 			
 			symTreeNode->isExecuted = true;
 
@@ -812,6 +836,10 @@ void SymbolicExecutor::symbolicExecute()
 			msg["text"] = Json::Value(symTreeNode->state->toString());
 			msg["fin"] = Json::Value("0");
 			msg["constraints"] = Json::Value(symTreeNode->state->getPathCondition());
+			if (symTreeNode->input != "")
+			{
+				msg["input"] = Json::Value(symTreeNode->input);
+			}
 			if (symTreeNode->block)
 			{
 				msg["startLine"] = Json::Value(getMinLineNumber(symTreeNode->block));

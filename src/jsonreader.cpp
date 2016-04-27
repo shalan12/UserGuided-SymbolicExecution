@@ -25,12 +25,16 @@ void JsonReader::sendMessageAndSleep()
 		std::cout << "sending this: " << output << std::endl;
 	#endif 
 
+	std::cout << "sending this: " << output << std::endl;
+
+
 	if (socket)
 		(*socket) << output;
 	
 	#ifdef DEBUG
 		std::cout << "going to sleep" << std::endl;
 	#endif
+	std::cout << "going to sleep" << std::endl;
 
 	std::unique_lock<std::mutex> lck(mtx);
 	cv.wait(lck);

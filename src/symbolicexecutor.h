@@ -61,6 +61,7 @@ class SymbolicTreeNode
     ProgramState * state;
     SymbolicTreeNode * left;
     SymbolicTreeNode * right;
+    std::string input;
     bool isExecuted, isModel;
     int id;
     unsigned int minLineNumber,maxLineNumber;

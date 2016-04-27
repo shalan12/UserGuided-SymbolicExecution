@@ -47,7 +47,7 @@ class ProgramState
   std::map<llvm::Value*, ExpressionTree*> getMap();
   std::string toString();
   void printZ3Variables();
-  bool Z3solver();
+  std::string Z3solver();
   std::map<std::string, llvm::Value*> getUserVarMap();
   std::map<llvm::Value*, std::string> getLLVMVarMap();
   std::map<llvm::Value*, llvm::Value*> getStoreMap();

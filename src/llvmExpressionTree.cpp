@@ -331,6 +331,8 @@ z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node,
                 *constraint = *left <= *right;
             else if (op == "==")
                 *constraint = *left == *right;
+            else if (op == "!=")
+                *constraint = *left != *right;
             return constraint;
         }
     }

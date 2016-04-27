@@ -198,7 +198,7 @@ std::map<llvm::Value*, std::string> ProgramState::getLLVMVarMap()
 	return llvmVarMap;
 }
 
-bool ProgramState::Z3solver()
+std::string ProgramState::Z3solver()
 { 
 	int xyz;
 	z3::solver s(context);
@@ -237,15 +237,36 @@ bool ProgramState::Z3solver()
 			s.add(!(*(z3Constraints[i].first)));
 		} 
 	}
+	std::cout << "some info from Z3\n";
+	int abcdef;
+	std::cin >> abcdef;
+	std::cout << "s" << s << "\n";
+	std::cout << "s.check()" << s.check() << "\n";
+	std::cout << "*****************\n";
 	bool toRet = (s.check() == z3::sat);
-	#ifdef DEBUG
-		std::cout << this->getPathCondition() << "\n";
-		std::cout << toRet << "\n";
-		if (toRet)
-		{
-			z3::model m = s.get_model();
-			std::cout << m << std::endl;
-		}
-	#endif
-	return toRet;
+	std::string toRet_str = "";  
+	if (toRet)
+	{
+		z3::model * model;
+		z3::model m = s.get_model();
+		std::stringstream ss;
+		ss << m;
+		toRet_str = ss.str();
+		std::cout << m << std::endl;
+		model = &m;
+		// return model;
+	}
+	// return NULL;
+	std::cout << "*****************\n";
+	return toRet_str;
+	// #ifdef DEBUG
+	// 	std::cout << this->getPathCondition() << "\n";
+	// 	std::cout << toRet << "\n";
+	// 	if (toRet)
+	// 	{
+	// 		z3::model m = s.get_model();
+	// 		std::cout << m << std::endl;
+	// 	}
+	// #endif
+	// return toRet;
 }
