@@ -3,7 +3,7 @@ int notmain(int p, int q) {
 	
 	while (p != 0) {
 		temp = p;
-		p = q - (q / p) * p;
+		p = q % p;
 		q = temp;
 	}
 	

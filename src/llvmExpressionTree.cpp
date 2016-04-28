@@ -21,11 +21,6 @@ ExpressionTreeNode::ExpressionTreeNode(std::string data = "", llvm::Value* value
     this->left = n.left;
     this->right = n.right;
 }*/
-bool ExpressionTree::isConstant(llvm::Value* value)
-{
-    return value && llvm::isa<llvm::Constant>(value); 
-}
-
 
 ExpressionTree::ExpressionTree(llvm::Value* value, std::map<std::string, llvm::Value*> userVarMap, std::map<llvm::Value*, std::string> llvmVarMap)
 {
@@ -34,15 +29,9 @@ ExpressionTree::ExpressionTree(llvm::Value* value, std::map<std::string, llvm::V
     this->llvmVarMap = llvmVarMap;
 }
 
-/*ExpressionTree::ExpressionTree(const ExpressionTree & e)
-{
-    top = new ExpressionTreeNode(ExpressionTreeNode(*(e.top)));
-}*/
-
-
 bool ExpressionTree::isConstant()
 {
-    return isConstant(this->top->value);
+    return ::isConstant(this->top->value);
 }
 
 ExpressionTree::ExpressionTree(std::string op, ExpressionTree* lhs, ExpressionTree* rhs)
@@ -72,15 +61,15 @@ ExpressionTree::ExpressionTree(std::string op, ExpressionTree* lhs, ExpressionTr
 
 ExpressionTree::ExpressionTree(std::string op, llvm::Value* lhs, llvm::Value* rhs)
 {
-    if (isConstant(lhs) && isConstant(rhs) && (op == "+" || op == "-")) 
+    if (::isConstant(lhs) && ::isConstant(rhs) && (op == "+" || op == "-")) 
     {
         this->top = new ExpressionTreeNode(ExpressionTreeNode("",evaluate(lhs, rhs, op)));
     }
-    else if ((op == "+" || op == "-") && isConstant(rhs))
+    else if ((op == "+" || op == "-") && ::isConstant(rhs))
     {
         if (::getInteger(rhs) == 0) this->top = new ExpressionTreeNode(ExpressionTreeNode("",lhs));
     }
-    else if (op == "+" && isConstant(lhs) && ::getInteger(lhs) == 0)
+    else if (op == "+" && ::isConstant(lhs) && ::getInteger(lhs) == 0)
     {
         this->top = new ExpressionTreeNode(ExpressionTreeNode("",rhs));
     }
@@ -236,7 +225,7 @@ void ExpressionTree::addZ3ExpressionToMap(llvm::Value* value, std::map<llvm::Val
 {
     int xyz;
     std::string str = getString(value);
-    if (isConstant(value))
+    if (::isConstant(value))
     {
         int val = ::getInteger(value);
         str = std::to_string(val);
@@ -333,6 +322,8 @@ z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node,
                 *constraint = *left == *right;
             else if (op == "!=")
                 *constraint = *left != *right;
+            else if (op == "%")
+                *constraint = *left - (*left / *right * *right);
             return constraint;
         }
     }
@@ -340,7 +331,7 @@ z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node,
 
 int ExpressionTree::compare(int value)
 {
-    if(isConstant(this->top->value))
+    if(::isConstant(this->top->value))
     {
         int myval = this->getInteger();
         if(value > myval) return 1;
@@ -352,7 +343,7 @@ int ExpressionTree::compare(int value)
 
 int ExpressionTree::compare(ExpressionTree* exp1)
 {
-    if (isConstant(exp1->top->value))
+    if (::isConstant(exp1->top->value))
     {
         return compare(exp1->getInteger());
     }

@@ -31,7 +31,6 @@ private:
     std::map<llvm::Value*, ExpressionTree*> map;
     std::map<std::string, llvm::Value*> userVarMap;
     std::map<llvm::Value*, std::string> llvmVarMap;
-    bool isConstant(llvm::Value* value);
     void getExpressionString(ExpressionTreeNode* node, std::stringstream& toReturn);
     void getExpressionStringHumanReadable(ExpressionTreeNode* node, std::stringstream& toReturn, 
     std::map<llvm::Value*, std::string> varMap, std::map<llvm::Value*, llvm::Value*> store);
