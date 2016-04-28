@@ -129,8 +129,7 @@ client.on('data',function(data)
           toSendToUser["parent"] = data[i]["parent"];
           toSendToUser["text"] = data[i]["text"];
           toSendToUser["constraints"] = data[i]["constraints"];
-          toSendToUser["startLine"] = data[i]["startLine"];// - 1;
-          toSendToUser["endLine"] = data[i]["endLine"];//  - 1;
+          toSendToUser["lines"] = data[i]["lines"];
           toSendToUser["addModel"] = data[i]["addModel"];
           toSendToUser["extra"] = data[i]["extra"];
           toSend[fileId]['nodes'].push(lodash.cloneDeep(toSendToUser));

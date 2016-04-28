@@ -319,12 +319,17 @@ std::vector<SymbolicTreeNode*>
 		else 
 		{
 			llvm::BasicBlock * successorZero = binst->getSuccessor(0);
+			node->isHidden = true;
 			#ifdef DEBUG
 				std::cout << "startLine of successor = " << getMinLineNumber(successorZero) << "\n";
 				std::cout << "startLine of curr = " << getMinLineNumber(node->block) << "\n";
 			#endif
 			SymbolicTreeNode* toPush = new SymbolicTreeNode(successorZero,state, 
-			numNodes++,node->id,NULL,returnNode);
+			numNodes++,node->prevId,NULL,returnNode);
+			for (auto line = node->lineNumbers.begin(); line != node->lineNumbers.end(); line++)
+			{
+				toPush->lineNumbers.insert(*line);
+			}
 			toPush->input = node->input;
 			if (getMinLineNumber(successorZero) < getMinLineNumber(node->block))
 			{
@@ -617,9 +622,10 @@ std::vector<SymbolicTreeNode*>
 		if (llvm::MDNode *N = instruction->getMetadata("dbg")) 
 		{  
 			llvm::DILocation Loc(N);
-			unsigned Line = Loc.getLineNumber();
-			symTreeNode->minLineNumber = std::min(symTreeNode->minLineNumber,Line);
-			symTreeNode->maxLineNumber = std::max(symTreeNode->maxLineNumber,Line);
+			unsigned line = Loc.getLineNumber();
+			symTreeNode->lineNumbers.insert(line);
+			// symTreeNode->minLineNumber = std::min(symTreeNode->minLineNumber,Line);
+			// symTreeNode->maxLineNumber = std::max(symTreeNode->maxLineNumber,Line);
 		}
 
 		if(isSplitPoint(instruction)) 
@@ -829,36 +835,45 @@ void SymbolicExecutor::symbolicExecute()
 			#endif
 			
 			BlockStates[symTreeNode->id]=symTreeNode;
-			
-			Json::Value msg;
-			msg["node"] = Json::Value(symTreeNode->id);
-			msg["parent"] = Json::Value(symTreeNode->getPrevId());
-			msg["text"] = Json::Value(symTreeNode->state->toString());
-			msg["fin"] = Json::Value("0");
-			msg["constraints"] = Json::Value(symTreeNode->state->getPathCondition());
-			if (symTreeNode->input != "")
+			if (symTreeNode->isHidden && symTreeNode->satInfo.isSatisfiable)
 			{
-				msg["input"] = Json::Value(symTreeNode->input);
-			}
-			if (symTreeNode->block)
-			{
-				msg["startLine"] = Json::Value(getMinLineNumber(symTreeNode->block));
-				msg["endLine"] = Json::Value(getMaxLineNumber(symTreeNode->block));
+				i--;
 			}
 			else
 			{
-				msg["startLine"] = Json::Value(0);
-				msg["endLine"] = Json::Value(0);
+				Json::Value msg;
+				msg["node"] = Json::Value(symTreeNode->id);
+				msg["parent"] = Json::Value(symTreeNode->getPrevId());
+				msg["text"] = Json::Value(symTreeNode->state->toString());
+				msg["fin"] = Json::Value("0");
+				msg["constraints"] = Json::Value(symTreeNode->state->getPathCondition());
+				if (symTreeNode->input != "")
+				{
+					msg["input"] = Json::Value(symTreeNode->input);
+				}
+				if (symTreeNode->block)
+				{
+					msg["lines"] = Json::arrayValue;
+					int idx = 0;
+					for (auto line = symTreeNode->lineNumbers.begin(); line != symTreeNode->lineNumbers.end(); line++)
+					{
+						msg["lines"][idx++] = *line;
+					}
+				}
+				else
+				{
+					msg["lines"] = Json::Value(0);
+				}
+				
+				msg["addModel"] = Json::Value("false");
+				if(! symTreeNode->satInfo.isSatisfiable)
+				{
+					Json::Value extra;
+					extra["isSatisfiable"] = Json::Value(false);
+					msg["extra"] = extra;
+				}
+				reader->addObject(msg);
 			}
-			
-			msg["addModel"] = Json::Value("false");
-			if(! symTreeNode->satInfo.isSatisfiable)
-			{
-				Json::Value extra;
-				extra["isSatisfiable"] = Json::Value(false);
-				msg["extra"] = extra;
-			}
-			reader->addObject(msg);
 			
 			#ifdef DEBUG
 				std::cout << "number of blocks :  " << new_blocks.size() << "\n";

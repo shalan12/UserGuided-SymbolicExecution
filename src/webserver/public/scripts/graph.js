@@ -124,7 +124,7 @@ var contextmenu = [
                                     var curr = todo.pop();
                                     excludeNode(curr.node);
                                     //d3.select("#name"+curr.node).style("fill", "grey");
-                                    for (var line = curr.startLine; line <= curr.endLine; line++)
+                                    for (let line of curr.lines)
                                     {
                                         document.getElementById(line).style.backgroundColor = 'red';
                                     }   
@@ -383,19 +383,24 @@ function click(d) {
 function highlightPathToNode(node)
 {
     d3.selectAll("circle").style("stroke", "steelblue");
-    hightlightCode(1, numOfCodeLines, 'transparent');
+    allLines = []
+    for (let i = 1; i <= numOfCodeLines; i++)
+    {
+        allLines.push(i);
+    }
+    highlightCode(allLines, 'transparent');
     document.getElementById("name"+node.node).style.stroke = '#F39C12';
-    hightlightCode(node.startLine, node.endLine, '#F39C12');
+    highlightCode(node.lines, '#F39C12');
     var curr = node;
     while (curr.parent)
     {
         document.getElementById("name"+curr.parent.node).style.stroke = '#F6B959';
-        hightlightCode(curr.parent.startLine, curr.parent.endLine, '#F6B959');
+        highlightCode(curr.parent.lines, '#F6B959');
         curr = curr.parent;
     }
 }
 
-function hightlightCode(startLine, endLine, color)
+function highlightCode(lines, color)
 {
     /*if (undoPrevious == true)
     {
@@ -404,8 +409,8 @@ function hightlightCode(startLine, endLine, color)
             document.getElementById(line).style.backgroundColor = "transparent";
         }
     }*/
-
-    for (var line = startLine; line <= endLine; line++)
+    console.log(lines)
+    for (let line of lines)
     {   
         if (line != 0)
         {
@@ -440,11 +445,9 @@ function excludeStatement(startLine,isPing)
         url: "/exclude",
         data: {"lineno": startLine, "isPing":isPing, "isNode": false} 
     }).done(function(resp){
-        if (resp.minLine !== undefined)
+        if (resp.lines !== undefined)
         {
-            var start = resp.minLine,
-            end = resp.maxLine;
-            hightlightCode(start,end,'red');
+            highlightCode(lines,'red');
         } 
         else setTimeout(function(){excludeStatement(startLine,true);}, 1000);
     });
@@ -464,7 +467,7 @@ function addNode(nodeObj)
     if (nodeObj["extra"] === undefined)
         isSatisfiable = true;    
     var node = {"node": nodeObj.node, "nodeText": text, "satisfiable": isSatisfiable, "text": nodeObj["text"], "parent": nodeObj["parent"], "children": [],
-        "constraints": nodeObj["constraints"],"startLine": nodeObj["startLine"], "endLine": nodeObj["endLine"], "excluded":false, "addModel": nodeObj["addModel"]};
+        "constraints": nodeObj["constraints"],"lines": nodeObj["lines"], "excluded":false, "addModel": nodeObj["addModel"]};
     treeData.push(node);
     for (var j = 0; j < treeData.length; j++)
     {
@@ -483,8 +486,8 @@ function addNode(nodeObj)
     console.log(numOfCodeLines);
     d3.selectAll("circle").style("stroke", "steelblue");
     document.getElementById("name"+node.node).style.stroke = '#00a65a';
-    /*hightlightCode(1, numOfCodeLines, '#ebebeb');*/
-    hightlightCode(node.startLine, node.endLine, '#00a65a');
+    /*highlightCode(1, numOfCodeLines, '#ebebeb');*/
+    highlightCode(node.lines, '#00a65a');
 }
 /* ---------------- Step To Get Next Node --------------------------------------- */
 function addNodes(data)
@@ -655,7 +658,7 @@ function checkForModel(selection)
 function addModelForFunction(name, minLine, maxLine)
 {
     getModelData('false',name);
-    hightlightCode(minLine, maxLine, '#F39C12');
+    highlightCode(minLine, maxLine, '#F39C12');
 }
 
 /* ---------------- Nodes Right Click Menu Options ------------------------------ */

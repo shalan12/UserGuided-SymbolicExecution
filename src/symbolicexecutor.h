@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 #include <deque>
+#include <set>
 
 #include <llvm/IR/Module.h>
 #include <llvm/IR/BasicBlock.h>
@@ -54,7 +55,6 @@ class SymbolicTreeNode
   private:
     bool hasNext, hasPrev;
     InstructionPtr* instructionPtr;
-    int prevId;
 
   public:
     llvm::BasicBlock * block;
@@ -62,9 +62,9 @@ class SymbolicTreeNode
     SymbolicTreeNode * left;
     SymbolicTreeNode * right;
     std::string input;
-    bool isExecuted, isModel;
-    int id;
-    unsigned int minLineNumber,maxLineNumber;
+    bool isExecuted, isModel, isHidden;
+    int id, prevId;
+    std::set<unsigned int> lineNumbers;
     SymbolicTreeNode* returnNode;
     std::vector<std::pair<ExpressionTree*, std::string> > modelVals;
     LoopInfo loopInfo;
@@ -87,7 +87,7 @@ class SymbolicTreeNode
       this->id = id;
       state = ps;
       prevId = pid;
-      
+      this->isHidden = false;
       if (block)
         this->instructionPtr = new InstructionPtr(block->begin());
       else
@@ -97,8 +97,6 @@ class SymbolicTreeNode
       right = NULL;
       hasNext = true;
       hasPrev = false;
-      maxLineNumber = 0;
-      minLineNumber = std::numeric_limits<unsigned int>::max();
       isExecuted = false;
       isModel = false;
       this->loopInfo.loopStartPoint = NULL;
