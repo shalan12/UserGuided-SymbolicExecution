@@ -849,18 +849,14 @@ void SymbolicExecutor::symbolicExecute()
 				{
 					msg["input"] = Json::Value(symTreeNode->input);
 				}
+				msg["lines"] = Json::arrayValue;
 				if (symTreeNode->block)
 				{
-					msg["lines"] = Json::arrayValue;
 					int idx = 0;
 					for (auto line = symTreeNode->lineNumbers.begin(); line != symTreeNode->lineNumbers.end(); line++)
 					{
 						msg["lines"][idx++] = *line;
 					}
-				}
-				else
-				{
-					msg["lines"] = Json::Value(0);
 				}
 				
 				msg["addModel"] = Json::Value("false");

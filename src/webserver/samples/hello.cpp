@@ -9,7 +9,6 @@ void notmain(int a, int b)
     if(a+1 > c)
     {
       b = bar(a+1,b+2);
-      b = b + ext(a);
     }
     else
     {
@@ -19,12 +18,12 @@ void notmain(int a, int b)
   else
   {
     int x = 3;
-    while(x > 0)
+    while(a > 0)
     {
-      a++;
-      x--;
+      a--;
+      x = x*2;
     }
-    b = b + 2;
+    b = b + ext(a);
   }
 }
 int bar(int c, int d)
