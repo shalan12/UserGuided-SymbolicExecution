@@ -469,10 +469,8 @@ std::vector<SymbolicTreeNode*>
 					}
 				}
 			#endif
-			
 
 			node->isModel = true;
-			// node->model = LLVM::VALUE;
 		}
 		else
 		{

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 int bar(int c, int d);
+int ext(int x);
 void notmain(int a, int b)
 {
   int c = 10;
@@ -8,7 +9,7 @@ void notmain(int a, int b)
     if(a+1 > c)
     {
       b = bar(a+1,b+2);
-      b = b + abs(a-b);
+      b = b + ext(a);
     }
     else
     {
@@ -29,6 +30,6 @@ void notmain(int a, int b)
 int bar(int c, int d)
 {
   if (c > d)
-  return c*d;
+    return c*d;
   else return c+d;
 }
