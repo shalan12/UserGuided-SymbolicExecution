@@ -99,12 +99,23 @@ void ExpressionTree::constructTree(std::stringstream & iss, ExpressionTreeNode* 
     }
     else
     {
-        //set value using map in state.
-        ExpressionTreeNode * temp_top = map[userVarMap[curr]]->top;
-        node->value = temp_top->value;
-        node->left = temp_top->left;
-        node->right = temp_top->right;
-        node->data = temp_top->data;
+        if (curr[0] == '-' || std::isdigit(curr[0])) 
+        {   // variables names don't start with a digit or negative sign 
+            // => this is a constant
+            int literal = std::stoi(curr);
+            llvm::Value* val = llvm::ConstantInt::get(llvm::IntegerType::get(llvm::getGlobalContext(),32), 
+                                                    literal, true); 
+                                                //numbits, value, isSigned
+            node->value = val;
+        }
+        else
+        {   //set value using map in state
+            ExpressionTreeNode * temp_top = map[userVarMap[curr]]->top; 
+            node->value = temp_top->value;
+            node->left = temp_top->left;
+            node->right = temp_top->right;
+            node->data = temp_top->data;
+        }
     }
 }
 
