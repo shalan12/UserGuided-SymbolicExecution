@@ -15,31 +15,41 @@ void runOnThread(SymbolicExecutor * sym, Json::Value val)
 
 int communicate(ServerSocket* new_sock)
 {
-    std::cout << "new connection established\n";
+    #ifdef DEBUG
+      std::cout << "new connection established\n";
+    #endif  
     std::string message;
     while(new_sock)
     {
         message = "";
         (*new_sock) >> message;
-        std::cout << "recieved : \n" << message << "\n";
+        #ifdef DEBUG
+          std::cout << "recieved : \n" << message << "\n";
+        #endif
         Json::Reader reader;
         Json::Value val;
         bool isParsed = reader.parse(message, val);
         if (isParsed)
         {
-          std::cout << "successfully parsed\n";
+          #ifdef DEBUG
+            std::cout << "successfully parsed\n";
+          #endif
           std::string id = val["id"].asString();
           Json::Value val1 = val;
           val = val["val"];
           
           if (threads_sym.find(id) != threads_sym.end() && val1["type"].asString() == "300")
           {
-            std::cout << "aleady present\n erasing it \n"; 
+            #ifdef DEBUG
+              std::cout << "aleady present\n erasing it \n"; 
+            #endif
             SymbolicExecutor * sym = new SymbolicExecutor(id, new_sock);
             std::thread t1 = std::thread(runOnThread,sym,val);
             std::swap(threads_sym[id].first, t1);
             threads_sym[id].second = sym;
-            std::cout << "done \n";
+            #ifdef DEBUG
+              std::cout << "done \n";
+            #endif
             t1.detach();
           }
           else if (threads_sym.find(id) != threads_sym.end())
@@ -73,7 +83,6 @@ int main ()
           server.accept ( *new_sock );
           tempThread = std::thread(communicate,new_sock);
           // tempThread.join();
-          std::cout << "Reached here";
         }
         catch ( SocketException& ) {}
     }

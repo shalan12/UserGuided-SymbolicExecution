@@ -2,6 +2,7 @@
 #include "jsoncpp/dist/json/json.h"
 #include "utils.h"
 #include <fstream>
+#include <sstream>
 #include "messagetypes.h"
 
 
@@ -110,7 +111,9 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
       		if (llvm::Value * val = llvm::dyn_cast<llvm::Value>(DbgDeclare->getAddress()))
       		{
 	      		llvm::StringRef strRef = llvm::DIVariable(Var).getName();
-	      		std::cout << " variable name : -- " << strRef.str() << std::endl << "\n";
+	      		#ifdef DEBUG
+	      			std::cout << " variable name : -- " << strRef.str() << std::endl << "\n";
+				#endif
 	      		state->addUserVar(strRef.str(), val);
       		}
       	}
@@ -144,6 +147,10 @@ void SymbolicExecutor::executeNonBranchingInstruction(llvm::Instruction* instruc
 			op = "<";
 		else if(cmpInst->getSignedPredicate() == llvm::ICmpInst::ICMP_SLE)
 			op = "<=";
+		else if(cmpInst->getSignedPredicate() == llvm::ICmpInst::ICMP_EQ)
+			op = "==";
+		else if (cmpInst->getSignedPredicate() == llvm::ICmpInst::ICMP_NE)
+			op = "!=";
 		#ifdef DEBUG
 			std::cout << "operand0 == " << getString(instruction->getOperand(0)) << "\n";
 			std::cout << "operand1 == " << getString(instruction->getOperand(1)) << "\n";
@@ -191,40 +198,93 @@ std::vector<SymbolicTreeNode*>
 			ProgramState* first = new ProgramState(*state);
 			llvm::Value* cond = binst->getCondition();
 			bool toAddConstraint = true;
+			bool toAddFirst = true;
+			bool toAddSecond = true;
+			
+			//for constraining iterations of loops
+			bool hasRunMaxExecs = (node->loopInfo.loopStartPoint != NULL
+							&& node->loopInfo.loopStartPoint == node->block
+							&& node->loopInfo.numExecutions >= node->loopInfo.maxExecutions);
+			
 			if(state->getMap()[cond]->isConstant())
-			{
+			{	
+				if (state->getMap()[cond]->getInteger()) 
+				{
+					toAddFirst = true;
+					toAddSecond = false;
+				}
+				else 
+				{
+					toAddFirst = false;
+					toAddSecond = true;
+				}
 				toAddConstraint = false;
 			}
+			toAddConstraint = toAddConstraint && !hasRunMaxExecs;
 			if(toAddConstraint) 
 			{
+				first->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(first->z3Variables, first->context),"true")); // added for z3
 				first->addCondition(state->get(cond)->toStringHumanReadable(state->getLLVMVarMap(), state->getStoreMap()));
 			}
-				first->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(first->z3Variables, first->c),"true")); // added for z3
+			
 			#ifdef DEBUG
 				std::cout << "ADDING CONDITION : " << state->get(cond)->toString() << std::endl;
 			#endif
 
+			#ifdef DEBUG
+				std::cout << "True satisfiable == " << toAddFirst << "\n";
+			#endif
+
 			// added for constraint checking
-			bool satisfiableFirst = first->Z3solver();
+			std::string firstModel = first->Z3solver();
+			toAddFirst = toAddFirst && (firstModel != "");
+			
+			if (toAddFirst)
+			{
+				std::cout << "not NULL!!!!";
+				// std::stringstream ss;
+				// ss << *firstModel;
+				// std::string mm = ss.str();
+				std::cout << firstModel << "\n";
+			}
+			
+			int qwerty;
+			std::cin >> qwerty;
 
 			#ifdef DEBUG
-				if (satisfiableFirst)
+				if (toAddFirst)
 					std::cout << "branch is satisfiable \n ";
 				else
 					std::cout << "branch is not satisfiable \n ";
 			#endif
-			bool hasRunMaxExecs = (node->loopInfo.loopStartPoint != NULL
-							&& node->loopInfo.loopStartPoint == node->block
-							&& node->loopInfo.numExecutions >= node->loopInfo.maxExecutions);
-				
+			
+			if (node->loopInfo.numExecutions >= node->loopInfo.maxExecutions)
+			{
+				#ifdef DEBUG
+					std::cout << "numExecutions == " << node->loopInfo.numExecutions << "\n";
+					std::cout << "Loop Starting Point\n";
+					std::cout << ::getString(node->loopInfo.loopStartPoint) << "\n";
+					std::cout << "Curr Block\n";
+					std::cout << ::getString(node->block) << "\n";
+				#endif
+			}
+
+			if (hasRunMaxExecs)
+			{	
+				#ifdef DEBUG
+					std::cout << "Has Run Max Executions\n";
+				#endif
+				toAddSecond = true;
+			}
 			if (!hasRunMaxExecs)
 			{
 				// added for limiting loop executions
 				SymbolicTreeNode* toPush = new SymbolicTreeNode(binst->getSuccessor(0), 
 						first, numNodes++,node->id,NULL,returnNode);
 				toPush->setLoopInfo(node->loopInfo.loopStartPoint,
-				node->loopInfo.numExecutions);
-				if(!satisfiableFirst)
+									node->loopInfo.numExecutions);
+				toPush->input = firstModel;
+				if(!toAddFirst)
 				{
 					node->setSATInfo(false);
 				}			
@@ -235,36 +295,43 @@ std::vector<SymbolicTreeNode*>
 			if(numSuccesors == 2)
 			{
 				ProgramState* second = new ProgramState(*state);
-				second->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(second->z3Variables, second->c),"false")); // added for z3
+			
 				if (toAddConstraint)
 				{
+					second->z3Constraints.push_back(std::make_pair(state->get(cond)->toZ3Expression(second->z3Variables, second->context),"false")); // added for z3
 					second->addCondition("!" + state->get(cond)->toStringHumanReadable(state->getLLVMVarMap(), state->getStoreMap()));
 				}
 				// added for constraint checking
-				bool satisfiableSecond = second->Z3solver();
+				std::string secondModel = second->Z3solver();
+				toAddSecond = toAddSecond && (secondModel != "");
 				SymbolicTreeNode* toPush = new SymbolicTreeNode(binst->getSuccessor(1), 
 								second, numNodes++,node->id,NULL,returnNode);
 				toPush->setLoopInfo(node->loopInfo.loopStartPoint,
 								node->loopInfo.numExecutions);	
-				if (!satisfiableSecond)
+				toPush->input = secondModel;				
+				if (!toAddSecond)
 				{
 					toPush->setSATInfo(false);
 				}
 				children.push_back(toPush);
-
 			}
 		}
 		else 
 		{
 			llvm::BasicBlock * successorZero = binst->getSuccessor(0);
-			std::cout << "startLine of successor = " << getMinLineNumber(successorZero) << "\n";
-			std::cout << "startLine of curr = " << getMinLineNumber(node->block) << "\n";
+			#ifdef DEBUG
+				std::cout << "startLine of successor = " << getMinLineNumber(successorZero) << "\n";
+				std::cout << "startLine of curr = " << getMinLineNumber(node->block) << "\n";
+			#endif
 			SymbolicTreeNode* toPush = new SymbolicTreeNode(successorZero,state, 
 			numNodes++,node->id,NULL,returnNode);
+			toPush->input = node->input;
 			if (getMinLineNumber(successorZero) < getMinLineNumber(node->block))
 			{
 				toPush->setLoopInfo(successorZero, node->loopInfo.numExecutions+1);
-				std::cout << "Back Jump\nNumExecs = " << node->loopInfo.numExecutions+1 << "\n";
+				#ifdef DEBUG
+					std::cout << "Back Jump\nNumExecs = " << node->loopInfo.numExecutions+1 << "\n";
+				#endif
 			}
 			else
 			{
@@ -276,13 +343,14 @@ std::vector<SymbolicTreeNode*>
 	}
 	else if (llvm::isa<llvm::CallInst>(inst))
 	{
-	llvm::CallInst* callInst = llvm::dyn_cast<llvm::CallInst>(inst);
+		llvm::CallInst* callInst = llvm::dyn_cast<llvm::CallInst>(inst);
 		llvm::Function* calledFunction = callInst->getCalledFunction();
 		auto attrs = calledFunction->getAttributes();
 		unsigned int attrsCount = attrs.getNumSlots();
-		std::cout << "get numSlots : " << attrsCount << "\n";
-		std::cout << "get function name : " << calledFunction->getName().str() << "\n";
+		
 		#ifdef DEBUG
+			std::cout << "get numSlots : " << attrsCount << "\n";
+			std::cout << "get function name : " << calledFunction->getName().str() << "\n";
 			for (auto i = 0; i < attrsCount; i++)
 			{
 				int xxyyzz;
@@ -310,6 +378,7 @@ std::vector<SymbolicTreeNode*>
 				}
 			}
 		#endif
+		
 		llvm::BasicBlock* funcStart = NULL;
 		int xxyyzz;
 		if(calledFunction->isDeclaration())
@@ -322,11 +391,16 @@ std::vector<SymbolicTreeNode*>
 			{
 				ExpressionTree* tree = state->get(arg->get());
 
-				std::cout << "llvm Value in external call : " << getString(arg->get()) << "\n";
+				#ifdef DEBUG
+					std::cout << "llvm Value in external call : " << getString(arg->get()) << "\n";
+				#endif
+
 				std::vector<llvm::Value*> vals;
 				for (auto& pr : state->getMap())
 				{
-					std::cout << "llvm Value in user var map : " << getString(pr.first) << "\n";
+					#ifdef DEBUG
+						std::cout << "llvm Value in user var map : " << getString(pr.first) << "\n";
+					#endif
 
 					if (pr.second == tree)
 					{
@@ -342,7 +416,9 @@ std::vector<SymbolicTreeNode*>
 				{
 					for (auto& pr : state->getUserVarMap())
 					{
-						std::cout << "llvm Value in user var map : " << getString(pr.second) << "\n";
+						#ifdef DEBUG
+							std::cout << "llvm Value in user var map : " << getString(pr.second) << "\n";
+						#endif
 
 						if (pr.second == v)
 						{
@@ -374,7 +450,6 @@ std::vector<SymbolicTreeNode*>
 
 							if (pr.second == val)
 							{
-
 								std::cout << "discovered : " << pr.first << "\n";
 								std::cin >> xxyyzz;
 							}
@@ -396,10 +471,14 @@ std::vector<SymbolicTreeNode*>
 		}
 		else
 		{
-			std::cout << "INTERNAL CALL\n";
+			#ifdef DEBUG
+				std::cout << "INTERNAL CALL\n";
+			#endif
 			funcStart = &calledFunction->getEntryBlock();
 		}
-		std::cout << getString(callInst->getCalledValue());
+		#ifdef DEBUG
+			std::cout << getString(callInst->getCalledValue());
+		#endif
 		std::vector<ExpressionTree*> arguments;
 		for(auto arg = callInst->op_begin(); arg != callInst->op_end(); arg++)
 		{
@@ -520,12 +599,12 @@ std::vector<SymbolicTreeNode*>
 	while(symTreeNode->hasNextInstruction())
 	{
 		auto instruction = symTreeNode->getNextInstruction();
-		if(instruction == symTreeNode->block->end())
-		{
-			std::cout << "wtf\n";
-		}
+		
 		#ifdef DEBUG
-
+			if(instruction == symTreeNode->block->end())
+			{
+				std::cout << "Unexpected End of Block\n";
+			}
 			std::cout << "printing operands : " << instruction->getNumOperands() << "\n";
 			for (int j = 0; j < instruction->getNumOperands(); j++)
 			{
@@ -533,7 +612,6 @@ std::vector<SymbolicTreeNode*>
 			}
 			std::cout << "printing instruction: " << getString(instruction) << "\n";
 			std::cout << "getOpcode: " << instruction->getOpcode() << "\n";
-
 		#endif
 
 		if (llvm::MDNode *N = instruction->getMetadata("dbg")) 
@@ -542,7 +620,6 @@ std::vector<SymbolicTreeNode*>
 			unsigned Line = Loc.getLineNumber();
 			symTreeNode->minLineNumber = std::min(symTreeNode->minLineNumber,Line);
 			symTreeNode->maxLineNumber = std::max(symTreeNode->maxLineNumber,Line);
-			std::cout << "instruction == " << getString(instruction) << "\tLine Number == " << Line << "\n";
 		}
 
 		if(isSplitPoint(instruction)) 
@@ -553,11 +630,13 @@ std::vector<SymbolicTreeNode*>
 			if (llvm::CallInst* callInst = llvm::dyn_cast<llvm::CallInst>(instruction))
 			{
 				llvm::Function* calledFunction = callInst->getCalledFunction();
+				// for marking bad regions in code
 				if(calledFunction->getName().str() == "_ZN2se13unknown_errorEv")
 				{
 					#ifdef DEBUG
-					std::cout << "Error State Reached";
+						std::cout << "Error State Reached";
 					#endif
+
 					continue;
 				}
 			}
@@ -603,9 +682,6 @@ void SymbolicExecutor::symbolicExecute()
 		reader->updateToSend(toSend);
 		reader->initializeJsonArray();
 
-		#ifdef DEBUG
-			// std::cout << "prev id: "<< prevId << "\n";
-		#endif
 		std::deque<SymbolicTreeNode*> deque;
 		if (reader->getPrevId() == -1)
 		{
@@ -667,7 +743,6 @@ void SymbolicExecutor::symbolicExecute()
 
 			SymbolicTreeNode* symTreeNode = deque.front();
 			deque.pop_front();
-			// printBlock(symTreeNode->block);
 
 			#ifdef DEBUG
 				std::cout << "2: size of deque : " << deque.size() << "\n";
@@ -677,9 +752,10 @@ void SymbolicExecutor::symbolicExecute()
 			if (excludedNodes.find(symTreeNode->block) != excludedNodes.end())
 			{
 				#ifdef DEBUGEXCLUDE
-				std::cout << "is Excluded! : \n";
-				std::cin >> xyz;
+					std::cout << "is Excluded! : \n";
+					std::cin >> xyz;
 				#endif
+				
 				i--;
 				continue;
 			}
@@ -701,42 +777,36 @@ void SymbolicExecutor::symbolicExecute()
 						if (k == 0)
 						{
 							tempSymTreeNode = symTreeNode->left;
-							std::cout << "left\n";
-							// printBlock(tempSymTreeNode->block);
+							#ifdef DEBUG
+								std::cout << "left\n";
+							#endif
 						}
 						else
 						{
 							tempSymTreeNode = symTreeNode->right;
-							std::cout << "right\n";
-							// printBlock(tempSymTreeNode->block);
-
+							#ifdef DEBUG
+								std::cout << "right\n";
+							#endif
 						}
 						if (reader->getIsBFS())
 						{
 							if (tempSymTreeNode)
 							{
 								deque.push_back(tempSymTreeNode);	
-								std::cout << "child added!\n";
-							}
-							else
-							{	
-								std::cout << "shit happenS!\n";
-							}  
-							
-						}
-								
+								#ifdef DEBUG
+									std::cout << "child added!\n";
+								#endif
+							}			
+						}	
 						else
 						{
 							if (tempSymTreeNode)
 							{
 								deque.push_front(tempSymTreeNode);
-								std::cout << "child added!\n";
+								#ifdef DEBUG
+									std::cout << "child added!\n";
+								#endif
 							}
-							else
-							{	
-								std::cout << "shit happenS!\n";
-							} 
-							
 						}
 					}
 				}
@@ -745,13 +815,19 @@ void SymbolicExecutor::symbolicExecute()
 			std::vector<SymbolicTreeNode*> new_blocks;
 			if(symTreeNode->satInfo.isSatisfiable)
 				new_blocks = executeBasicBlock(symTreeNode);
+
+			if (new_blocks.size() > 0)
+			{
+				symTreeNode->input = "";
+			}
 			
 			symTreeNode->isExecuted = true;
+
 			#ifdef DEBUG
-				// printBlock(symTreeNode->block);
 				std::cout << "Executed !" << "\n";
 				std::cin >> xyz;
 			#endif
+			
 			BlockStates[symTreeNode->id]=symTreeNode;
 			
 			Json::Value msg;
@@ -760,6 +836,10 @@ void SymbolicExecutor::symbolicExecute()
 			msg["text"] = Json::Value(symTreeNode->state->toString());
 			msg["fin"] = Json::Value("0");
 			msg["constraints"] = Json::Value(symTreeNode->state->getPathCondition());
+			if (symTreeNode->input != "")
+			{
+				msg["input"] = Json::Value(symTreeNode->input);
+			}
 			if (symTreeNode->block)
 			{
 				msg["startLine"] = Json::Value(getMinLineNumber(symTreeNode->block));
@@ -780,16 +860,12 @@ void SymbolicExecutor::symbolicExecute()
 			}
 			reader->addObject(msg);
 			
-			
-			
-			
-			
 			#ifdef DEBUG
 				std::cout << "number of blocks :  " << new_blocks.size() << "\n";
 				std::cin >> xyz;
+				std::cout << "iterating blocks!\n";
 			#endif
 
-			std::cout << "iterating blocks!\n";
 			for (int j = 0; j < new_blocks.size(); j++)
 			{
 				int k = j;
@@ -798,7 +874,9 @@ void SymbolicExecutor::symbolicExecute()
 				SymbolicTreeNode * x = new_blocks[j];
 				if (x->satInfo.isSatisfiable == false)
 				{
-					std:: cout << "no statisfiable";
+					#ifdef DEBUG
+						std:: cout << "not statisfiable";
+					#endif
 				}
 
 				SymbolicTreeNode * tempSymTreeNode;
@@ -836,7 +914,9 @@ void SymbolicExecutor::symbolicExecute()
 						symTreeNode->state->getUserVarMap(),
 						symTreeNode->state->getLLVMVarMap(),
 						symTreeNode->state->getMap());
-				 	std::cout << "modelVals size : " << tempSymTreeNode->modelVals.size() << "\n";
+				 	#ifdef DEBUG
+				 		std::cout << "modelVals size : " << tempSymTreeNode->modelVals.size() << "\n";
+				 	#endif
 				 	toSend.clear();
 					toSend["type"] = Json::Value(MSG_TYPE_EXPANDNODE);
 					toSend["fileId"] = Json::Value(filename.c_str());
@@ -849,18 +929,7 @@ void SymbolicExecutor::symbolicExecute()
 				std::cout << "3: size of deque : " << deque.size() << "\n";
 			#endif
 		}
-		// #ifdef CIN_SERVER
-		// 	// std::cout << "proceed? \n";
-		// 	// std::cout << "prevId : ";
-		// 	// std::cin >> prevId;
-		// 	// std::cout << "isBFS : ";
-		// 	// std::cin >> isBFS;
-		// 	// std::cout << "steps : ";
-		// 	// std::cin >> steps;
-		// 	// std::cout << "dir : ";
-		// 	// std::cin >> dir; 
-		// 	continue;
-		// #endif
+
 		reader->proceedSymbolicExecution();
 		if (reader->getIsExclude() != -1)
 			exclude(reader->getExcludedId(), reader->getIsExclude());
@@ -876,10 +945,7 @@ void SymbolicExecutor::symbolicExecute()
 void SymbolicExecutor::printAllFunctions(llvm::Function* function, int index, Json::Value & functions)
 {
 	std::cout << "get function name : " << function->getName().str() << "\n";
-	// if (function->getAllMetadata())
-	// {
-	// 	std::cout << "this func has some thing special!\n";
-	// }
+	
 	std::string name = function->getName().str();
 	unsigned int minLineNumber = std::numeric_limits<unsigned int>::max();
 	unsigned int maxLineNumber = 0;
@@ -920,12 +986,16 @@ void SymbolicExecutor::printAllFunctions(llvm::Function* function, int index, Js
 void SymbolicExecutor::executeFunction(llvm::Function* function)
 {
 	int xyz;
-	std::cout << "start printing all the  functions that could be  called \n";
+	#ifdef DEBUG
+		std::cout << "start printing all the  functions that could be  called \n";
+	#endif
 	Json::Value functions;
 	functions["type"] = MSG_TYPE_FUNCNAMES;
 	functions["fileId"] = Json::Value(filename.c_str());
 	functions["functions"] =  Json::arrayValue;
-	printAllFunctions(function, 0, functions["functions"]);
+	#ifdef DEBUG
+		printAllFunctions(function, 0, functions["functions"]);
+	#endif
 	reader->updateToSend(functions);
 	reader->proceedSymbolicExecution();
 	#ifdef DEBUG
@@ -961,15 +1031,6 @@ void SymbolicExecutor::executeFunction(llvm::Function* function)
 	auto rootBlock = &function->getEntryBlock();
 	rootNode = new SymbolicTreeNode(rootBlock, rootState, numNodes++,-1);	
 	symbolicExecute();
-	
-	// Json::Value msg;
-	// msg["fin"] = Json::Value("1");
-	// Json::FastWriter fastWriter;
-	// std::string output = fastWriter.write(msg);
-
-	// std::cout << "sending this: " << output << std::endl;
-	// (*socket) << output;
-	// std::cout << "Function executed" << std::endl;
 }
 
 llvm::Module* SymbolicExecutor::loadCode(std::string filename) 
@@ -1024,9 +1085,11 @@ void SymbolicExecutor::execute(Json::Value val)
 * dont want to explore 
 */
 void SymbolicExecutor::exclude(int input, int isNode)
-{ 
-	std::cout << "input : " << input << "\n";
-	std::cout << "isNode : " << isNode << "\n";
+{
+	#ifdef DEBUG
+		std::cout << "input : " << input << "\n";
+		std::cout << "isNode : " << isNode << "\n";
+	#endif
 	unsigned int minLine = std::numeric_limits<unsigned int>::max();
 	unsigned int maxLine = std::numeric_limits<unsigned int>::min();
 	std::vector< llvm::BasicBlock* > blocks;
@@ -1043,12 +1106,14 @@ void SymbolicExecutor::exclude(int input, int isNode)
 	for (auto b : blocks)
 	{
 		excludedNodes[b] = true;
-		std::cout << "excluded block : \n";
-			int xyz;
+		
 		#ifdef DEBUG
+			int xyz;
+			std::cout << "excluded block : \n";
 			printBlock(b);
 			std::cin >> xyz;
 		#endif
+		
 		for (auto instruction = b->begin(), e = b->end(); instruction != e; instruction++)
 		{
 			if (llvm::MDNode *N = instruction->getMetadata("dbg")) 
@@ -1072,4 +1137,3 @@ void SymbolicExecutor::exclude(int input, int isNode)
 	if (reader->getIsExclude() != -1)
 		exclude(reader->getExcludedId(), reader->getIsExclude());
 }
-

@@ -21,11 +21,6 @@ ExpressionTreeNode::ExpressionTreeNode(std::string data = "", llvm::Value* value
     this->left = n.left;
     this->right = n.right;
 }*/
-bool ExpressionTree::isConstant(llvm::Value* value)
-{
-    return value && llvm::isa<llvm::Constant>(value); 
-}
-
 
 ExpressionTree::ExpressionTree(llvm::Value* value, std::map<std::string, llvm::Value*> userVarMap, std::map<llvm::Value*, std::string> llvmVarMap)
 {
@@ -34,21 +29,15 @@ ExpressionTree::ExpressionTree(llvm::Value* value, std::map<std::string, llvm::V
     this->llvmVarMap = llvmVarMap;
 }
 
-/*ExpressionTree::ExpressionTree(const ExpressionTree & e)
-{
-    top = new ExpressionTreeNode(ExpressionTreeNode(*(e.top)));
-}*/
-
-
 bool ExpressionTree::isConstant()
 {
-    return isConstant(this->top->value);
+    return ::isConstant(this->top->value);
 }
 
 ExpressionTree::ExpressionTree(std::string op, ExpressionTree* lhs, ExpressionTree* rhs)
 {
 
-    if (lhs->isConstant() && rhs->isConstant()) 
+    if (lhs->isConstant() && rhs->isConstant() && (op == "+" || op == "-")) 
     {
         this->top = new ExpressionTreeNode(ExpressionTreeNode("",evaluate(lhs->top->value, rhs->top->value, op)));
     }
@@ -72,15 +61,15 @@ ExpressionTree::ExpressionTree(std::string op, ExpressionTree* lhs, ExpressionTr
 
 ExpressionTree::ExpressionTree(std::string op, llvm::Value* lhs, llvm::Value* rhs)
 {
-    if (isConstant(lhs) && isConstant(rhs)) 
+    if (::isConstant(lhs) && ::isConstant(rhs) && (op == "+" || op == "-")) 
     {
         this->top = new ExpressionTreeNode(ExpressionTreeNode("",evaluate(lhs, rhs, op)));
     }
-    else if ((op == "+" || op == "-") && isConstant(rhs))
+    else if ((op == "+" || op == "-") && ::isConstant(rhs))
     {
         if (::getInteger(rhs) == 0) this->top = new ExpressionTreeNode(ExpressionTreeNode("",lhs));
     }
-    else if (op == "+" && isConstant(lhs) && ::getInteger(lhs) == 0)
+    else if (op == "+" && ::isConstant(lhs) && ::getInteger(lhs) == 0)
     {
         this->top = new ExpressionTreeNode(ExpressionTreeNode("",rhs));
     }
@@ -110,12 +99,23 @@ void ExpressionTree::constructTree(std::stringstream & iss, ExpressionTreeNode* 
     }
     else
     {
-        //set value using map in state.
-        ExpressionTreeNode * temp_top = map[userVarMap[curr]]->top;
-        node->value = temp_top->value;
-        node->left = temp_top->left;
-        node->right = temp_top->right;
-        node->data = temp_top->data;
+        if (curr[0] == '-' || std::isdigit(curr[0])) 
+        {   // variables names don't start with a digit or negative sign 
+            // => this is a constant
+            int literal = std::stoi(curr);
+            llvm::Value* val = llvm::ConstantInt::get(llvm::IntegerType::get(llvm::getGlobalContext(),32), 
+                                                    literal, true); 
+                                                //numbits, value, isSigned
+            node->value = val;
+        }
+        else
+        {   //set value using map in state
+            ExpressionTreeNode * temp_top = map[userVarMap[curr]]->top; 
+            node->value = temp_top->value;
+            node->left = temp_top->left;
+            node->right = temp_top->right;
+            node->data = temp_top->data;
+        }
     }
 }
 
@@ -146,9 +146,7 @@ llvm::Value* ExpressionTree::evaluate(llvm::Value* lhs, llvm::Value* rhs, std::s
         if (op == "+")
             result = lhsInt + rhsInt;
         else if (op == "-")
-            result = lhsInt - rhsInt;
-        else if (op == ">")
-            result = lhsInt > rhsInt;
+            result = lhsInt - rhsInt; 
         llvm::Value* ans = llvm::ConstantInt::get( llvm::getGlobalContext() , llvm::APInt(32, result, false));
         return ans;
 }
@@ -181,14 +179,7 @@ void ExpressionTree::getExpressionStringHumanReadable(ExpressionTreeNode* node, 
             {
                 toReturn << ::getInteger(node->value);   
             }
-            else
-            {
-                // int abcdef;
-                // std::cout << getString(node->value) << "\n";
-                // std::cout << varMap[node->value] << "\n"; 
-                // std::cin >> abcdef;
-                toReturn << varMap[store[node->value]];
-            }
+            else toReturn << varMap[store[node->value]];
         }
         else
         {
@@ -250,32 +241,32 @@ void ExpressionTree::addZ3ExpressionToMap(llvm::Value* value, std::map<llvm::Val
 {
     int xyz;
     std::string str = getString(value);
-    if (isConstant(value))
+    if (::isConstant(value))
     {
-        int abc = ::getInteger(value);
-        str = std::to_string(abc);
-        z3::expr * val = new z3::expr(c);
+        int val = ::getInteger(value);
+        str = std::to_string(val);
+        z3::expr * z3Val = new z3::expr(context);
         #ifdef DEBUG
             std::cout << "real value : " << str << "\n";
             std::cin >> xyz;
         #endif
 
-        *val = c.int_val(abc);
+        *z3Val = context.int_val(val);
         #ifdef DEBUG
-            std::cout << "adding expression to MAP : " << *val << "\n";
+            std::cout << "adding expression to MAP : " << *z3Val << "\n";
             std::cin >> xyz;
         #endif
-        z3Map.insert(std::make_pair(value, val)); 
+        z3Map.insert(std::make_pair(value, z3Val)); 
     }
     else
     {
-        z3::expr * val = new z3::expr(c);
-        *val = c.int_const(str.c_str());
+        z3::expr * z3Val = new z3::expr(context);
+        *z3Val = context.int_const(str.c_str());
         #ifdef DEBUG
-            std::cout << "adding expression to MAP : " << *val << "\n";
+            std::cout << "adding expression to MAP : " << *z3Val << "\n";
             std::cin >> xyz;
         #endif
-        z3Map.insert(std::make_pair(value, val)); 
+        z3Map.insert(std::make_pair(value, z3Val)); 
     }
 }
 
@@ -283,7 +274,8 @@ void ExpressionTree::addZ3ExpressionToMap(llvm::Value* value, std::map<llvm::Val
 * Returns a Z3 expression for an ExpressionTree
 */
 
-z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node, std::map<llvm::Value*, z3::expr*>& z3Map, z3::context& c)
+z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node, 
+            std::map<llvm::Value*, z3::expr*>& z3Map, z3::context& context)
 {
     if (node != NULL)
     {
@@ -292,7 +284,7 @@ z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node, std::map<llv
             std::string str = getString(node->value);
             if (z3Map.find(node->value) == z3Map.end())
             {
-                addZ3ExpressionToMap(node->value, z3Map,c);
+                addZ3ExpressionToMap(node->value, z3Map, context);
             }
             return z3Map[node->value];
          
@@ -300,17 +292,15 @@ z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node, std::map<llv
         else if (node->left != NULL && node->right != NULL)
         {
             int xyz;
-            z3::expr * constraint = new z3::expr(c);
-            z3::expr * left = getZ3Expression(node->left, z3Map, c);
-            z3::expr * right = getZ3Expression(node->right, z3Map, c);
+            z3::expr * constraint = new z3::expr(context);
+            z3::expr * left = getZ3Expression(node->left, z3Map, context);
+            z3::expr * right = getZ3Expression(node->right, z3Map, context);
             
             #ifdef DEBUG
                 if (!left)
                 {
-                  // #ifdef DEBUG
                     std::cout << "left NULL!\n";
                     std::cin >> xyz;
-                  // #endif  
                 }
                 else
                 {
@@ -320,10 +310,8 @@ z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node, std::map<llv
 
                 if (!right)
                 {
-                  // #ifdef DEBUG
                     std::cout << "right NULL!\n";
                     std::cin >> xyz; 
-                  // #endif  
                 }
                 else
                 {
@@ -351,6 +339,10 @@ z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node, std::map<llv
                 *constraint = *left <= *right;
             else if (op == "==")
                 *constraint = *left == *right;
+            else if (op == "!=")
+                *constraint = *left != *right;
+            else if (op == "%")
+                *constraint = *left - (*left / *right * *right);
             return constraint;
         }
     }
@@ -360,7 +352,7 @@ z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node, std::map<llv
 */
 int ExpressionTree::compare(int value)
 {
-    if(isConstant(this->top->value))
+    if(::isConstant(this->top->value))
     {
         int myval = this->getInteger();
         if(value > myval) return 1;
@@ -375,7 +367,7 @@ int ExpressionTree::compare(int value)
 */
 int ExpressionTree::compare(ExpressionTree* exp1)
 {
-    if (isConstant(exp1->top->value))
+    if (::isConstant(exp1->top->value))
     {
         return compare(exp1->getInteger());
     }

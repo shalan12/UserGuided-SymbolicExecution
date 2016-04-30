@@ -61,6 +61,7 @@ class SymbolicTreeNode
     ProgramState * state;
     SymbolicTreeNode * left;
     SymbolicTreeNode * right;
+    std::string input;
     bool isExecuted, isModel;
     int id;
     unsigned int minLineNumber,maxLineNumber;
@@ -155,13 +156,22 @@ class SymbolicTreeNode
         {
             hasNext = (++(*instructionPtr) != block->end());
         }
-        std::cout << "hasNext == " << hasNext << "\nInstructionPtr now at ";
+        #ifdef DEBUG
+          std::cout << "hasNext == " << hasNext << "\nInstructionPtr now at ";
+        #endif
         if(*instructionPtr == block->end())
         {
+          #ifdef DEBUG
             std::cout << "END of block\n";
+          #endif
         }
-        else std::cout << getString(*instructionPtr) << "\n";
+        
+        #ifdef DEBUG
+          else std::cout << getString(*instructionPtr) << "\n";
+        #endif
+
         hasPrev = true;
+        
         return toRet;
     }
 };

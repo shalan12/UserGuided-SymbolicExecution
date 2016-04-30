@@ -23,7 +23,7 @@ class ProgramState
   std::string pathCondition;
   
   public:
-  z3::context c;
+  z3::context context;
   std::map<std::string, z3::expr> variables;
   std::map<llvm::Value*, z3::expr*> z3Variables;
   std::vector<std::pair<z3::expr*, std::string> > z3Constraints;
@@ -47,7 +47,7 @@ class ProgramState
   std::map<llvm::Value*, ExpressionTree*> getMap();
   std::string toString();
   void printZ3Variables();
-  bool Z3solver();
+  std::string Z3solver();
   std::map<std::string, llvm::Value*> getUserVarMap();
   std::map<llvm::Value*, std::string> getLLVMVarMap();
   std::map<llvm::Value*, llvm::Value*> getStoreMap();

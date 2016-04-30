@@ -20,6 +20,14 @@ std::string getString(llvm::Value* val)
     return TmpStr.str();
 }
 /**
+ Checks whether an llvm Value is a constant literal
+*/
+bool isConstant(llvm::Value* value)
+{
+    return value && llvm::isa<llvm::Constant>(value); 
+}
+
+/**
  Returns integer value of an llvm::Value if it exists
 */
 int getInteger(llvm::Value* value)
@@ -67,7 +75,8 @@ unsigned int getMinLineNumber (llvm::BasicBlock* block)
             return Loc.getLineNumber();
         }
     }
-    throw "no line number found";
+    return std::numeric_limits<unsigned int>::max();
+    // throw "no line number found";
 }
 unsigned int getMaxLineNumber (llvm::BasicBlock* block)
 {

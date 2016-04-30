@@ -15,7 +15,10 @@ ProgramState::ProgramState(llvm::iterator_range<llvm::Function::arg_iterator> in
 			add(input,new ExpressionTree(input, getUserVarMap(), getLLVMVarMap()));
 		else 
 			add(input,arguments[i++]);
-		std::cout << "program state constructor, function parameters : " << getString(input) << "\n";
+		
+		#ifdef DEBUG
+			std::cout << "program state constructor, function parameters : " << getString(input) << "\n";
+		#endif
 	}
 	pathCondition = "";
 }
@@ -45,8 +48,8 @@ void ProgramState::Copy(const ProgramState& from, ProgramState* to, bool copyMap
 
 	for (auto constraint : from.z3Constraints)
 	{
-		z3::expr * copy_constraint = new z3::expr(to->c);
-		*copy_constraint = to_expr(to->c, Z3_translate(from.c, *constraint.first, to->c));
+		z3::expr * copy_constraint = new z3::expr(to->context);
+		*copy_constraint = to_expr(to->context, Z3_translate(from.context, *constraint.first, to->context));
 		to->z3Constraints.push_back(std::make_pair(copy_constraint, constraint.second));
 	}
 	to->pathCondition = from.pathCondition;
@@ -84,15 +87,6 @@ void ProgramState::add(llvm::Value* value, ExpressionTree* exp)
 */
 void ProgramState::addUserVar(std::string varname, llvm::Value* val)
 {
-	// std::cout << "adding this in both maps \n";
-	// int x;
-	// std::cout << "adding this expression tree to user vars:  \n " << varname << "  :  " << getString(val);
-	// std::cin >> x;
-	// std::cout << "adding this \n";
-	// int x;
-	// std::cin >> x;
-	// std::cout << "adding this expression tree to user vars:  \n " << varname << "  :  " << exp->toString();
-	// llvm::Value * xyz = map[val]->top->value;
 	userVarMap[varname] = val;
 	llvmVarMap[val] = varname;
 }
@@ -102,10 +96,6 @@ void ProgramState::addUserVar(std::string varname, llvm::Value* val)
 */
 void ProgramState::addLLVMVar(std::string varname, llvm::Value* val)
 {
-	// std::cout << "adding this \n";
-	// int x;
-	// std::cout << "adding this expression tree to user vars:  \n " << varname << "  :  " << getString(val);
-	// std::cin >> x;
 	llvmVarMap[val] = varname;
 }
 
@@ -138,12 +128,7 @@ std::map<llvm::Value*, ExpressionTree*> ProgramState::getMap()
 std::string ProgramState::toString()
 {
 	std::stringstream str;
-	/*for (auto& pr : map)
-	{
-		str <<	getString(pr.first) << "\t == \t" << pr.second->toString() << '\n';
-	}*/
-	/*str << "\n user variables: \n";*/
-
+	
 	for (auto& pr : userVarMap)
 	{
 		if (get(pr.second))
@@ -158,15 +143,17 @@ void ProgramState::printZ3Variables()
 {
 	for (auto& pr : map)
 	{
-		std::cout << getString(pr.first) << " === ";
+		#ifdef DEBUG
+			std::cout << getString(pr.first) << " === ";
+		#endif
 		if (pr.second->top != NULL)
 		{
 			if (pr.second->top->left != NULL && pr.second->top->right != NULL)
 			{
 				std::string left = getString(pr.second->top->left->value);
 				std::string right = getString(pr.second->top->right->value);
-				variables.insert(std::make_pair(left, c.int_const(left.c_str())));
-				variables.insert(std::make_pair(right, c.int_const(right.c_str())));
+				variables.insert(std::make_pair(left, context.int_const(left.c_str())));
+				variables.insert(std::make_pair(right, context.int_const(right.c_str())));
 
 				if (pr.second->top->data == "+")
 				{
@@ -192,7 +179,7 @@ void ProgramState::printZ3Variables()
 			else if (pr.second->top->left == NULL && pr.second->top->right == NULL)
 			{
 				variables.insert(std::make_pair(getString(pr.second->top->value),
-								c.int_const(getString(pr.second->top->value).c_str())));
+								context.int_const(getString(pr.second->top->value).c_str())));
 
 				std::cout << variables.at(getString(pr.second->top->value)) << '\n';
 			}
@@ -217,7 +204,7 @@ std::map<llvm::Value*, std::string> ProgramState::getLLVMVarMap()
 bool ProgramState::Z3solver()
 { 
 	int xyz;
-	z3::solver s(c);
+	z3::solver s(context);
 	#ifdef DEBUG
 		std::cout << "size of constraints = " << z3Constraints.size() << "\n";
 	#endif
@@ -234,8 +221,8 @@ bool ProgramState::Z3solver()
 				std::cout << "z3 expression is NULL!\n";
 				std::cin >> xyz;
 			}
+			std::cout << "i = " << i << "\n";
 		#endif
-		std::cout << "i = " << i << "\n";
 		if(z3Constraints[i].second == "true")
 		{
 			#ifdef DEBUG
@@ -253,15 +240,36 @@ bool ProgramState::Z3solver()
 			s.add(!(*(z3Constraints[i].first)));
 		} 
 	}
+	std::cout << "some info from Z3\n";
+	int abcdef;
+	std::cin >> abcdef;
+	std::cout << "s" << s << "\n";
+	std::cout << "s.check()" << s.check() << "\n";
+	std::cout << "*****************\n";
 	bool toRet = (s.check() == z3::sat);
-	#ifdef DEBUG
-		std::cout << this->getPathCondition() << "\n";
-		std::cout << toRet << "\n";
-		if (toRet)
-		{
-			z3::model m = s.get_model();
-			std::cout << m << std::endl;
-		}
-	#endif
-	return toRet;
+	std::string toRet_str = "";  
+	if (toRet)
+	{
+		z3::model * model;
+		z3::model m = s.get_model();
+		std::stringstream ss;
+		ss << m;
+		toRet_str = ss.str();
+		std::cout << m << std::endl;
+		model = &m;
+		// return model;
+	}
+	// return NULL;
+	std::cout << "*****************\n";
+	return toRet_str;
+	// #ifdef DEBUG
+	// 	std::cout << this->getPathCondition() << "\n";
+	// 	std::cout << toRet << "\n";
+	// 	if (toRet)
+	// 	{
+	// 		z3::model m = s.get_model();
+	// 		std::cout << m << std::endl;
+	// 	}
+	// #endif
+	// return toRet;
 }

@@ -13,4 +13,5 @@ int getInteger(llvm::Value* value);
 Json::Value getMessage();
 unsigned int getMinLineNumber (llvm::BasicBlock* block);
 unsigned int getMaxLineNumber (llvm::BasicBlock* block);
+bool isConstant(llvm::Value* value);
 #endif
