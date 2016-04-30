@@ -211,6 +211,9 @@ std::map<llvm::Value*, std::string> ProgramState::getLLVMVarMap()
 	return llvmVarMap;
 }
 
+/**
+* Uses Z3 to check constraint satisfiability
+*/
 bool ProgramState::Z3solver()
 { 
 	int xyz;

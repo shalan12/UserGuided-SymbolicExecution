@@ -1,20 +1,11 @@
 /* --------------------- Symbolic Tree --------------------- */
 
+/**
+* Initializations
+*/
 var margin = { top: 40, right: 120, bottom: 20, left: 220};
-
-//var margin = { top: 0, right: 0, bottom: 0, left: 0};
 var width = 960 - margin.right - margin.left;
 var height = 1000 - margin.top - margin.bottom;
-/*var margin = {top: 200.5, right: 120, bottom: 20, left: 275},
-width = 1040,//960 - margin.right - margin.left,
-height = 1040;//margin.top - margin.bottom;*/
-/*window.addEventListener('resize', resize); 
-
-function resize() {
-    width = window.innerWidth, height = window.innerHeight;
-    svg.attr("width", width).attr("height", height);
-    tree.size([width, height]).resume();
-}*/
 var zoomStep = 0.2;
 var actualZoomLevel = 1.0;
 var i = 0,
@@ -30,77 +21,16 @@ var zoom = d3.behavior.zoom()
                     svg.attr("transform", "translate(" + [(d3.event.translate[0] + margin.left),(d3.event.translate[1] + margin.top)] + ")scale(" + d3.event.scale + ")");
             });
 var container;
-function setup()
-{
-    var graph = document.getElementById("graph").clientWidth;
-    var graphLeft = document.getElementById("graph").clientLeft;
-
-    console.log("graph width: " + graph + " graph left: " + graphLeft);
-    tree = d3.layout.tree()
-    .size([height, width]);
-    diagonal = d3.svg.diagonal()
-    .projection(function(d) { return [d.x, d.y]; });
-    var temp = d3.select("#graph")
-        .append("svg")
-        .attr("viewbox", "0 0 960 500")
-        .attr("preserveAspectRatio", "xMidYMid meet");
-    svg = temp
-        // .attr("width", width+ margin.right + margin.left)
-        // .attr("height", height+ margin.top + margin.bottom)
-        .append("g")
-        .attr("id", "tree")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    container = svg;
-    temp.on("mousedown", function(){
-/*            if(d3.event.button === 2){
-                d3.event.sourceEvent.stopPropagation();
-            };*/
-        })
-        .call(zoom).on("dblclick.zoom", function()
-        {
-            console.log("here");
-            zoom.translate([0,0]);
-            zoom.scale(1);
-            svg.transition().duration(500).attr('transform', 'translate(' + [margin.left,margin.top] + ') scale(' + zoom.scale() + ')')
-        });
-}
-function zoomIn(){
-    //Calculate and set the new zoom level 
-    actualZoomLevel = roundFloat(parseFloat(actualZoomLevel) + parseFloat(zoomStep));
-    zoom.scale(actualZoomLevel);
-    //Get the actual position of the container
-    var xPosition = d3.transform(container.attr("transform")).translate[0];
-    var yPosition = d3.transform(container.attr("transform")).translate[1];
-    //Esecute the transformation setting the actual position and the new zoom level
-    container.attr("transform", "translate(" + xPosition + ", " + yPosition + ")scale(" + zoom.scale() + ")");
-}
-
-function zoomOut(){
-    actualZoomLevel = roundFloat(parseFloat(actualZoomLevel) - parseFloat(zoomStep));
-    zoom.scale(actualZoomLevel);
-    var xPosition = d3.transform(container.attr("transform")).translate[0];
-    var yPosition = d3.transform(container.attr("transform")).translate[1];
-    container.attr("transform", "translate(" + xPosition + ", " + yPosition + ")scale(" + zoom.scale() + ")");
-}
-function roundFloat(value){
-    return value.toFixed(2);
-}
-/*var rect = svg.append("svg:rect")
-    .attr("width", width)
-    .attr("height", height);
-rect.call(d3.behavior.zoom().y(y).on("zoom", function(){svg.select("g.y.axis").call(yAxis);}))*/
-
 var treeData = [];
 var numSteps, branchSelected, explore;
 var beginSymbolicExecution = false;
-function setDefaults()
-{
-    numSteps = 1;
-    branchSelected = 0;
-    explore = 1;
-}
+
 var numOfCodeLines = 0;
 var contextMenuShowing = false;
+
+/**
+* Context Menu for each node in the symbolic tree
+*/
 var contextmenu = [
             {
                 title: 'Exclude',
@@ -188,10 +118,84 @@ var contextmenu = [
             }
         ]
 
+/**
+* Creates and initializes the svg
+*/
+function setup()
+{
+    var graph = document.getElementById("graph").clientWidth;
+    var graphLeft = document.getElementById("graph").clientLeft;
+
+    console.log("graph width: " + graph + " graph left: " + graphLeft);
+    tree = d3.layout.tree()
+    .size([height, width]);
+    diagonal = d3.svg.diagonal()
+    .projection(function(d) { return [d.x, d.y]; });
+    var temp = d3.select("#graph")
+        .append("svg")
+        .attr("viewbox", "0 0 960 500")
+        .attr("preserveAspectRatio", "xMidYMid meet");
+    svg = temp
+        // .attr("width", width+ margin.right + margin.left)
+        // .attr("height", height+ margin.top + margin.bottom)
+        .append("g")
+        .attr("id", "tree")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    container = svg;
+    temp.on("mousedown", function(){
+/*            if(d3.event.button === 2){
+                d3.event.sourceEvent.stopPropagation();
+            };*/
+        })
+        .call(zoom).on("dblclick.zoom", function()
+        {
+            console.log("here");
+            zoom.translate([0,0]);
+            zoom.scale(1);
+            svg.transition().duration(500).attr('transform', 'translate(' + [margin.left,margin.top] + ') scale(' + zoom.scale() + ')')
+        });
+}
+
+function zoomIn(){
+    //Calculate and set the new zoom level 
+    actualZoomLevel = roundFloat(parseFloat(actualZoomLevel) + parseFloat(zoomStep));
+    zoom.scale(actualZoomLevel);
+    //Get the actual position of the container
+    var xPosition = d3.transform(container.attr("transform")).translate[0];
+    var yPosition = d3.transform(container.attr("transform")).translate[1];
+    //Esecute the transformation setting the actual position and the new zoom level
+    container.attr("transform", "translate(" + xPosition + ", " + yPosition + ")scale(" + zoom.scale() + ")");
+}
+
+function zoomOut(){
+    actualZoomLevel = roundFloat(parseFloat(actualZoomLevel) - parseFloat(zoomStep));
+    zoom.scale(actualZoomLevel);
+    var xPosition = d3.transform(container.attr("transform")).translate[0];
+    var yPosition = d3.transform(container.attr("transform")).translate[1];
+    container.attr("transform", "translate(" + xPosition + ", " + yPosition + ")scale(" + zoom.scale() + ")");
+}
+function roundFloat(value){
+    return value.toFixed(2);
+}
+
+/**
+* Sets the default values for contextmenu options
+*/
+function setDefaults()
+{
+    numSteps = 1;
+    branchSelected = 0;
+    explore = 1;
+}
+
 
 
 /* ---------------------- Tree update and node handling ------------------------- */
 
+/**
+* Handles the update of the tree whenever new node is added to the tree
+* Handles click, dblclick, contextmenu, node and path highlighting
+*/
 function update(source) {
     // Compute the new tree layout.
     var nodes = tree.nodes(root).reverse(),
@@ -234,7 +238,14 @@ function update(source) {
     })   // return d.children ? "lightsteelblue" : "#fff"; 
     .call(d3.helper.tooltip(
         function(d, i){
-            return d.text + " \n<b>Constraint: </b> \n" + d.constraints;
+            if(d.output === undefined)
+            {
+                return d.text + " \n<b>Constraint: </b> \n" + d.constraints;
+            }
+            else
+            {
+                return d.text + " \n<b>Constraint: </b> \n" + d.constraints + " \n<b>Test-Cases: </b> \n"+ d.output; 
+            }
         }
     ))
     .each(function(d){checkForModel(d)})
@@ -326,33 +337,11 @@ function update(source) {
 /*    svg.selectAll("g").each(function(d){console.log("display text");console.log(d.text.node().getBBox().width);});*/
 //    d3.select("#graph svg").selectAll("g.node").select("circle").attr('r',function(d){return svg.selectAll("g.node").select("text").getComputedTextLength();});
 }
-/*
-function wrap(text, width) {
-  text.each(function() {
-    var text = d3.select(this),
-      words = text.text().split(/\s+/).reverse(),
-      word,
-      line = [],
-      lineNumber = 0,
-      lineHeight = 1.1, // ems
-      y = text.attr("y"),
-      dy = parseFloat(text.attr("dy")),
-      tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
-    while (word = words.pop()) {
-      line.push(word);
-      tspan.text(line.join(" "));
-      if (tspan.node().getComputedTextLength() > width) {
-        line.pop();
-        tspan.text(line.join(" "));
-        line = [word];
-        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-      }
-    }
-    d3.select(this.parentNode.children[0]).attr('r', 19 * (lineNumber+1));
-    
-  });
-*/
 
+
+/**
+* Updates the graph whenever treeData changes
+*/
 function updateGraph()
 {
     root = treeData[0]
@@ -363,7 +352,9 @@ function updateGraph()
     d3.select(self.frameElement).style("height", "800px");
 }
 
-// Toggle children on click.
+/**
+* Sets defaults and gets node's children on click
+*/
 function click(d) {
 /*      if (d.children) {
         d._children = d.children;
@@ -380,6 +371,9 @@ function click(d) {
         getNext(d.node);
 }
 
+/**
+* Highlights path from the root to a node
+*/
 function highlightPathToNode(node)
 {
     d3.selectAll("circle").style("stroke", "steelblue");
@@ -395,6 +389,9 @@ function highlightPathToNode(node)
     }
 }
 
+/**
+* Highlights corresponding code for a node
+*/
 function hightlightCode(startLine, endLine, color)
 {
     /*if (undoPrevious == true)
@@ -425,6 +422,9 @@ function hightlightCode(startLine, endLine, color)
     }    
 }
 
+/**
+* Marks a node as excluded
+*/
 function excludeNode(nodeID)
 {
     var toExclude = treeData.filter(function ( obj ) {
@@ -433,6 +433,9 @@ function excludeNode(nodeID)
     toExclude.excluded = true; 
 }
 
+/**
+* Excludes a statement in the code so it won't be explored
+*/
 function excludeStatement(startLine,isPing)
 {
     isPing = isPing || false;
@@ -449,10 +452,10 @@ function excludeStatement(startLine,isPing)
         else setTimeout(function(){excludeStatement(startLine,true);}, 1000);
     });
 }
-/*var exclusionMenu = {
-                title: 'Exclude',
-                action: excludeStatement(line);
-}*/
+
+/**
+* Adds a node to the treeData and calls updateGraph
+*/
 function addNode(nodeObj)
 {
     var constraints = nodeObj["constraints"].split("\n");
@@ -487,6 +490,10 @@ function addNode(nodeObj)
     hightlightCode(node.startLine, node.endLine, '#00a65a');
 }
 /* ---------------- Step To Get Next Node --------------------------------------- */
+
+/**
+* Adds children nodes into treeData
+*/
 function addNodes(data)
 {
     if (data.nodes === undefined || data.nodes.length == 0)
@@ -509,6 +516,10 @@ function addNodes(data)
             addNode(data.nodes[i]);
     }
 }
+
+/**
+* Begins symbolic execution and gets children nodes whenever a node is double-clicked 
+*/
 function getNext(nodeID,isPing)
 {
     if(!beginSymbolicExecution)
@@ -531,6 +542,9 @@ function getNext(nodeID,isPing)
     });
 }
 
+/**
+* Sends a user defined model i.e constraints and expected output, for an external function call to the server 
+*/
 function addModel(isNode, id)
 {
     var _modelOptions = document.getElementById('modelData');
@@ -589,6 +603,9 @@ function addModel(isNode, id)
     return false;
 }        
 
+/**
+* Adds form for the model
+*/
 function addModelInput()
 {
     var newInputsDiv = document.createElement('div');
@@ -600,6 +617,9 @@ function addModelInput()
     document.getElementById("modelFormInputs").appendChild(newInputsDiv);
 }
 
+/**
+* Gets a model from the user
+*/
 function getModelData(isNode, node, func)
 {
     var id;
@@ -632,6 +652,9 @@ function getModelData(isNode, node, func)
         '</form></div>');
 }
 
+/**
+* Checks if a model is needed for a node
+*/
 function checkForModel(selection)
 {
         if (selection.addModel.valueOf() == 'true')
@@ -652,6 +675,9 @@ function checkForModel(selection)
         }    
 }
 
+/**
+* Adds a model for a function
+*/
 function addModelForFunction(name, minLine, maxLine)
 {
     getModelData('false',name);
@@ -660,7 +686,9 @@ function addModelForFunction(name, minLine, maxLine)
 
 /* ---------------- Nodes Right Click Menu Options ------------------------------ */
 
-
+/**
+* Handles node's contextmenu options
+*/
 function handleMenuOptions(nodeID)
 {
     try
@@ -739,7 +767,9 @@ function handleMenuOptions(nodeID)
 
 /*----------------------- Upload Sample File, Code and Functions ----------------- */
 
-
+/**
+* Displays function names in the code in the sidebar
+*/
 function displayFunctionNames(functions)
 {
     var functionNamesDiv = document.getElementById('functionNames');
@@ -757,6 +787,10 @@ function displayFunctionNames(functions)
     }
 
 }
+
+/**
+* Receives function names in the code from the server
+*/
 function getFunctionNames(isPing)
 {
     isPing = isPing || false;
@@ -773,6 +807,9 @@ function getFunctionNames(isPing)
     })
 }
 
+/**
+* Refresh the page when back button is clicked
+*/
 function goBack()
 {
     console.log("go back function called");
@@ -781,6 +818,9 @@ function goBack()
     });
 }
 
+/**
+* Handles sample selection and displays code on the page
+*/
 function uploadSample(isPing)
 {    
     var sampleSubmit = document.getElementById('_submitSample'),
@@ -826,11 +866,13 @@ function uploadSample(isPing)
         }*/
     });
 }
+
 function showFunctionNames()
 {
     document.getElementById("codedata").style.display = "none";
     document.getElementById("functionNames").style.display = "block";   
 }
+
 function showCode()
 {
     document.getElementById("functionNames").style.display = "none";   

@@ -234,12 +234,18 @@ void ExpressionTree::getExpressionString(ExpressionTreeNode* node, std::stringst
     }
 }
 
+/**
+* Returns a Z3 expression in context c for a LLVM Value
+*/
 z3::expr* ExpressionTree::toZ3Expression(std::map<llvm::Value*, z3::expr*>& z3Map, z3::context& c)
 {
     return getZ3Expression(this->top, z3Map, c);
     
 }
 
+/**
+* Adds a Z3 expression for a LLVM value to z3Map
+*/
 void ExpressionTree::addZ3ExpressionToMap(llvm::Value* value, std::map<llvm::Value*, z3::expr*>& z3Map, z3::context& c)
 {
     int xyz;
@@ -273,6 +279,9 @@ void ExpressionTree::addZ3ExpressionToMap(llvm::Value* value, std::map<llvm::Val
     }
 }
 
+/**
+* Returns a Z3 expression for an ExpressionTree
+*/
 
 z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node, std::map<llvm::Value*, z3::expr*>& z3Map, z3::context& c)
 {
@@ -346,7 +355,9 @@ z3::expr* ExpressionTree::getZ3Expression(ExpressionTreeNode* node, std::map<llv
         }
     }
 }
-
+/**
+* Compares two values
+*/
 int ExpressionTree::compare(int value)
 {
     if(isConstant(this->top->value))
@@ -359,6 +370,9 @@ int ExpressionTree::compare(int value)
     else return -2;
 }
 
+/**
+* Compares two ExpressionTrees
+*/
 int ExpressionTree::compare(ExpressionTree* exp1)
 {
     if (isConstant(exp1->top->value))
