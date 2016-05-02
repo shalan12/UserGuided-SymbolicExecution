@@ -237,12 +237,6 @@ std::string ProgramState::Z3solver()
 			s.add(!(*(z3Constraints[i].first)));
 		} 
 	}
-	std::cout << "some info from Z3\n";
-	int abcdef;
-	std::cin >> abcdef;
-	std::cout << "s" << s << "\n";
-	std::cout << "s.check()" << s.check() << "\n";
-	std::cout << "*****************\n";
 	bool toRet = (s.check() == z3::sat);
 	std::string toRet_str = "";  
 	if (toRet)

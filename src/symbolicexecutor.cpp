@@ -247,9 +247,6 @@ std::vector<SymbolicTreeNode*>
 				// std::string mm = ss.str();
 				std::cout << firstModel << "\n";
 			}
-			
-			int qwerty;
-			std::cin >> qwerty;
 
 			#ifdef DEBUG
 				if (toAddFirst)
