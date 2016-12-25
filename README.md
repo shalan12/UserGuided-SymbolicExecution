@@ -1,6 +1,6 @@
-# Sproj
-For stuff related to sproj :P
+# User Guided Symbolic Execution
+We introduce user-guided symbolic execution. Instead of adding annotations in code or heuristics provided as configuration at the start of symbolic execution, we introduce the concept of user guiding the symbolic execution while it is being performed. We also provide an effective visualization of symbolic execution that enables the developers to understand how symbolic search is being performed on their code and testers to understand code structure as symbolic search is exploring it. Both can utilize the search visualization to provide heuristics to make the search more effective. We implemented these visualization and user-guidance ideas in an online tool with a simple graphical interface to view and control the symbolic execution. A demo of the project can be viewed at https://www.youtube.com/watch?v=0VNe4BjjF90
 
-#### How to use this file.
-Write high level descriptions of important files and concepts here.
-Put the details in the comments in he actual code.
+
+# Running the Project
+The project includes a makefile. Running make builds the code that's responsible for symbolically executing a system under test. An output file 'sfse' is created. Run sfse, then navigate to src/webserver. This directory contains the webserver, written in nodejs. Running sudo node app.js starts the webserver, which would be listening on port 80. 
